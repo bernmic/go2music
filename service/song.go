@@ -6,6 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"go2music/model"
 	"log"
+	"path/filepath"
 )
 
 var createTableStatement = `
@@ -173,4 +174,129 @@ func FindAllSongs() ([]*model.Song, error) {
 	}
 
 	return songs, err
+}
+
+func FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
+	stmt := `
+	SELECT
+		song.id,
+		song.path,
+		song.title,
+		song.genre,
+		song.track,
+		song.yearpublished,
+		artist.id artist_id,
+		artist.name,
+		album.id album_id,
+		album.title album_title,
+		album.path album_path
+	FROM
+		song
+	LEFT JOIN artist ON song.artist_id = artist.id
+	LEFT JOIN album ON song.album_id = album.id
+	WHERE album.id = ?
+	`
+	rows, err := Database.Query(stmt, findAlbumId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	songs := make([]*model.Song, 0)
+	var artistId sql.NullInt64
+	var artistName sql.NullString
+	var albumId sql.NullInt64
+	var albumTitle sql.NullString
+	var albumPath sql.NullString
+	for rows.Next() {
+		song := new(model.Song)
+		err := rows.Scan(&song.Id, &song.Path, &song.Title, &song.Genre, &song.Track, &song.Year, &artistId, &artistName, &albumId, &albumTitle, &albumPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if artistId.Valid {
+			song.Artist = new(model.Artist)
+			song.Artist.Id = artistId.Int64
+			song.Artist.Name = artistName.String
+		}
+		if albumId.Valid {
+			song.Album = new(model.Album)
+			song.Album.Id = albumId.Int64
+			song.Album.Title = albumTitle.String
+			song.Album.Path = albumPath.String
+		}
+		songs = append(songs, song)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return songs, err
+}
+
+func FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
+	stmt := `
+	SELECT
+		song.id,
+		song.path,
+		song.title,
+		song.genre,
+		song.track,
+		song.yearpublished,
+		artist.id artist_id,
+		artist.name,
+		album.id album_id,
+		album.title album_title,
+		album.path album_path
+	FROM
+		song
+	LEFT JOIN artist ON song.artist_id = artist.id
+	LEFT JOIN album ON song.album_id = album.id
+	WHERE artist.id = ?
+	`
+	rows, err := Database.Query(stmt, findArtistId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	songs := make([]*model.Song, 0)
+	var artistId sql.NullInt64
+	var artistName sql.NullString
+	var albumId sql.NullInt64
+	var albumTitle sql.NullString
+	var albumPath sql.NullString
+	for rows.Next() {
+		song := new(model.Song)
+		err := rows.Scan(&song.Id, &song.Path, &song.Title, &song.Genre, &song.Track, &song.Year, &artistId, &artistName, &albumId, &albumTitle, &albumPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if artistId.Valid {
+			song.Artist = new(model.Artist)
+			song.Artist.Id = artistId.Int64
+			song.Artist.Name = artistName.String
+		}
+		if albumId.Valid {
+			song.Album = new(model.Album)
+			song.Album.Id = albumId.Int64
+			song.Album.Title = albumTitle.String
+			song.Album.Path = albumPath.String
+		}
+		songs = append(songs, song)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return songs, err
+}
+
+func GetCoverForSong(song *model.Song) ([]byte, string, error) {
+	image, mimetype, err := GetCoverFromID3(song.Path)
+
+	if err != nil {
+		log.Println("try to find cover in path")
+		image, mimetype, err = GetCoverFromPath(filepath.Dir(song.Path))
+	}
+
+	return image, mimetype, err
 }

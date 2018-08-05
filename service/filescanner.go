@@ -1,8 +1,11 @@
 package service
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -31,4 +34,34 @@ func Filescanner(root string, extension string, level ...int) []string {
 	}
 
 	return result
+}
+
+type ImageFile struct {
+	path     string
+	mimetype string
+}
+
+func GetCoverFromPath(path string) ([]byte, string, error) {
+	var files []ImageFile
+	filepath.Walk(path, func(path string, f os.FileInfo, _ error) error {
+		if !f.IsDir() {
+			ext := strings.ToLower(f.Name())
+			if filepath.Ext(ext) == ".gif" {
+				files = append(files, ImageFile{path: path, mimetype: "image/gif"})
+			} else if filepath.Ext(ext) == ".jpg" {
+				files = append(files, ImageFile{path: path, mimetype: "image/jpeg"})
+			} else if filepath.Ext(ext) == ".jpeg" {
+				files = append(files, ImageFile{path: path, mimetype: "image/jpeg"})
+			} else if filepath.Ext(ext) == ".png" {
+				files = append(files, ImageFile{path: path, mimetype: "image/png"})
+			}
+		}
+		return nil
+	})
+
+	if len(files) > 0 {
+		image, err := ioutil.ReadFile(files[0].path)
+		return image, files[0].mimetype, err
+	}
+	return nil, "", errors.New("no cover found in path " + path)
 }

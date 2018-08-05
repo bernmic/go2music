@@ -30,3 +30,43 @@ func GetAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	respondWithJSON(w, 200, album)
 }
+
+func GetSongForAlbum(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid album ID")
+		return
+	}
+	songs, err := service.FindSongsByAlbumId(id)
+	if err == nil {
+		respondWithJSON(w, 200, songs)
+		return
+	}
+	respondWithError(w, 500, "Cound not read songs")
+}
+
+func GetCoverForAlbum(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid album ID")
+		return
+	}
+	songs, err := service.FindSongsByAlbumId(id)
+	if err != nil {
+		respondWithError(w, 404, "album not found")
+		return
+	}
+	if len(songs) > 0 {
+		image, mimetype, _ := service.GetCoverForSong(songs[0])
+
+		if image != nil {
+			w.Header().Set("Content-Type", mimetype)
+			w.Header().Set("Content-Length", strconv.Itoa(len(image)))
+
+			_, err = w.Write(image)
+		}
+	}
+	respondWithError(w, http.StatusNotFound, "No cover found")
+}

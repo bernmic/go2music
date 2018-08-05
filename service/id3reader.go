@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"errors"
 	"github.com/bogem/id3v2"
 	"go2music/model"
 )
@@ -51,10 +52,11 @@ func ID3Reader(filenames []string) {
 	}
 }
 
-func GetCover(filename string) ([]byte, string, error) {
+func GetCoverFromID3(filename string) ([]byte, string, error) {
 	tag, err := id3v2.Open(filename, id3v2.Options{Parse: true})
 	if err != nil {
-		log.Fatal("Error opening mp3 file: ", err)
+		log.Println("Error opening mp3 file: " + err.Error())
+		return nil, "", errors.New("song file not found")
 	}
 	defer tag.Close()
 	pictures := tag.GetFrames(tag.CommonID("Attached picture"))
@@ -65,5 +67,5 @@ func GetCover(filename string) ([]byte, string, error) {
 		}
 	}
 
-	return nil, "", nil
+	return nil, "", errors.New("no cover found")
 }

@@ -88,7 +88,7 @@ func GetCover(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, 404, "song not found")
 		return
 	}
-	image, mimetype, err := service.GetCover(song.Path)
+	image, mimetype, err := service.GetCoverForSong(song)
 
 	if image != nil {
 		w.Header().Set("Content-Type", mimetype)

@@ -30,3 +30,18 @@ func GetArtist(w http.ResponseWriter, r *http.Request) {
 	}
 	respondWithJSON(w, 200, artist)
 }
+
+func GetSongForArtist(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid artist ID")
+		return
+	}
+	songs, err := service.FindSongsByArtistId(id)
+	if err == nil {
+		respondWithJSON(w, 200, songs)
+		return
+	}
+	respondWithError(w, 500, "Cound not read songs")
+}
