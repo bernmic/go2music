@@ -6,9 +6,10 @@ import (
 )
 
 func SetupAlbumRoutes(router *mux.Router) *mux.Router {
-	router.HandleFunc("/album", controller.GetAlbums).Methods("GET")
-	router.HandleFunc("/album/{id}", controller.GetAlbum).Methods("GET")
-	router.HandleFunc("/album/{id}/songs", controller.GetSongForAlbum).Methods("GET")
-	router.HandleFunc("/album/{id}/cover", controller.GetCoverForAlbum).Methods("GET")
+	albumRouter := router.PathPrefix("/api/album").Subrouter()
+	albumRouter.HandleFunc("", controller.GetAlbums).Methods("GET")
+	albumRouter.HandleFunc("/{id}", controller.GetAlbum).Methods("GET")
+	albumRouter.HandleFunc("/{id}/songs", controller.GetSongForAlbum).Methods("GET")
+	albumRouter.HandleFunc("/{id}/cover", controller.GetCoverForAlbum).Methods("GET")
 	return router
 }

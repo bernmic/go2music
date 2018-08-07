@@ -6,8 +6,9 @@ import (
 )
 
 func SetupArtistRoutes(router *mux.Router) *mux.Router {
-	router.HandleFunc("/artist", controller.GetArtists).Methods("GET")
-	router.HandleFunc("/artist/{id}", controller.GetArtist).Methods("GET")
-	router.HandleFunc("/artist/{id}/songs", controller.GetSongForArtist).Methods("GET")
+	artistRouter := router.PathPrefix("/api/artist").Subrouter()
+	artistRouter.HandleFunc("", controller.GetArtists).Methods("GET")
+	artistRouter.HandleFunc("/{id}", controller.GetArtist).Methods("GET")
+	artistRouter.HandleFunc("/{id}/songs", controller.GetSongForArtist).Methods("GET")
 	return router
 }

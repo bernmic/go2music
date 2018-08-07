@@ -2,11 +2,13 @@ package service
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"go2music/model"
 	"log"
 	"path/filepath"
+	"strings"
 )
 
 var createTableStatement = `
@@ -19,6 +21,11 @@ var createTableStatement = `
 		genre varchar(255) NULL,
 		track int NULL,
 		yearpublished varchar(32) NULL,
+		bitrate int null,
+		samplerate int null,
+		duration int null,
+		mode varchar(30) null,
+		cbrvbr varchar(10) null,
 		PRIMARY KEY (id),
 		FOREIGN KEY (artist_id) REFERENCES artist(id),
 		FOREIGN KEY (album_id) REFERENCES album(id)
@@ -57,7 +64,19 @@ func InitializeSong() {
 }
 
 func CreateSong(song model.Song) (*model.Song, error) {
-	result, err := Database.Exec("INSERT IGNORE INTO song (path, title, artist_id, album_id, genre, track, yearpublished) VALUES(?,?,?,?,?,?,?)", song.Path, song.Title, song.Artist.Id, song.Album.Id, song.Genre, song.Track, song.Year)
+	result, err := Database.Exec("INSERT IGNORE INTO song (path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, cbrvbr) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+		song.Path,
+		song.Title,
+		song.Artist.Id,
+		song.Album.Id,
+		song.Genre.String,
+		song.Track.Int64,
+		song.Year.String,
+		song.Bitrate,
+		song.Samplerate,
+		song.Duration,
+		song.Mode,
+		song.CbrVbr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,7 +85,20 @@ func CreateSong(song model.Song) (*model.Song, error) {
 }
 
 func UpdateSong(song model.Song) (*model.Song, error) {
-	_, err := Database.Exec("UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=? WHERE id=?", song.Path, song.Title, song.Artist.Id, song.Album.Id, song.Genre, song.Track, song.Year, song.Id)
+	_, err := Database.Exec("UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=?, bitrate=?, samplerate=?, duration=?, mode=?, cbrvbr=? WHERE id=?",
+		song.Path,
+		song.Title,
+		song.Artist.Id,
+		song.Album.Id,
+		song.Genre.String,
+		song.Track.Int64,
+		song.Year.String,
+		song.Bitrate,
+		song.Samplerate,
+		song.Duration,
+		song.Mode,
+		song.CbrVbr,
+		song.Id)
 	return &song, err
 }
 
@@ -75,6 +107,21 @@ func DeleteSong(id int64) error {
 	return err
 }
 
+func SongExists(path string) bool {
+	sqlStmt := `SELECT path FROM song WHERE path = ?`
+	err := Database.QueryRow(sqlStmt, path).Scan(&path)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			// a real error happened! you should change your function return
+			// to "(bool, error)" and return "false, err" here
+			log.Print(err)
+		}
+
+		return false
+	}
+
+	return true
+}
 func FindOneSong(id int64) (*model.Song, error) {
 	stmt := `
 		SELECT
@@ -84,6 +131,11 @@ func FindOneSong(id int64) (*model.Song, error) {
 			song.genre,
 			song.track,
 			song.yearpublished,
+			song.bitrate, 
+			song.samplerate, 
+			song.duration, 
+			song.mode, 
+			song.cbrvbr,
 			artist.id artist_id,
 			artist.name,
 			album.id album_id,
@@ -102,7 +154,23 @@ func FindOneSong(id int64) (*model.Song, error) {
 	var albumId sql.NullInt64
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
-	err := Database.QueryRow(stmt, id).Scan(&song.Id, &song.Path, &song.Title, &song.Genre, &song.Track, &song.Year, &artistId, &artistName, &albumId, &albumTitle, &albumPath)
+	err := Database.QueryRow(stmt, id).Scan(
+		&song.Id,
+		&song.Path,
+		&song.Title,
+		&song.Genre,
+		&song.Track,
+		&song.Year,
+		&song.Bitrate,
+		&song.Samplerate,
+		&song.Duration,
+		&song.Mode,
+		&song.CbrVbr,
+		&artistId,
+		&artistName,
+		&albumId,
+		&albumTitle,
+		&albumPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -129,6 +197,11 @@ func FindAllSongs() ([]*model.Song, error) {
 		song.genre,
 		song.track,
 		song.yearpublished,
+		song.bitrate, 
+		song.samplerate, 
+		song.duration, 
+		song.mode, 
+		song.cbrvbr,
 		artist.id artist_id,
 		artist.name,
 		album.id album_id,
@@ -152,7 +225,23 @@ func FindAllSongs() ([]*model.Song, error) {
 	var albumPath sql.NullString
 	for rows.Next() {
 		song := new(model.Song)
-		err := rows.Scan(&song.Id, &song.Path, &song.Title, &song.Genre, &song.Track, &song.Year, &artistId, &artistName, &albumId, &albumTitle, &albumPath)
+		err := rows.Scan(
+			&song.Id,
+			&song.Path,
+			&song.Title,
+			&song.Genre,
+			&song.Track,
+			&song.Year,
+			&song.Bitrate,
+			&song.Samplerate,
+			&song.Duration,
+			&song.Mode,
+			&song.CbrVbr,
+			&artistId,
+			&artistName,
+			&albumId,
+			&albumTitle,
+			&albumPath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -185,6 +274,11 @@ func FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
 		song.genre,
 		song.track,
 		song.yearpublished,
+		song.bitrate, 
+		song.samplerate, 
+		song.duration, 
+		song.mode, 
+		song.cbrvbr,
 		artist.id artist_id,
 		artist.name,
 		album.id album_id,
@@ -209,7 +303,23 @@ func FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
 	var albumPath sql.NullString
 	for rows.Next() {
 		song := new(model.Song)
-		err := rows.Scan(&song.Id, &song.Path, &song.Title, &song.Genre, &song.Track, &song.Year, &artistId, &artistName, &albumId, &albumTitle, &albumPath)
+		err := rows.Scan(
+			&song.Id,
+			&song.Path,
+			&song.Title,
+			&song.Genre,
+			&song.Track,
+			&song.Year,
+			&song.Bitrate,
+			&song.Samplerate,
+			&song.Duration,
+			&song.Mode,
+			&song.CbrVbr,
+			&artistId,
+			&artistName,
+			&albumId,
+			&albumTitle,
+			&albumPath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -242,6 +352,11 @@ func FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
 		song.genre,
 		song.track,
 		song.yearpublished,
+		song.bitrate, 
+		song.samplerate, 
+		song.duration, 
+		song.mode, 
+		song.cbrvbr,
 		artist.id artist_id,
 		artist.name,
 		album.id album_id,
@@ -266,7 +381,114 @@ func FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
 	var albumPath sql.NullString
 	for rows.Next() {
 		song := new(model.Song)
-		err := rows.Scan(&song.Id, &song.Path, &song.Title, &song.Genre, &song.Track, &song.Year, &artistId, &artistName, &albumId, &albumTitle, &albumPath)
+		err := rows.Scan(
+			&song.Id,
+			&song.Path,
+			&song.Title,
+			&song.Genre,
+			&song.Track,
+			&song.Year,
+			&song.Bitrate,
+			&song.Samplerate,
+			&song.Duration,
+			&song.Mode,
+			&song.CbrVbr,
+			&artistId,
+			&artistName,
+			&albumId,
+			&albumTitle,
+			&albumPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if artistId.Valid {
+			song.Artist = new(model.Artist)
+			song.Artist.Id = artistId.Int64
+			song.Artist.Name = artistName.String
+		}
+		if albumId.Valid {
+			song.Album = new(model.Album)
+			song.Album.Id = albumId.Int64
+			song.Album.Title = albumTitle.String
+			song.Album.Path = albumPath.String
+		}
+		songs = append(songs, song)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return songs, err
+}
+
+func FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
+	stmt := `
+	SELECT
+		song.id,
+		song.path,
+		song.title,
+		song.genre,
+		song.track,
+		song.yearpublished,
+		song.bitrate, 
+		song.samplerate, 
+		song.duration, 
+		song.mode, 
+		song.cbrvbr,
+		artist.id artist_id,
+		artist.name,
+		album.id album_id,
+		album.title album_title,
+		album.path album_path
+	FROM
+		song
+	LEFT JOIN artist ON song.artist_id = artist.id
+	LEFT JOIN album ON song.album_id = album.id
+	`
+	splitted := strings.Split(query, "=")
+	if len(splitted) != 2 {
+		return nil, errors.New("incorrect query")
+	}
+
+	switch strings.ToLower(splitted[0]) {
+	case "album":
+		stmt += " WHERE album.title = ?"
+	case "artist":
+		stmt += " WHERE artist.name = ?"
+	case "title":
+		stmt += " WHERE song.title = ?"
+	}
+
+	rows, err := Database.Query(stmt, splitted[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	songs := make([]*model.Song, 0)
+	var artistId sql.NullInt64
+	var artistName sql.NullString
+	var albumId sql.NullInt64
+	var albumTitle sql.NullString
+	var albumPath sql.NullString
+	for rows.Next() {
+		song := new(model.Song)
+		err := rows.Scan(
+			&song.Id,
+			&song.Path,
+			&song.Title,
+			&song.Genre,
+			&song.Track,
+			&song.Year,
+			&song.Bitrate,
+			&song.Samplerate,
+			&song.Duration,
+			&song.Mode,
+			&song.CbrVbr,
+			&artistId,
+			&artistName,
+			&albumId,
+			&albumTitle,
+			&albumPath)
 		if err != nil {
 			log.Fatal(err)
 		}

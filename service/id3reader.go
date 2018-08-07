@@ -7,6 +7,7 @@ import (
 
 	"errors"
 	"github.com/bogem/id3v2"
+	"github.com/xhenner/mp3-go"
 	"go2music/model"
 )
 
@@ -33,20 +34,36 @@ func readData(filename string) (*model.Song, error) {
 	return song, err
 }
 
+func readMetaData(filename string, song *model.Song) (*model.Song, error) {
+	mp3File, err := mp3.Examine(filename, false)
+	if err == nil {
+		song.Bitrate = mp3File.Bitrate
+		song.Samplerate = mp3File.Sampling
+		song.Duration = int(mp3File.Length)
+		song.Mode = mp3File.Mode
+		song.CbrVbr = mp3File.Type
+		return song, nil
+	}
+	return nil, err
+}
+
 func ID3Reader(filenames []string) {
 	counter := 0
 	for _, filename := range filenames {
-		song, err := readData(filename)
-		if err == nil {
-			song.Artist, err = CreateIfNotExistsArtist(*song.Artist)
-			song.Album, err = CreateIfNotExistsAlbum(*song.Album)
-			song, err = CreateSong(*song)
-			if err != nil {
-				log.Fatalf("Error creating song: %v", err)
-			}
-			counter++
-			if counter%100 == 0 {
-				log.Printf("Proceeded %d songs", counter)
+		if !SongExists(filename) {
+			song, err := readData(filename)
+			song, err = readMetaData(filename, song)
+			if err == nil {
+				song.Artist, err = CreateIfNotExistsArtist(*song.Artist)
+				song.Album, err = CreateIfNotExistsAlbum(*song.Album)
+				song, err = CreateSong(*song)
+				if err != nil {
+					log.Fatalf("Error creating song: %v", err)
+				}
+				counter++
+				if counter%100 == 0 {
+					log.Printf("Proceeded %d songs", counter)
+				}
 			}
 		}
 	}

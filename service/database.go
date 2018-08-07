@@ -19,6 +19,7 @@ func InitializeDatabase(dbtype, user, password, dbname string) *sql.DB {
 	InitializeArtist()
 	InitializeAlbum()
 	InitializeSong()
+	InitializePlaylist()
 	log.Print("Database initialized....")
 
 	go syncWithFilesystem(db)
