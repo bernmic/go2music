@@ -9,10 +9,11 @@ import (
 
 var Database *sql.DB
 
-func InitializeDatabase(dbtype, user, password, dbname string) *sql.DB {
-	db, err := sql.Open(dbtype, fmt.Sprintf("%s:%s@%s", user, password, dbname))
+func InitializeDatabase() *sql.DB {
+	c := GetConfiguration()
+	db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, c.Database.Url))
 	if err != nil {
-		log.Print("Error opening service " + dbname)
+		log.Print("Error opening service " + c.Database.Url)
 		panic(fmt.Sprintf("%v", err))
 	}
 	Database = db
@@ -30,7 +31,7 @@ func InitializeDatabase(dbtype, user, password, dbname string) *sql.DB {
 func syncWithFilesystem(db *sql.DB) {
 	log.Print("Start scanning filesystem....")
 	start := time.Now()
-	result := Filescanner("d:/music", ".mp3")
+	result := Filescanner(GetConfiguration().Media.Path, ".mp3")
 	log.Printf("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
 	log.Print("Start sync found files with service...")
 	start = time.Now()
