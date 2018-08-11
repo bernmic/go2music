@@ -9,30 +9,30 @@ import (
 func InitializeArtist() {
 	_, err := Database.Query("SELECT 1 FROM artist LIMIT 1")
 	if err != nil {
-		log.Print("Table artist does not exists. Creating now.")
+		log.Print("INFO Table artist does not exists. Creating now.")
 		stmt, err := Database.Prepare("CREATE TABLE IF NOT EXISTS artist (id BIGINT NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, PRIMARY KEY (id));")
 		if err != nil {
-			log.Print("Error creating artist table")
+			log.Print("ERROR Error creating artist table")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("Error creating artist table")
+			log.Print("ERROR Error creating artist table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("Artist Table successfully created....")
+			log.Println("INFO Artist Table successfully created....")
 		}
 		stmt, err = Database.Prepare("ALTER TABLE artist ADD UNIQUE INDEX artist_name (name)")
 		if err != nil {
-			log.Print("Error creating artist table index for name")
+			log.Print("ERROR Error creating artist table index for name")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("Error creating artist table index for name")
+			log.Print("ERROR Error creating artist table index for name")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("Index on name generated....")
+			log.Println("INFO Index on name generated....")
 		}
 	}
 }

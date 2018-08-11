@@ -6,4 +6,4 @@ database:
   type: mysql
   url: tcp(beethoven:3306)/go2music
 media:
-  path: ${home}/Music
+  path: d:/music

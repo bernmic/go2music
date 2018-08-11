@@ -6,31 +6,43 @@ import (
 	"go2music/controller"
 	"log"
 	"net/http"
+	"os"
 )
 
 func Init() *mux.Router {
 	router := mux.NewRouter()
+	// add authenticate endpoint
 	router.HandleFunc("/api/authenticate", controller.Authenticate).Methods("POST")
 	fs := http.FileServer(http.Dir("static"))
 	router.Handle("/", fs)
 
+	// only admins are allowed to see users
+	adminRouter := mux.NewRouter()
+	adminRouter = SetupUserRoutes(adminRouter)
+	adminMiddleware := negroni.New(negroni.HandlerFunc(controller.AdminMiddeware), negroni.Wrap(adminRouter))
+	router.PathPrefix("/api/user").Handler(adminMiddleware)
+
+	// protect API
 	authRouter := mux.NewRouter()
 	authRouter = SetupAlbumRoutes(authRouter)
 	authRouter = SetupArtistRoutes(authRouter)
 	authRouter = SetupSongRoutes(authRouter)
 	authRouter = SetupPlaylistRoutes(authRouter)
-	an := negroni.New(negroni.HandlerFunc(controller.AuthMiddeware), negroni.Wrap(authRouter))
-	router.PathPrefix("/api").Handler(an)
+	authMiddleware := negroni.New(negroni.HandlerFunc(controller.AuthMiddeware), negroni.Wrap(authRouter))
+	router.PathPrefix("/api").Handler(authMiddleware)
 
 	return router
 }
 
 func Run(addr string) {
-	log.Print("Start Router on port " + addr)
+	log.Println("INFO Start Router on port " + addr)
 	r := Init()
-	n := negroni.Classic()
+	logger := negroni.NewLogger()
+	logger.ALogger = log.New(os.Stdout, "", 0)
+	logger.SetFormat("{{.StartTime}} INFO {{.Status}} | {{.Duration}} | {{.Hostname}} | {{.Method}} {{.Path}}")
+	logger.SetDateFormat("2006-01-02 15:04:05")
+	n := negroni.New(negroni.NewRecovery(), logger)
+	//n.Use(logger)
 	n.UseHandler(r)
 	n.Run(addr)
-
-	// log.Fatal(http.ListenAndServe(addr, Init()))
 }

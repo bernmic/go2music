@@ -18,7 +18,7 @@ func Filescanner(root string, extension string, level ...int) []string {
 	}
 	files, err := ioutil.ReadDir(root)
 	if err != nil {
-		log.Print(err)
+		log.Println("ERROR error reading dir", err)
 		return nil
 	}
 	if clevel == 0 {

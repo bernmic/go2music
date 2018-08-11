@@ -2,23 +2,37 @@ package service
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/patrickmn/go-cache"
+	"go2music/model"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 )
 
-func userpassword() (userPasswordMap map[string]string) {
-	userPasswordMap = make(map[string]string)
-	userPasswordMap["user"] = "user"
-	userPasswordMap["admin"] = "admin"
-	userPasswordMap["guest"] = "guest"
-	return
+const (
+	UserRole  string = "user"
+	AdminRole string = "admin"
+	GuestRole string = "guest"
+)
+
+type Go2MusicClaimsType struct {
+	*jwt.StandardClaims
+	User string `json:"usr"`
 }
 
-func GenerateJWT() (tokenString string, err error) {
+var usersCache *cache.Cache
+
+func init() {
+	usersCache = cache.New(5*time.Minute, 10*time.Minute)
+}
+
+func GenerateJWT(user *model.User) (tokenString string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"usr": user.Username,
 		"iat": time.Now().Unix(),
 		"exp": time.Now().Add(time.Hour * 1).Unix()})
 
@@ -27,40 +41,60 @@ func GenerateJWT() (tokenString string, err error) {
 	return tokenString, err
 }
 
-func AuthenticateRequest(authHeader string) bool {
-
-	data, err := base64.StdEncoding.DecodeString(authHeader)
-	if err != nil {
-		fmt.Println("error:", err)
-		return false
+func AuthenticateRequest(authHeader string) (*model.User, error) {
+	splittedHeader := strings.Split(authHeader, " ")
+	if len(splittedHeader) != 2 || splittedHeader[0] != "Basic" {
+		return nil, errors.New("bad request")
 	}
-	fmt.Printf("%q\n", data)
+	data, err := base64.StdEncoding.DecodeString(splittedHeader[1])
+	if err != nil {
+		log.Println("WARN error decoding base64", err)
+		return nil, errors.New("bad request")
+	}
 	userpwd := strings.Split(string(data), ":")
 
-	userpwdmap := userpassword()
-	if userpwdmap[userpwd[0]] == userpwd[1] {
-		return true
+	user, err := FindUserByUsername(userpwd[0])
+	if err != nil {
+		return nil, errors.New("username/password wrong")
 	}
-	return false
+	if user.Password == userpwd[1] {
+		return user, nil
+	}
+	return nil, errors.New("username/password wrong")
 }
 
-func AuthenticateJWT(header http.Header) bool {
-	jwtString := header.Get("Authentication")
-	if len(jwtString) == 0 {
-		return false
+func AuthenticateJWT(header http.Header) (username string, valid bool) {
+	jwtString := header.Get("Authorization")
+	splittedHeader := strings.Split(jwtString, " ")
+	if len(splittedHeader) != 2 || splittedHeader[0] != "Bearer" {
+		return "", false
 	}
-	token, err := jwt.Parse(jwtString, func(token *jwt.Token) (interface{}, error) {
+	claims := Go2MusicClaimsType{}
+	token, _ := jwt.ParseWithClaims(splittedHeader[1], &claims, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte("secret"), nil
 	})
 
-	if err == nil && token.Valid {
-		return true
+	if token.Valid {
+		return claims.User, true
 	} else {
-		return false
+		return "", false
 	}
-	return false
+	return "", false
+}
+
+func GetPrincipal(username string) (*model.User, error) {
+	user, found := usersCache.Get(username)
+	if !found {
+		var err error
+		user, err = FindUserByUsername(username)
+		if err != nil {
+			return nil, err
+		}
+		usersCache.Set(username, user, cache.DefaultExpiration)
+	}
+	return user.(*model.User), nil
 }

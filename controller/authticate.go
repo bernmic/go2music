@@ -7,31 +7,57 @@ import (
 	"net/http"
 )
 
+const (
+	UsernameHeader string = "username"
+	RoleHeader     string = "userrole"
+)
+
 func Authenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	authHeader := r.Header.Get("Authentication")
-	if len(authHeader) == 0 || !service.AuthenticateRequest(authHeader) {
+	authHeader := r.Header.Get("Authorization")
+	user, err := service.AuthenticateRequest(authHeader)
+	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	token, err := service.GenerateJWT()
+	token, err := service.GenerateJWT(user)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(token); err != nil {
+	if err := json.NewEncoder(w).Encode(map[string]string{"token": token}); err != nil {
 		panic(err)
 	}
 }
 
 func AuthMiddeware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	b := service.AuthenticateJWT(r.Header)
+	username, b := service.AuthenticateJWT(r.Header)
 	if b {
-		log.Println("Before handler - OK")
-	} else {
-		log.Println("Before handler - NOK")
+		user, err := service.GetPrincipal(username)
+		if err == nil && (user.Role == service.UserRole || user.Role == service.AdminRole) {
+			log.Println("INFO Authorization OK - " + username + " with role " + user.Role)
+			next(w, r)
+			return
+		}
 	}
-	next(w, r)
-	log.Println("After handler")
+	respondWithError(w, 401, "Unauthorized")
+}
+
+func AdminMiddeware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	username, b := service.AuthenticateJWT(r.Header)
+	if b {
+		user, err := service.GetPrincipal(username)
+		if err == nil && user.Role == service.AdminRole {
+			log.Println("INFO Authorization OK - " + username + " with role " + user.Role)
+			next(w, r)
+			return
+		}
+	}
+	respondWithError(w, 401, "Unauthorized")
+}
+
+func CheckRole(r *http.Request, role string) bool {
+	headerRole := r.Header.Get("userrole")
+	return headerRole == role
 }

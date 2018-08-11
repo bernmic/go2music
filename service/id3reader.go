@@ -1,20 +1,19 @@
 package service
 
 import (
-	"log"
-	"path/filepath"
-	"strconv"
-
 	"errors"
 	"github.com/bogem/id3v2"
 	"github.com/xhenner/mp3-go"
 	"go2music/model"
+	"log"
+	"path/filepath"
+	"strconv"
 )
 
 func readData(filename string) (*model.Song, error) {
 	tag, err := id3v2.Open(filename, id3v2.Options{Parse: true})
 	if err != nil {
-		log.Fatal("Error opening mp3 file: ", err)
+		log.Fatal("ERROR Error opening mp3 file: ", err)
 	}
 	defer tag.Close()
 	song := new(model.Song)
@@ -58,11 +57,11 @@ func ID3Reader(filenames []string) {
 				song.Album, err = CreateIfNotExistsAlbum(*song.Album)
 				song, err = CreateSong(*song)
 				if err != nil {
-					log.Fatalf("Error creating song: %v", err)
+					log.Fatalf("FATAL Error creating song: %v", err)
 				}
 				counter++
 				if counter%100 == 0 {
-					log.Printf("Proceeded %d songs", counter)
+					log.Printf("INFO Proceeded %d songs", counter)
 				}
 			}
 		}
@@ -72,7 +71,7 @@ func ID3Reader(filenames []string) {
 func GetCoverFromID3(filename string) ([]byte, string, error) {
 	tag, err := id3v2.Open(filename, id3v2.Options{Parse: true})
 	if err != nil {
-		log.Println("Error opening mp3 file: " + err.Error())
+		log.Println("ERROR Error opening mp3 file", err)
 		return nil, "", errors.New("song file not found")
 	}
 	defer tag.Close()

@@ -9,30 +9,30 @@ import (
 func InitializePlaylist() {
 	_, err := Database.Query("SELECT 1 FROM playlist LIMIT 1")
 	if err != nil {
-		log.Print("Table playlist does not exists. Creating now.")
+		log.Print("INFO Table playlist does not exists. Creating now.")
 		stmt, err := Database.Prepare("CREATE TABLE IF NOT EXISTS playlist (id BIGINT NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, query varchar(255) NOT NULL, PRIMARY KEY (id));")
 		if err != nil {
-			log.Print("Error creating playlist table")
+			log.Print("ERROR Error creating playlist table")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("Error creating playlist table")
+			log.Print("ERROR Error creating playlist table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("Playlist Table successfully created....")
+			log.Println("INFO Playlist Table successfully created....")
 		}
 		stmt, err = Database.Prepare("ALTER TABLE playlist ADD UNIQUE INDEX playlist_name (name)")
 		if err != nil {
-			log.Print("Error creating playlist table index for name")
+			log.Print("ERROR Error creating playlist table index for name")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("Error creating playlist table index for name")
+			log.Print("ERROR Error creating playlist table index for name")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("Index on name generated....")
+			log.Println("INFO Index on name generated....")
 		}
 	}
 }

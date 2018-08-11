@@ -12,7 +12,6 @@ import (
 )
 
 func GetSongs(w http.ResponseWriter, r *http.Request) {
-	dumpRequestHeader(r)
 	songs, err := service.FindAllSongs()
 	if err == nil {
 		respondWithJSON(w, 200, songs)

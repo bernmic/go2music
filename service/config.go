@@ -9,6 +9,14 @@ import (
 
 var config model.Config
 var configLoaded = false
+var secrets = map[string]string{}
+
+type Secret string
+
+const (
+	PasswordSecret Secret = "password"
+	TokenSecret    Secret = "token"
+)
 
 func GetConfiguration() *model.Config {
 	if !configLoaded {
@@ -47,4 +55,14 @@ func GetConfiguration() *model.Config {
 		configLoaded = true
 	}
 	return &config
+}
+
+func GetSecret(secret Secret) string {
+	if len(secrets) == 0 {
+		secretdata, err := ioutil.ReadFile("secrets.yaml")
+		if err == nil {
+			yaml.Unmarshal([]byte(secretdata), &config)
+		}
+	}
+	return ""
 }

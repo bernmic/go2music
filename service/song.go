@@ -11,7 +11,8 @@ import (
 	"strings"
 )
 
-var createTableStatement = `
+const (
+	createSongTableStatement = `
 	CREATE TABLE IF NOT EXISTS song (
 		id BIGINT NOT NULL AUTO_INCREMENT,
 		path varchar(255) NOT NULL,
@@ -30,35 +31,59 @@ var createTableStatement = `
 		FOREIGN KEY (artist_id) REFERENCES artist(id),
 		FOREIGN KEY (album_id) REFERENCES album(id)
 		);
+	`
+	selectSongStatement = `
+SELECT
+	song.id,
+	song.path,
+	song.title,
+	song.genre,
+	song.track,
+	song.yearpublished,
+	song.bitrate,
+	song.samplerate,
+	song.duration,
+	song.mode,
+	song.cbrvbr,
+	artist.id artist_id,
+	artist.name,
+	album.id album_id,
+	album.title album_title,
+	album.path album_path
+FROM
+	song
+LEFT JOIN artist ON song.artist_id = artist.id
+LEFT JOIN album ON song.album_id = album.id
 `
+)
 
 func InitializeSong() {
 	_, err := Database.Query("SELECT 1 FROM song LIMIT 1")
 	if err != nil {
-		log.Print("Table song does not exists. Creating now.")
-		stmt, err := Database.Prepare(createTableStatement)
+		log.Print("INFO Table song does not exists. Creating now.")
+		stmt, err := Database.Prepare(createSongTableStatement)
 		if err != nil {
-			log.Print("Error creating song table")
+			log.Print("ERROR Error creating song table")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("Error creating song table")
+			log.Print("ERROR Error creating song table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("Song Table successfully created....")
+			log.Println("INFO Song Table successfully created....")
 		}
 		stmt, err = Database.Prepare("ALTER TABLE song ADD UNIQUE INDEX song_path (path)")
 		if err != nil {
-			log.Print("Error creating song table index for path")
+			log.Print("ERROR Error creating song table index for path")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("Error creating song table index for path")
+			log.Print("ERROR Error creating song table index for path")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("Index on path generated....")
+			log.Println("INFO Index on path generated....")
 		}
 	}
 }
@@ -114,7 +139,7 @@ func SongExists(path string) bool {
 		if err != sql.ErrNoRows {
 			// a real error happened! you should change your function return
 			// to "(bool, error)" and return "false, err" here
-			log.Print(err)
+			log.Println("ERROR Error reading song from database", err)
 		}
 
 		return false
@@ -123,28 +148,7 @@ func SongExists(path string) bool {
 	return true
 }
 func FindOneSong(id int64) (*model.Song, error) {
-	stmt := `
-		SELECT
-			song.id,
-			song.path,
-			song.title,
-			song.genre,
-			song.track,
-			song.yearpublished,
-			song.bitrate, 
-			song.samplerate, 
-			song.duration, 
-			song.mode, 
-			song.cbrvbr,
-			artist.id artist_id,
-			artist.name,
-			album.id album_id,
-			album.title album_title,
-			album.path album_path
- 		FROM
-			song
-		LEFT JOIN artist ON song.artist_id = artist.id
-		LEFT JOIN album ON song.album_id = album.id
+	stmt := selectSongStatement + ` 
 		WHERE
 			song.id=?
 	`
@@ -189,32 +193,9 @@ func FindOneSong(id int64) (*model.Song, error) {
 }
 
 func FindAllSongs() ([]*model.Song, error) {
-	stmt := `
-	SELECT
-		song.id,
-		song.path,
-		song.title,
-		song.genre,
-		song.track,
-		song.yearpublished,
-		song.bitrate, 
-		song.samplerate, 
-		song.duration, 
-		song.mode, 
-		song.cbrvbr,
-		artist.id artist_id,
-		artist.name,
-		album.id album_id,
-		album.title album_title,
-		album.path album_path
-	FROM
-		song
-	LEFT JOIN artist ON song.artist_id = artist.id
-	LEFT JOIN album ON song.album_id = album.id
-	`
-	rows, err := Database.Query(stmt)
+	rows, err := Database.Query(selectSongStatement)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("FATAL Error reading song table", err)
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
@@ -266,33 +247,10 @@ func FindAllSongs() ([]*model.Song, error) {
 }
 
 func FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
-	stmt := `
-	SELECT
-		song.id,
-		song.path,
-		song.title,
-		song.genre,
-		song.track,
-		song.yearpublished,
-		song.bitrate, 
-		song.samplerate, 
-		song.duration, 
-		song.mode, 
-		song.cbrvbr,
-		artist.id artist_id,
-		artist.name,
-		album.id album_id,
-		album.title album_title,
-		album.path album_path
-	FROM
-		song
-	LEFT JOIN artist ON song.artist_id = artist.id
-	LEFT JOIN album ON song.album_id = album.id
-	WHERE album.id = ?
-	`
+	stmt := selectSongStatement + ` WHERE album.id = ?`
 	rows, err := Database.Query(stmt, findAlbumId)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("FATAL Error reading song table", err)
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
@@ -344,33 +302,10 @@ func FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
 }
 
 func FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
-	stmt := `
-	SELECT
-		song.id,
-		song.path,
-		song.title,
-		song.genre,
-		song.track,
-		song.yearpublished,
-		song.bitrate, 
-		song.samplerate, 
-		song.duration, 
-		song.mode, 
-		song.cbrvbr,
-		artist.id artist_id,
-		artist.name,
-		album.id album_id,
-		album.title album_title,
-		album.path album_path
-	FROM
-		song
-	LEFT JOIN artist ON song.artist_id = artist.id
-	LEFT JOIN album ON song.album_id = album.id
-	WHERE artist.id = ?
-	`
+	stmt := selectSongStatement + `WHERE artist.id = ?	`
 	rows, err := Database.Query(stmt, findArtistId)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("FATAL Error reading song table", err)
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
@@ -422,29 +357,7 @@ func FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
 }
 
 func FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
-	stmt := `
-	SELECT
-		song.id,
-		song.path,
-		song.title,
-		song.genre,
-		song.track,
-		song.yearpublished,
-		song.bitrate, 
-		song.samplerate, 
-		song.duration, 
-		song.mode, 
-		song.cbrvbr,
-		artist.id artist_id,
-		artist.name,
-		album.id album_id,
-		album.title album_title,
-		album.path album_path
-	FROM
-		song
-	LEFT JOIN artist ON song.artist_id = artist.id
-	LEFT JOIN album ON song.album_id = album.id
-	`
+	stmt := selectSongStatement
 	splitted := strings.Split(query, "=")
 	if len(splitted) != 2 {
 		return nil, errors.New("incorrect query")
@@ -461,7 +374,7 @@ func FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 
 	rows, err := Database.Query(stmt, splitted[1])
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("FATAL Error reading song table", err)
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
@@ -516,7 +429,7 @@ func GetCoverForSong(song *model.Song) ([]byte, string, error) {
 	image, mimetype, err := GetCoverFromID3(song.Path)
 
 	if err != nil {
-		log.Println("try to find cover in path")
+		log.Println("INFO try to find cover in path")
 		image, mimetype, err = GetCoverFromPath(filepath.Dir(song.Path))
 	}
 
