@@ -7,11 +7,6 @@ import (
 	"net/http"
 )
 
-const (
-	UsernameHeader string = "username"
-	RoleHeader     string = "userrole"
-)
-
 func Authenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -55,9 +50,4 @@ func AdminMiddeware(w http.ResponseWriter, r *http.Request, next http.HandlerFun
 		}
 	}
 	respondWithError(w, 401, "Unauthorized")
-}
-
-func CheckRole(r *http.Request, role string) bool {
-	headerRole := r.Header.Get("userrole")
-	return headerRole == role
 }

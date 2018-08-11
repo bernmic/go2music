@@ -1,14 +1,12 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"go2music/service"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 )
 
 func GetSongs(w http.ResponseWriter, r *http.Request) {
@@ -97,14 +95,5 @@ func GetCover(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", strconv.Itoa(len(image)))
 
 		_, err = w.Write(image)
-	}
-}
-
-func dumpRequestHeader(r *http.Request) {
-	for name, headers := range r.Header {
-		name = strings.ToLower(name)
-		for _, h := range headers {
-			fmt.Printf("%v: %v\n", name, h)
-		}
 	}
 }

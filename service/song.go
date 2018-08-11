@@ -144,7 +144,6 @@ func SongExists(path string) bool {
 
 		return false
 	}
-
 	return true
 }
 func FindOneSong(id int64) (*model.Song, error) {
