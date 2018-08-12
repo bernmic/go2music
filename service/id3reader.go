@@ -1,13 +1,17 @@
 package service
 
 import (
+	"bytes"
 	"errors"
 	"github.com/bogem/id3v2"
 	"github.com/xhenner/mp3-go"
 	"go2music/model"
 	"log"
+	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 )
 
 func readData(filename string) (*model.Song, error) {
@@ -18,18 +22,19 @@ func readData(filename string) (*model.Song, error) {
 	defer tag.Close()
 	song := new(model.Song)
 	song.Path = filename
-	song.Title = tag.Title()
+	song.Title = strings.Trim(tag.Title(), "\x00")
 	song.Artist = new(model.Artist)
-	song.Artist.Name = tag.Artist()
+	song.Artist.Name = strings.Trim(tag.Artist(), "\x00")
 	song.Album = new(model.Album)
-	song.Album.Title = tag.Album()
+	song.Album.Title = strings.Trim(tag.Album(), "\x00")
 	song.Album.Path = filepath.Dir(filename)
-	song.Genre.String = tag.Genre()
+	song.Genre.String = strings.Trim(tag.Genre(), "\x00")
 	track, err := strconv.ParseInt(tag.GetTextFrame("TRCK").Text, 10, 64)
 	if err == nil {
 		song.Track.Int64 = track
 	}
-	song.Year.String = tag.Year()
+	song.YearPublished.String = tag.Year()
+	song.Rating = getRating(tag)
 	return song, err
 }
 
@@ -41,6 +46,9 @@ func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 		song.Duration = int(mp3File.Length)
 		song.Mode = mp3File.Mode
 		song.CbrVbr = mp3File.Type
+		song.Added = time.Now().Unix()
+		info, _ := os.Stat(filename)
+		song.Filedate = info.ModTime().Unix()
 		return song, nil
 	}
 	return nil, err
@@ -84,4 +92,17 @@ func GetCoverFromID3(filename string) ([]byte, string, error) {
 	}
 
 	return nil, "", errors.New("no cover found")
+}
+
+func getRating(tag *id3v2.Tag) int {
+	ratings := tag.GetFrames("POPM")
+	if len(ratings) > 0 {
+		rating, ok := ratings[0].(id3v2.UnknownFrame)
+		if ok {
+			nulpos := bytes.IndexByte(rating.Body, 0)
+			//ratingEmail := string(rating.Body[:nulpos])
+			return int(uint(rating.Body[nulpos+1]))
+		}
+	}
+	return 0
 }

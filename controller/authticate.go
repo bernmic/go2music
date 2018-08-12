@@ -27,6 +27,7 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 }
 
 func AuthMiddeware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	BaseUrl(r)
 	username, b := service.AuthenticateJWT(r.Header)
 	if b {
 		user, err := service.GetPrincipal(username)
