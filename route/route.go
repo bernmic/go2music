@@ -3,6 +3,7 @@ package route
 import (
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"go2music/controller"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ func Init() *mux.Router {
 	router := mux.NewRouter()
 	// add authenticate endpoint
 	router.HandleFunc("/api/authenticate", controller.Authenticate).Methods("POST")
+	router.HandleFunc("/token", controller.Authenticate).Methods("GET")
 	fs := http.FileServer(http.Dir("static"))
 	router.Handle("/", fs)
 
@@ -42,7 +44,12 @@ func Run(addr string) {
 	logger.SetFormat("{{.StartTime}} INFO {{.Status}} | {{.Duration}} | {{.Hostname}} | {{.Method}} {{.Path}}")
 	logger.SetDateFormat("2006-01-02 15:04:05")
 	n := negroni.New(negroni.NewRecovery(), logger)
-	//n.Use(logger)
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
+		AllowedHeaders: []string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
+	})
+	n.Use(c)
 	n.UseHandler(r)
 	n.Run(addr)
 }

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gorilla/mux"
+	"go2music/model"
 	"go2music/service"
 	"io"
 	"net/http"
@@ -12,7 +13,8 @@ import (
 func GetSongs(w http.ResponseWriter, r *http.Request) {
 	songs, err := service.FindAllSongs()
 	if err == nil {
-		respondWithJSON(w, 200, songs)
+		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		respondWithJSON(w, 200, songCollection)
 		return
 	}
 	respondWithError(w, 500, "Cound not read songs")

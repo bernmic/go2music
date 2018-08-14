@@ -26,7 +26,7 @@ const (
 		samplerate INT NULL,
 		duration INT NULL,
 		mode VARCHAR(30) NULL,
-		cbrvbr VARCHAR(10) NULL,
+		vbr BOOLEAN NULL,
 		added INT NOT NULL,
 		filedate INT NOT NULL,
 		rating INT NOT NULL,
@@ -47,7 +47,7 @@ SELECT
 	song.samplerate,
 	song.duration,
 	song.mode,
-	song.cbrvbr,
+	song.vbr,
 	song.added,
 	song.filedate,
 	song.rating,
@@ -95,7 +95,7 @@ func InitializeSong() {
 }
 
 func CreateSong(song model.Song) (*model.Song, error) {
-	result, err := Database.Exec("INSERT IGNORE INTO song (path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, cbrvbr, added, filedate, rating) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	result, err := Database.Exec("INSERT IGNORE INTO song (path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, vbr, added, filedate, rating) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 		song.Path,
 		song.Title,
 		song.Artist.Id,
@@ -107,7 +107,7 @@ func CreateSong(song model.Song) (*model.Song, error) {
 		song.Samplerate,
 		song.Duration,
 		song.Mode,
-		song.CbrVbr,
+		song.Vbr,
 		song.Added,
 		song.Filedate,
 		song.Rating)
@@ -119,7 +119,7 @@ func CreateSong(song model.Song) (*model.Song, error) {
 }
 
 func UpdateSong(song model.Song) (*model.Song, error) {
-	_, err := Database.Exec("UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=?, bitrate=?, samplerate=?, duration=?, mode=?, cbrvbr=?, added=?, filedate=?, rating=? WHERE id=?",
+	_, err := Database.Exec("UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=?, bitrate=?, samplerate=?, duration=?, mode=?, vbr=?, added=?, filedate=?, rating=? WHERE id=?",
 		song.Path,
 		song.Title,
 		song.Artist.Id,
@@ -131,7 +131,7 @@ func UpdateSong(song model.Song) (*model.Song, error) {
 		song.Samplerate,
 		song.Duration,
 		song.Mode,
-		song.CbrVbr,
+		song.Vbr,
 		song.Added,
 		song.Filedate,
 		song.Rating,
@@ -180,7 +180,7 @@ func FindOneSong(id int64) (*model.Song, error) {
 		&song.Samplerate,
 		&song.Duration,
 		&song.Mode,
-		&song.CbrVbr,
+		&song.Vbr,
 		&song.Added,
 		&song.Filedate,
 		&song.Rating,
@@ -231,7 +231,7 @@ func FindAllSongs() ([]*model.Song, error) {
 			&song.Samplerate,
 			&song.Duration,
 			&song.Mode,
-			&song.CbrVbr,
+			&song.Vbr,
 			&song.Added,
 			&song.Filedate,
 			&song.Rating,
@@ -289,7 +289,7 @@ func FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
 			&song.Samplerate,
 			&song.Duration,
 			&song.Mode,
-			&song.CbrVbr,
+			&song.Vbr,
 			&song.Added,
 			&song.Filedate,
 			&song.Rating,
@@ -347,7 +347,7 @@ func FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
 			&song.Samplerate,
 			&song.Duration,
 			&song.Mode,
-			&song.CbrVbr,
+			&song.Vbr,
 			&song.Added,
 			&song.Filedate,
 			&song.Rating,
@@ -381,21 +381,43 @@ func FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
 
 func FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 	stmt := selectSongStatement
+	splittedBy := "="
 	splitted := strings.Split(query, "=")
 	if len(splitted) != 2 {
-		return nil, errors.New("incorrect query")
+		splitted = strings.Split(query, "~")
+		if len(splitted) != 2 {
+			return nil, errors.New("incorrect query")
+		}
+		splittedBy = "~"
 	}
+
+	searchItem := splitted[1]
 
 	switch strings.ToLower(splitted[0]) {
 	case "album":
-		stmt += " WHERE album.title = ?"
+		if splittedBy == "=" {
+			stmt += " WHERE album.title = ?"
+		} else {
+			stmt += " WHERE LOWER(album.title) LIKE ?"
+			searchItem = "%" + strings.ToLower(searchItem) + "%"
+		}
 	case "artist":
-		stmt += " WHERE artist.name = ?"
+		if splittedBy == "=" {
+			stmt += " WHERE artist.name = ?"
+		} else {
+			stmt += " WHERE LOWER(artist.name) LIKE ?"
+			searchItem = "%" + strings.ToLower(searchItem) + "%"
+		}
 	case "title":
-		stmt += " WHERE song.title = ?"
+		if splittedBy == "=" {
+			stmt += " WHERE song.title = ?"
+		} else {
+			stmt += " WHERE LOWER(song.title) LIKE ?"
+			searchItem = "%" + strings.ToLower(searchItem) + "%"
+		}
 	}
 
-	rows, err := Database.Query(stmt, splitted[1])
+	rows, err := Database.Query(stmt, searchItem)
 	if err != nil {
 		log.Fatal("FATAL Error reading song table", err)
 	}
@@ -419,7 +441,7 @@ func FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 			&song.Samplerate,
 			&song.Duration,
 			&song.Mode,
-			&song.CbrVbr,
+			&song.Vbr,
 			&song.Added,
 			&song.Filedate,
 			&song.Rating,

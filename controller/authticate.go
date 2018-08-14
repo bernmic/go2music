@@ -9,7 +9,6 @@ import (
 
 func Authenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	authHeader := r.Header.Get("Authorization")
 	user, err := service.AuthenticateRequest(authHeader)
 	if err != nil {
@@ -27,7 +26,10 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 }
 
 func AuthMiddeware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	BaseUrl(r)
+	bearer := r.URL.Query().Get("bearer")
+	if bearer != "" {
+		r.Header.Set("Authorization", "Bearer "+bearer)
+	}
 	username, b := service.AuthenticateJWT(r.Header)
 	if b {
 		user, err := service.GetPrincipal(username)

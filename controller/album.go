@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gorilla/mux"
+	"go2music/model"
 	"go2music/service"
 	"net/http"
 	"strconv"
@@ -10,7 +11,8 @@ import (
 func GetAlbums(w http.ResponseWriter, r *http.Request) {
 	albums, err := service.FindAllAlbums()
 	if err == nil {
-		respondWithJSON(w, 200, albums)
+		albumCollection := model.AlbumCollection{Albums: albums}
+		respondWithJSON(w, 200, albumCollection)
 		return
 	}
 	respondWithError(w, 500, "Cound not read albums")

@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -28,12 +29,9 @@ func readData(filename string) (*model.Song, error) {
 	song.Album = new(model.Album)
 	song.Album.Title = strings.Trim(tag.Album(), "\x00")
 	song.Album.Path = filepath.Dir(filename)
-	song.Genre.String = strings.Trim(tag.Genre(), "\x00")
-	track, err := strconv.ParseInt(tag.GetTextFrame("TRCK").Text, 10, 64)
-	if err == nil {
-		song.Track.Int64 = track
-	}
-	song.YearPublished.String = tag.Year()
+	song.Genre.String = getGenre(strings.Trim(tag.Genre(), "\x00"))
+	song.Track.Int64 = getTrack(tag.GetTextFrame("TRCK").Text)
+	song.YearPublished.String = strings.Trim(tag.Year(), "\x00")
 	song.Rating = getRating(tag)
 	return song, err
 }
@@ -45,7 +43,11 @@ func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 		song.Samplerate = mp3File.Sampling
 		song.Duration = int(mp3File.Length)
 		song.Mode = mp3File.Mode
-		song.CbrVbr = mp3File.Type
+		if mp3File.Type == "VBR" {
+			song.Vbr = true
+		} else {
+			song.Vbr = false
+		}
 		song.Added = time.Now().Unix()
 		info, _ := os.Stat(filename)
 		song.Filedate = info.ModTime().Unix()
@@ -105,4 +107,33 @@ func getRating(tag *id3v2.Tag) int {
 		}
 	}
 	return 0
+}
+
+func getUnknownTagAsString(tag *id3v2.Tag, id string) string {
+	items := tag.GetFrames(id)
+	if len(items) > 0 {
+		item, ok := items[0].(id3v2.UnknownFrame)
+		if ok {
+			log.Printf("%v", item)
+			return ""
+		}
+	}
+	return ""
+}
+
+func getTrack(strack string) int64 {
+	strack = strings.Split(strack, "/")[0]
+	track, err := strconv.ParseInt(strack, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return track
+}
+
+func getGenre(genre string) string {
+	r := regexp.MustCompile(`\([0-9]+\).*`)
+	if r.MatchString(genre) {
+		return strings.Split(genre, ")")[1]
+	}
+	return genre
 }

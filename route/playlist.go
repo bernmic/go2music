@@ -10,5 +10,8 @@ func SetupPlaylistRoutes(router *mux.Router) *mux.Router {
 	artistRouter.HandleFunc("", controller.GetPlaylists).Methods("GET")
 	artistRouter.HandleFunc("/{id}", controller.GetPlaylist).Methods("GET")
 	artistRouter.HandleFunc("/{id}/songs", controller.GetSongsForPlaylist).Methods("GET")
+	artistRouter.HandleFunc("", controller.CreatePlaylist).Methods("POST")
+	artistRouter.HandleFunc("", controller.UpdatePlaylist).Methods("PUT")
+	artistRouter.HandleFunc("/{id}", controller.DeletePlaylist).Methods("DELETE")
 	return router
 }
