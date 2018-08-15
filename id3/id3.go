@@ -1,8 +1,11 @@
 package id3
 
-import "os"
+import (
+	"os"
+)
 
 type Tag struct {
+	Version string
 	Title   string
 	Artist  string
 	Album   string
@@ -16,7 +19,10 @@ func ReadID3(path string) (*Tag, error) {
 	f, err := os.Open(path)
 	defer f.Close()
 	if err == nil {
-		ReadID3v2(f)
+		tag, err := ReadID3v2(f)
+		if err == nil {
+			return tag, nil
+		}
 		return ReadID3v1(f)
 	}
 	return nil, err

@@ -1,6 +1,7 @@
 package id3
 
 import (
+	"io"
 	"os"
 	"strings"
 )
@@ -157,7 +158,7 @@ var (
 )
 
 func ReadID3v1(f *os.File) (*Tag, error) {
-	_, err := f.Seek(-128, os.SEEK_END)
+	_, err := f.Seek(-128, io.SeekEnd)
 	if err == nil {
 		id3v1 := make([]byte, 128)
 		var bytesRead int
@@ -171,9 +172,11 @@ func ReadID3v1(f *os.File) (*Tag, error) {
 			if id3v1[125] == 0 && id3v1[126] != 0 {
 				tag.Comment = strings.TrimRight(string(id3v1[97:125]), "\x00")
 				tag.Track = int(id3v1[126])
+				tag.Version = "1.1"
 			} else {
 				tag.Comment = strings.TrimRight(string(id3v1[97:127]), "\x00")
 				tag.Track = 0
+				tag.Version = "1.0"
 			}
 			tag.Genre = id3v1genres[id3v1[127]]
 			return &tag, nil
