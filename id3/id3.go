@@ -13,6 +13,7 @@ type Tag struct {
 	Comment string
 	Genre   string
 	Track   int
+	Picture *Picture
 }
 
 func ReadID3(path string) (*Tag, error) {

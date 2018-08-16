@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+type Picture struct {
+	Mimetype    string
+	Description string
+	Image       []byte
+}
+
 func ReadID3v2(f *os.File) (*Tag, error) {
 	tag := Tag{}
 	headerBytes := make([]byte, 10)
@@ -68,6 +74,8 @@ func ReadID3v2(f *os.File) (*Tag, error) {
 			case "TRCK":
 				trackString, _ := getTextFrame(f, frameSize)
 				tag.Track, _ = strconv.Atoi(trackString)
+			case "APIC":
+				tag.Picture, _ = getPicture(f, frameSize)
 			default:
 				f.Seek(int64(frameSize), 1)
 			}
@@ -111,4 +119,27 @@ func toUtf8(iso8859_1_buf []byte) string {
 		buf[i] = rune(b)
 	}
 	return string(buf)
+}
+
+func getPicture(f *os.File, size uint32) (*Picture, error) {
+	picture := Picture{}
+	data := make([]byte, size)
+	f.Read(data)
+	picture.Mimetype = getZeroTerminatedString(data[1:])
+	//pictureType := uint(data[1 + 1 + len(picture.Mimetype)])
+	picture.Description = getZeroTerminatedString(data[1+1+len(picture.Mimetype)+1:])
+	picture.Image = data[1+1+len(picture.Mimetype)+1+1+len(picture.Description):]
+	return &picture, nil
+}
+
+func getZeroTerminatedString(data []byte) string {
+	// todo respect text encoding
+	s := ""
+	for _, b := range data {
+		if b == 0 {
+			break
+		}
+		s += string(b)
+	}
+	return s
 }
