@@ -14,10 +14,10 @@ func GetPlaylists(w http.ResponseWriter, r *http.Request) {
 	playlists, err := service.FindAllPlaylists()
 	if err == nil {
 		playlistCollection := model.PlaylistCollection{Playlists: playlists}
-		respondWithJSON(w, 200, playlistCollection)
+		respondWithJSON(w, http.StatusOK, playlistCollection)
 		return
 	}
-	respondWithError(w, 500, "Cound not read playlists")
+	respondWithError(w, http.StatusInternalServerError, "Cound not read playlists")
 }
 
 func GetPlaylist(w http.ResponseWriter, r *http.Request) {
@@ -29,10 +29,10 @@ func GetPlaylist(w http.ResponseWriter, r *http.Request) {
 	}
 	playlist, err := service.FindPlaylistById(int64(id))
 	if err != nil {
-		respondWithError(w, 404, "playlist not found")
+		respondWithError(w, http.StatusNotFound, "playlist not found")
 		return
 	}
-	respondWithJSON(w, 200, playlist)
+	respondWithJSON(w, http.StatusOK, playlist)
 }
 
 func GetSongsForPlaylist(w http.ResponseWriter, r *http.Request) {
@@ -44,16 +44,16 @@ func GetSongsForPlaylist(w http.ResponseWriter, r *http.Request) {
 	}
 	playlist, err := service.FindPlaylistById(int64(id))
 	if err != nil {
-		respondWithError(w, 404, "playlist not found")
+		respondWithError(w, http.StatusNotFound, "playlist not found")
 		return
 	}
 
 	songs, err := service.FindSongsByPlaylistQuery(playlist.Query)
 	if err == nil {
-		respondWithJSON(w, 200, songs)
+		respondWithJSON(w, http.StatusOK, songs)
 		return
 	}
-	respondWithError(w, 500, "Cound not read songs of playlist")
+	respondWithError(w, http.StatusInternalServerError, "Cound not read songs of playlist")
 }
 
 func CreatePlaylist(w http.ResponseWriter, r *http.Request) {

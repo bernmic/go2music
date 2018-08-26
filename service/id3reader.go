@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -28,15 +27,28 @@ func readData(filename string) (*model.Song, error) {
 	}
 	song := new(model.Song)
 	song.Path = filename
-	song.Title = strings.Trim(id3tag.Title(), "\x00")
+	song.Title = id3tag.Title()
 	song.Artist = new(model.Artist)
-	song.Artist.Name = strings.Trim(id3tag.Artist(), "\x00")
+	song.Artist.Name = id3tag.Artist()
 	song.Album = new(model.Album)
-	song.Album.Title = strings.Trim(id3tag.Album(), "\x00")
+	song.Album.Title = id3tag.Album()
 	song.Album.Path = filepath.Dir(filename)
 	song.Genre = id3tag.Genre()
+	if len(song.Genre)%2 != 0 {
+		// id3 lib make of "(17)Hard Rock" "Hard Rock Hard Rock"
+		h1 := song.Genre[0 : len(song.Genre)/2]
+		h2 := song.Genre[len(song.Genre)/2+1:]
+		if h1 == h2 {
+			song.Genre = h1
+		}
+	}
 	song.Track, _ = id3tag.Track()
-	song.YearPublished = strconv.Itoa(id3tag.Year())
+	if id3tag.Year() == 0 {
+		x := id3tag.Raw()["TYER"]
+		song.YearPublished = x.(string)
+	} else {
+		song.YearPublished = strconv.Itoa(id3tag.Year())
+	}
 	song.Rating = getRating(id3tag)
 	return song, err
 }

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"go2music/service"
 	"log"
@@ -34,12 +35,13 @@ func AuthMiddeware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc
 	if b {
 		user, err := service.GetPrincipal(username)
 		if err == nil && (user.Role == service.UserRole || user.Role == service.AdminRole) {
+			ctx := context.WithValue(r.Context(), "principal", user)
 			log.Println("INFO Authorization OK - " + username + " with role " + user.Role)
-			next(w, r)
+			next(w, r.WithContext(ctx))
 			return
 		}
 	}
-	respondWithError(w, 401, "Unauthorized")
+	respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 }
 
 func AdminMiddeware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
@@ -47,10 +49,11 @@ func AdminMiddeware(w http.ResponseWriter, r *http.Request, next http.HandlerFun
 	if b {
 		user, err := service.GetPrincipal(username)
 		if err == nil && user.Role == service.AdminRole {
+			ctx := context.WithValue(r.Context(), "principal", user)
 			log.Println("INFO Authorization OK - " + username + " with role " + user.Role)
-			next(w, r)
+			next(w, r.WithContext(ctx))
 			return
 		}
 	}
-	respondWithError(w, 401, "Unauthorized")
+	respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 }

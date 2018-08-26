@@ -55,12 +55,12 @@ func AuthenticateRequest(authHeader string) (*model.User, error) {
 
 	user, err := FindUserByUsername(userpwd[0])
 	if err != nil {
-		return nil, errors.New("username/password wrong")
+		return nil, errors.New("usernameand/or password wrong")
 	}
-	if user.Password == userpwd[1] {
+	if CheckPasswordHash(userpwd[1], user.Password) {
 		return user, nil
 	}
-	return nil, errors.New("username/password wrong")
+	return nil, errors.New("username and/or password wrong")
 }
 
 func AuthenticateJWT(header http.Header) (username string, valid bool) {

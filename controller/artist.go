@@ -12,10 +12,10 @@ func GetArtists(w http.ResponseWriter, r *http.Request) {
 	artists, err := service.FindAllArtists()
 	if err == nil {
 		artistCollection := model.ArtistCollection{Artists: artists}
-		respondWithJSON(w, 200, artistCollection)
+		respondWithJSON(w, http.StatusOK, artistCollection)
 		return
 	}
-	respondWithError(w, 500, "Cound not read artists")
+	respondWithError(w, http.StatusInternalServerError, "Cound not read artists")
 }
 
 func GetArtist(w http.ResponseWriter, r *http.Request) {
@@ -27,10 +27,10 @@ func GetArtist(w http.ResponseWriter, r *http.Request) {
 	}
 	artist, err := service.FindArtistById(int64(id))
 	if err != nil {
-		respondWithError(w, 404, "artist not found")
+		respondWithError(w, http.StatusNotFound, "artist not found")
 		return
 	}
-	respondWithJSON(w, 200, artist)
+	respondWithJSON(w, http.StatusOK, artist)
 }
 
 func GetSongForArtist(w http.ResponseWriter, r *http.Request) {
@@ -42,8 +42,8 @@ func GetSongForArtist(w http.ResponseWriter, r *http.Request) {
 	}
 	songs, err := service.FindSongsByArtistId(id)
 	if err == nil {
-		respondWithJSON(w, 200, songs)
+		respondWithJSON(w, http.StatusOK, songs)
 		return
 	}
-	respondWithError(w, 500, "Cound not read songs")
+	respondWithError(w, http.StatusInternalServerError, "Cound not read songs")
 }

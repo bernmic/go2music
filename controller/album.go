@@ -12,10 +12,10 @@ func GetAlbums(w http.ResponseWriter, r *http.Request) {
 	albums, err := service.FindAllAlbums()
 	if err == nil {
 		albumCollection := model.AlbumCollection{Albums: albums}
-		respondWithJSON(w, 200, albumCollection)
+		respondWithJSON(w, http.StatusOK, albumCollection)
 		return
 	}
-	respondWithError(w, 500, "Cound not read albums")
+	respondWithError(w, http.StatusInternalServerError, "Cound not read albums")
 }
 
 func GetAlbum(w http.ResponseWriter, r *http.Request) {
@@ -27,10 +27,10 @@ func GetAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	album, err := service.FindAlbumById(int64(id))
 	if err != nil {
-		respondWithError(w, 404, "album not found")
+		respondWithError(w, http.StatusNotFound, "album not found")
 		return
 	}
-	respondWithJSON(w, 200, album)
+	respondWithJSON(w, http.StatusOK, album)
 }
 
 func GetSongForAlbum(w http.ResponseWriter, r *http.Request) {
@@ -42,10 +42,10 @@ func GetSongForAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	songs, err := service.FindSongsByAlbumId(id)
 	if err == nil {
-		respondWithJSON(w, 200, songs)
+		respondWithJSON(w, http.StatusOK, songs)
 		return
 	}
-	respondWithError(w, 500, "Cound not read songs")
+	respondWithError(w, http.StatusInternalServerError, "Cound not read songs")
 }
 
 func GetCoverForAlbum(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +57,7 @@ func GetCoverForAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	songs, err := service.FindSongsByAlbumId(id)
 	if err != nil {
-		respondWithError(w, 404, "album not found")
+		respondWithError(w, http.StatusNotFound, "album not found")
 		return
 	}
 	if len(songs) > 0 {

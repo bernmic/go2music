@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"go2music/model"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 )
 
@@ -49,9 +50,12 @@ func InitializeUser() {
 	var count int64
 	Database.QueryRow("SELECT count(*) c FROM user").Scan(&count)
 	if count == 0 {
-		CreateUser(model.User{Username: "user", Password: "user", Role: "user", Email: "user@example.com"})
-		CreateUser(model.User{Username: "admin", Password: "admin", Role: "admin", Email: "admin@example.com"})
-		CreateUser(model.User{Username: "guest", Password: "guest", Role: "guest", Email: "guest@example.com"})
+		userPassword, _ := HashPassword("user")
+		adminPassword, _ := HashPassword("admin")
+		guestPassword, _ := HashPassword("guest")
+		CreateUser(model.User{Username: "user", Password: userPassword, Role: "user", Email: "user@example.com"})
+		CreateUser(model.User{Username: "admin", Password: adminPassword, Role: "admin", Email: "admin@example.com"})
+		CreateUser(model.User{Username: "guest", Password: guestPassword, Role: "guest", Email: "guest@example.com"})
 	}
 }
 
@@ -158,4 +162,14 @@ func FindAllUsers() ([]*model.User, error) {
 	}
 
 	return users, err
+}
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
