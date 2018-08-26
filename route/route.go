@@ -15,8 +15,9 @@ func Init() *mux.Router {
 	// add authenticate endpoint
 	router.HandleFunc("/api/authenticate", controller.Authenticate).Methods("POST")
 	router.HandleFunc("/token", controller.Authenticate).Methods("GET")
-	fs := http.FileServer(http.Dir("static"))
+	fs := http.FileServer(http.Dir("./static"))
 	router.Handle("/", fs)
+	router.Handle("/{.*}", fs)
 
 	// only admins are allowed to see users
 	adminRouter := mux.NewRouter()

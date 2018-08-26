@@ -1,38 +1,43 @@
 package service
 
 import (
-	"bytes"
 	"errors"
-	"github.com/bogem/id3v2"
+	"fmt"
+	"github.com/dhowden/tag"
 	"github.com/xhenner/mp3-go"
 	"go2music/model"
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
 func readData(filename string) (*model.Song, error) {
-	tag, err := id3v2.Open(filename, id3v2.Options{Parse: true})
+	f, err := os.Open(filename)
+	if err != nil {
+		fmt.Printf("error loading file: %v", err)
+		return nil, err
+	}
+	defer f.Close()
+
+	id3tag, err := tag.ReadFrom(f)
 	if err != nil {
 		log.Fatal("ERROR Error opening mp3 file: ", err)
 	}
-	defer tag.Close()
 	song := new(model.Song)
 	song.Path = filename
-	song.Title = strings.Trim(tag.Title(), "\x00")
+	song.Title = strings.Trim(id3tag.Title(), "\x00")
 	song.Artist = new(model.Artist)
-	song.Artist.Name = strings.Trim(tag.Artist(), "\x00")
+	song.Artist.Name = strings.Trim(id3tag.Artist(), "\x00")
 	song.Album = new(model.Album)
-	song.Album.Title = strings.Trim(tag.Album(), "\x00")
+	song.Album.Title = strings.Trim(id3tag.Album(), "\x00")
 	song.Album.Path = filepath.Dir(filename)
-	song.Genre.String = getGenre(strings.Trim(tag.Genre(), "\x00"))
-	song.Track.Int64 = getTrack(tag.GetTextFrame("TRCK").Text)
-	song.YearPublished.String = strings.Trim(tag.Year(), "\x00")
-	song.Rating = getRating(tag)
+	song.Genre = id3tag.Genre()
+	song.Track, _ = id3tag.Track()
+	song.YearPublished = strconv.Itoa(id3tag.Year())
+	song.Rating = getRating(id3tag)
 	return song, err
 }
 
@@ -79,61 +84,32 @@ func ID3Reader(filenames []string) {
 }
 
 func GetCoverFromID3(filename string) ([]byte, string, error) {
-	tag, err := id3v2.Open(filename, id3v2.Options{Parse: true})
+	f, err := os.Open(filename)
 	if err != nil {
-		log.Println("ERROR Error opening mp3 file", err)
-		return nil, "", errors.New("song file not found")
+		fmt.Printf("error loading file: %v", err)
+		return nil, "", err
 	}
-	defer tag.Close()
-	pictures := tag.GetFrames(tag.CommonID("Attached picture"))
-	if len(pictures) > 0 {
-		pic, ok := pictures[0].(id3v2.PictureFrame)
-		if ok {
-			return pic.Picture, pic.MimeType, nil
-		}
-	}
+	defer f.Close()
 
+	id3tag, err := tag.ReadFrom(f)
+	if err != nil {
+		log.Fatal("ERROR Error opening mp3 file: ", err)
+	}
+	if p := id3tag.Picture(); p != nil {
+		return p.Data, p.MIMEType, nil
+	}
 	return nil, "", errors.New("no cover found")
 }
 
-func getRating(tag *id3v2.Tag) int {
-	ratings := tag.GetFrames("POPM")
-	if len(ratings) > 0 {
-		rating, ok := ratings[0].(id3v2.UnknownFrame)
-		if ok {
-			nulpos := bytes.IndexByte(rating.Body, 0)
-			//ratingEmail := string(rating.Body[:nulpos])
-			return int(uint(rating.Body[nulpos+1]))
+func getRating(id3tag tag.Metadata) int {
+	ratingsBunch := id3tag.Raw()["POPM"]
+	if ratingsBunch != nil {
+		us := ratingsBunch.([]uint8)
+		for i, u := range us {
+			if u == 0 {
+				return int(us[i+1])
+			}
 		}
 	}
 	return 0
-}
-
-func getUnknownTagAsString(tag *id3v2.Tag, id string) string {
-	items := tag.GetFrames(id)
-	if len(items) > 0 {
-		item, ok := items[0].(id3v2.UnknownFrame)
-		if ok {
-			log.Printf("%v", item)
-			return ""
-		}
-	}
-	return ""
-}
-
-func getTrack(strack string) int64 {
-	strack = strings.Split(strack, "/")[0]
-	track, err := strconv.ParseInt(strack, 10, 64)
-	if err != nil {
-		return 0
-	}
-	return track
-}
-
-func getGenre(genre string) string {
-	r := regexp.MustCompile(`\([0-9]+\).*`)
-	if r.MatchString(genre) {
-		return strings.Split(genre, ")")[1]
-	}
-	return genre
 }
