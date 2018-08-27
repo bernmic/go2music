@@ -23,7 +23,8 @@ func readData(filename string) (*model.Song, error) {
 
 	id3tag, err := tag.ReadFrom(f)
 	if err != nil {
-		log.Fatal("ERROR Error opening mp3 file: ", err)
+		log.Printf("ERROR Error opening mp3 file %s: %v", filename, err)
+		return nil, err
 	}
 	song := new(model.Song)
 	song.Path = filename
@@ -78,7 +79,9 @@ func ID3Reader(filenames []string) {
 	for _, filename := range filenames {
 		if !SongExists(filename) {
 			song, err := readData(filename)
-			song, err = readMetaData(filename, song)
+			if err == nil {
+				song, err = readMetaData(filename, song)
+			}
 			if err == nil {
 				song.Artist, err = CreateIfNotExistsArtist(*song.Artist)
 				song.Album, err = CreateIfNotExistsAlbum(*song.Album)

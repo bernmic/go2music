@@ -18,6 +18,10 @@ func InitializeDatabase() *sql.DB {
 		log.Print("ERROR Error opening service " + c.Database.Url)
 		panic(fmt.Sprintf("%v", err))
 	}
+	if err := db.Ping(); err != nil {
+		log.Printf("Error accessing database: %v\n", err)
+		return nil
+	}
 	Database = db
 	InitializeUser()
 	InitializeArtist()
