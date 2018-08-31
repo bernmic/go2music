@@ -1,3 +1,5 @@
+application:
+  mode: release
 server:
   port: 8080
 database:

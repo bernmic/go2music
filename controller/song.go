@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"go2music/service"
 	"io"
@@ -10,48 +10,55 @@ import (
 	"strconv"
 )
 
-func GetSongs(w http.ResponseWriter, r *http.Request) {
+func initSong(r *gin.RouterGroup) {
+	r.GET("/song", GetSongs)
+	r.GET("/song/:id", GetSong)
+	r.GET("/song/:id/cover", GetCover)
+	r.GET("/song/:id/stream", StreamSong)
+}
+
+func GetSongs(c *gin.Context) {
 	songs, err := service.FindAllSongs()
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
-		respondWithJSON(w, http.StatusOK, songCollection)
+		c.JSON(http.StatusOK, songCollection)
 		return
 	}
-	respondWithError(w, http.StatusInternalServerError, "Cound not read songs")
+	respondWithError(http.StatusInternalServerError, "Cound not read songs", c)
 }
 
-func GetSong(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func GetSong(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid song ID")
+		respondWithError(http.StatusBadRequest, "Invalid song ID", c)
 		return
 	}
-	song, err := service.FindOneSong(int64(id))
+	song, err := service.FindOneSong(id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "song not found")
+		respondWithError(http.StatusNotFound, "song not found", c)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, song)
+	c.JSON(http.StatusOK, song)
 }
 
-func StreamSong(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func StreamSong(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid song ID")
+		respondWithError(http.StatusBadRequest, "Invalid song ID", c)
 		return
 	}
-	song, err := service.FindOneSong(int64(id))
+	song, err := service.FindOneSong(id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "song not found")
+		respondWithError(http.StatusNotFound, "song not found", c)
 		return
 	}
 	file, err := os.Open(song.Path)
 	defer file.Close() //Close after function return
 	if err != nil {
 		//File not found, send 404
-		respondWithError(w, http.StatusNotFound, "song file not found")
+		respondWithError(http.StatusNotFound, "song file not found", c)
 		return
 	}
 	//Get the Content-Type of the file
@@ -67,35 +74,33 @@ func StreamSong(w http.ResponseWriter, r *http.Request) {
 	fileSize := strconv.FormatInt(fileStat.Size(), 10) //Get file size as a string
 
 	//Send the headers
-	w.Header().Set("Content-Disposition", "attachment; filename="+song.Path)
-	w.Header().Set("Content-Type", fileContentType)
-	w.Header().Set("Content-Length", fileSize)
+	c.Header("Content-Disposition", "attachment; filename="+song.Path)
+	c.Header("Content-Type", fileContentType)
+	c.Header("Content-Length", fileSize)
 
 	//Send the file
 	//We read 512 bytes from the file already so we reset the offset back to 0
 	file.Seek(0, 0)
-	io.Copy(w, file) //'Copy' the file to the client
-
+	io.Copy(c.Writer, file) //'Copy' the file to the client
 }
 
-func GetCover(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func GetCover(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid song ID")
+		respondWithError(http.StatusBadRequest, "Invalid song ID", c)
 		return
 	}
-	song, err := service.FindOneSong(int64(id))
+	song, err := service.FindOneSong(id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "song not found")
+		respondWithError(http.StatusNotFound, "song not found", c)
 		return
 	}
 	image, mimetype, err := service.GetCoverForSong(song)
 
 	if image != nil {
-		w.Header().Set("Content-Type", mimetype)
-		w.Header().Set("Content-Length", strconv.Itoa(len(image)))
-
-		_, err = w.Write(image)
+		c.Header("Content-Type", mimetype)
+		c.Header("Content-Length", strconv.Itoa(len(image)))
+		c.Data(http.StatusOK, mimetype, image)
 	}
 }

@@ -27,6 +27,10 @@ func GetConfiguration() *model.Config {
 			yaml.Unmarshal([]byte(configdata), &config)
 		}
 
+		if config.Application.Mode == "" {
+			config.Application.Mode = "debug"
+		}
+
 		if config.Server.Port == 0 {
 			config.Server.Port = 8080
 		}

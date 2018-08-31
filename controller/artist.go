@@ -1,49 +1,56 @@
 package controller
 
 import (
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"go2music/service"
 	"net/http"
 	"strconv"
 )
 
-func GetArtists(w http.ResponseWriter, r *http.Request) {
+func initArtist(r *gin.RouterGroup) {
+	r.GET("/artist", GetArtists)
+	r.GET("/artist/:id", GetArtist)
+	r.GET("/artist/:id/songs", GetSongForArtist)
+}
+
+func GetArtists(c *gin.Context) {
 	artists, err := service.FindAllArtists()
 	if err == nil {
 		artistCollection := model.ArtistCollection{Artists: artists}
-		respondWithJSON(w, http.StatusOK, artistCollection)
+		c.JSON(http.StatusOK, artistCollection)
 		return
 	}
-	respondWithError(w, http.StatusInternalServerError, "Cound not read artists")
+	respondWithError(http.StatusInternalServerError, "Cound not read artists", c)
 }
 
-func GetArtist(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func GetArtist(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid artist ID")
+		respondWithError(http.StatusBadRequest, "Invalid artist ID", c)
 		return
 	}
-	artist, err := service.FindArtistById(int64(id))
+	artist, err := service.FindArtistById(id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "artist not found")
+		respondWithError(http.StatusNotFound, "artist not found", c)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, artist)
+	c.JSON(http.StatusOK, artist)
 }
 
-func GetSongForArtist(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.ParseInt(vars["id"], 10, 64)
+func GetSongForArtist(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid artist ID")
+		respondWithError(http.StatusBadRequest, "Invalid artist ID", c)
 		return
 	}
 	songs, err := service.FindSongsByArtistId(id)
 	if err == nil {
-		respondWithJSON(w, http.StatusOK, songs)
+		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		c.JSON(http.StatusOK, songCollection)
 		return
 	}
-	respondWithError(w, http.StatusInternalServerError, "Cound not read songs")
+	respondWithError(http.StatusInternalServerError, "Cound not read songs", c)
 }

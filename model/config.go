@@ -1,7 +1,7 @@
 package model
 
 type Server struct {
-	Port int `yaml: "port,omitempty"`
+	Port int `yaml:"port,omitempty"`
 }
 
 type Database struct {
@@ -15,8 +15,13 @@ type Media struct {
 	Path string `yaml:"path,omitempty"`
 }
 
+type Application struct {
+	Mode string `yaml:"mode,omitempty"`
+}
+
 type Config struct {
-	Server   Server   `yaml:"server,omitempty"`
-	Database Database `yaml:"database,omitempty"`
-	Media    Media    `yaml:"media,omitempty"`
+	Application Application `yaml:"application,omitempty"`
+	Server      Server      `yaml:"server,omitempty"`
+	Database    Database    `yaml:"database,omitempty"`
+	Media       Media       `yaml:"media,omitempty"`
 }

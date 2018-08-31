@@ -1,8 +1,7 @@
 package controller
 
 import (
-	"encoding/json"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"go2music/service"
 	"log"
@@ -10,72 +9,80 @@ import (
 	"strconv"
 )
 
-func GetUsers(w http.ResponseWriter, r *http.Request) {
+func initUser(r *gin.RouterGroup) {
+	r.GET("/user", GetUsers)
+	r.GET("/user/:id", GetUser)
+	r.POST("/user", CreateUser)
+	r.PUT("/user", UpdateUser)
+	r.DELETE("/user/:id", DeleteUser)
+}
+
+func GetUsers(c *gin.Context) {
 	users, err := service.FindAllUsers()
 	if err == nil {
-		respondWithJSON(w, http.StatusOK, users)
+		c.JSON(http.StatusOK, users)
 		return
 	}
-	respondWithError(w, http.StatusInternalServerError, "Cound not read users")
+	respondWithError(http.StatusInternalServerError, "Cound not read users", c)
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func GetUser(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
+		respondWithError(http.StatusBadRequest, "Invalid user ID", c)
 		return
 	}
-	user, err := service.FindUserById(int64(id))
+	user, err := service.FindUserById(id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "user not found")
+		respondWithError(http.StatusNotFound, "user not found", c)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, user)
+	c.JSON(http.StatusOK, user)
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+func CreateUser(c *gin.Context) {
 	user := &model.User{}
-	err := json.NewDecoder(r.Body).Decode(user)
+	err := c.BindJSON(user)
 	if err != nil {
 		log.Println("WARN cannot decode request", err)
-		respondWithError(w, http.StatusBadRequest, "bad request")
+		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
 	user, err = service.CreateUser(*user)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "bad request")
+		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	respondWithJSON(w, http.StatusCreated, user)
+	c.JSON(http.StatusCreated, user)
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
+func UpdateUser(c *gin.Context) {
 	user := &model.User{}
-	err := json.NewDecoder(r.Body).Decode(user)
+	err := c.BindJSON(user)
 	if err != nil {
 		log.Println("WARN cannot decode request", err)
-		respondWithError(w, http.StatusBadRequest, "bad request")
+		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
 	user, err = service.UpdateUser(*user)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "bad request")
+		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, user)
+	c.JSON(http.StatusOK, user)
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func DeleteUser(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
+		respondWithError(http.StatusBadRequest, "Invalid user ID", c)
 		return
 	}
-	if service.DeleteUser(int64(id)) != nil {
-		respondWithError(w, http.StatusBadRequest, "cannot delete user")
+	if service.DeleteUser(id) != nil {
+		respondWithError(http.StatusBadRequest, "cannot delete user", c)
 		return
 	}
-	respond(w, http.StatusOK)
+	c.Data(http.StatusOK, gin.MIMEPlain, nil)
 }

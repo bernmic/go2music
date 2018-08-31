@@ -1,74 +1,82 @@
 package controller
 
 import (
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"go2music/service"
 	"net/http"
 	"strconv"
 )
 
-func GetAlbums(w http.ResponseWriter, r *http.Request) {
+func initAlbum(r *gin.RouterGroup) {
+	r.GET("/album", GetAlbums)
+	r.GET("/album/:id", GetAlbum)
+	r.GET("/album/:id/songs", GetSongForAlbum)
+	r.GET("/album/:id/cover", GetCoverForAlbum)
+}
+
+func GetAlbums(c *gin.Context) {
 	albums, err := service.FindAllAlbums()
 	if err == nil {
 		albumCollection := model.AlbumCollection{Albums: albums}
-		respondWithJSON(w, http.StatusOK, albumCollection)
+		c.JSON(http.StatusOK, albumCollection)
 		return
 	}
-	respondWithError(w, http.StatusInternalServerError, "Cound not read albums")
+	respondWithError(http.StatusInternalServerError, "Cound not read albums", c)
 }
 
-func GetAlbum(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func GetAlbum(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid album ID")
+		respondWithError(http.StatusBadRequest, "Invalid album ID", c)
 		return
 	}
-	album, err := service.FindAlbumById(int64(id))
+	album, err := service.FindAlbumById(id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "album not found")
+		respondWithError(http.StatusNotFound, "album not found", c)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, album)
+	c.JSON(http.StatusOK, album)
 }
 
-func GetSongForAlbum(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.ParseInt(vars["id"], 10, 64)
+func GetSongForAlbum(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid album ID")
+		respondWithError(http.StatusBadRequest, "Invalid album ID", c)
 		return
 	}
 	songs, err := service.FindSongsByAlbumId(id)
 	if err == nil {
-		respondWithJSON(w, http.StatusOK, songs)
+		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		c.JSON(http.StatusOK, songCollection)
 		return
 	}
-	respondWithError(w, http.StatusInternalServerError, "Cound not read songs")
+	respondWithError(http.StatusInternalServerError, "Cound not read songs", c)
 }
 
-func GetCoverForAlbum(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.ParseInt(vars["id"], 10, 64)
+func GetCoverForAlbum(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid album ID")
+		respondWithError(http.StatusBadRequest, "Invalid album ID", c)
 		return
 	}
 	songs, err := service.FindSongsByAlbumId(id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "album not found")
+		respondWithError(http.StatusNotFound, "album not found", c)
 		return
 	}
 	if len(songs) > 0 {
 		image, mimetype, _ := service.GetCoverForSong(songs[0])
 
 		if image != nil {
-			w.Header().Set("Content-Type", mimetype)
-			w.Header().Set("Content-Length", strconv.Itoa(len(image)))
-
-			_, err = w.Write(image)
+			c.Header("Content-Type", mimetype)
+			c.Header("Content-Length", strconv.Itoa(len(image)))
+			c.Data(http.StatusOK, mimetype, image)
+			return
 		}
 	}
-	respondWithError(w, http.StatusNotFound, "No cover found")
+	respondWithError(http.StatusNotFound, "No cover found", c)
 }

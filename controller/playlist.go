@@ -1,8 +1,7 @@
 package controller
 
 import (
-	"encoding/json"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"go2music/service"
 	"log"
@@ -10,94 +9,104 @@ import (
 	"strconv"
 )
 
-func GetPlaylists(w http.ResponseWriter, r *http.Request) {
+func initPlaylist(r *gin.RouterGroup) {
+	r.GET("/playlist", GetPlaylists)
+	r.GET("/playlist/:id", GetPlaylist)
+	r.GET("/playlist/:id/songs", GetSongsForPlaylist)
+	r.POST("/playlist", CreatePlaylist)
+	r.PUT("/playlist", UpdatePlaylist)
+	r.DELETE("/playlist/:id", DeletePlaylist)
+}
+
+func GetPlaylists(c *gin.Context) {
 	playlists, err := service.FindAllPlaylists()
 	if err == nil {
 		playlistCollection := model.PlaylistCollection{Playlists: playlists}
-		respondWithJSON(w, http.StatusOK, playlistCollection)
+		c.JSON(http.StatusOK, playlistCollection)
 		return
 	}
-	respondWithError(w, http.StatusInternalServerError, "Cound not read playlists")
+	respondWithError(http.StatusInternalServerError, "Cound not read playlists", c)
 }
 
-func GetPlaylist(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func GetPlaylist(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid playlist ID")
+		respondWithError(http.StatusBadRequest, "Invalid playlist ID", c)
 		return
 	}
-	playlist, err := service.FindPlaylistById(int64(id))
+	playlist, err := service.FindPlaylistById(id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "playlist not found")
+		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, playlist)
+	c.JSON(http.StatusOK, playlist)
 }
 
-func GetSongsForPlaylist(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.ParseInt(vars["id"], 10, 64)
+func GetSongsForPlaylist(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid playlist ID")
+		respondWithError(http.StatusBadRequest, "Invalid playlist ID", c)
 		return
 	}
-	playlist, err := service.FindPlaylistById(int64(id))
+	playlist, err := service.FindPlaylistById(id)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "playlist not found")
+		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
 	}
 
 	songs, err := service.FindSongsByPlaylistQuery(playlist.Query)
 	if err == nil {
-		respondWithJSON(w, http.StatusOK, songs)
+		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		c.JSON(http.StatusOK, songCollection)
 		return
 	}
-	respondWithError(w, http.StatusInternalServerError, "Cound not read songs of playlist")
+	respondWithError(http.StatusInternalServerError, "Cound not read songs of playlist", c)
 }
 
-func CreatePlaylist(w http.ResponseWriter, r *http.Request) {
+func CreatePlaylist(c *gin.Context) {
 	playlist := &model.Playlist{}
-	err := json.NewDecoder(r.Body).Decode(playlist)
+	err := c.BindJSON(playlist)
 	if err != nil {
 		log.Println("WARN cannot decode request", err)
-		respondWithError(w, http.StatusBadRequest, "bad request")
+		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
 	playlist, err = service.CreatePlaylist(*playlist)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "bad request")
+		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	respondWithJSON(w, http.StatusCreated, playlist)
+	c.JSON(http.StatusCreated, playlist)
 }
 
-func UpdatePlaylist(w http.ResponseWriter, r *http.Request) {
+func UpdatePlaylist(c *gin.Context) {
 	playlist := &model.Playlist{}
-	err := json.NewDecoder(r.Body).Decode(playlist)
+	err := c.BindJSON(playlist)
 	if err != nil {
 		log.Println("WARN cannot decode request", err)
-		respondWithError(w, http.StatusBadRequest, "bad request")
+		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
 	playlist, err = service.UpdatePlaylist(*playlist)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "bad request")
+		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, playlist)
+	c.JSON(http.StatusOK, playlist)
 }
 
-func DeletePlaylist(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func DeletePlaylist(c *gin.Context) {
+	idString := c.Param("id")
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid playlist ID")
+		respondWithError(http.StatusBadRequest, "Invalid playlist ID", c)
 		return
 	}
-	if service.DeletePlaylist(int64(id)) != nil {
-		respondWithError(w, http.StatusBadRequest, "cannot delete playlist")
+	if service.DeletePlaylist(id) != nil {
+		respondWithError(http.StatusBadRequest, "cannot delete playlist", c)
 		return
 	}
-	respond(w, http.StatusOK)
+	c.JSON(http.StatusOK, "")
 }

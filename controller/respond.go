@@ -1,22 +1,10 @@
 package controller
 
 import (
-	"encoding/json"
-	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
-func respondWithError(w http.ResponseWriter, code int, message string) {
-	respondWithJSON(w, code, map[string]string{"error": message})
-}
-
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(response)
-}
-
-func respond(w http.ResponseWriter, code int) {
-	w.WriteHeader(code)
+func respondWithError(code int, message string, c *gin.Context) {
+	c.JSON(code, gin.H{"message": message})
+	c.Abort()
 }

@@ -65,7 +65,11 @@ func AuthenticateRequest(authHeader string) (*model.User, error) {
 
 func AuthenticateJWT(header http.Header) (username string, valid bool) {
 	jwtString := header.Get("Authorization")
-	splittedHeader := strings.Split(jwtString, " ")
+	return AuthenticateJWTString(jwtString)
+}
+
+func AuthenticateJWTString(authHeader string) (username string, valid bool) {
+	splittedHeader := strings.Split(authHeader, " ")
 	if len(splittedHeader) != 2 || splittedHeader[0] != "Bearer" {
 		return "", false
 	}
