@@ -2,17 +2,22 @@ package controller
 
 import (
 	"fmt"
+	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"go2music/service"
 	"net/http"
+	"time"
 )
 
 var router *gin.Engine
 
 func init() {
 	gin.SetMode(service.GetConfiguration().Application.Mode)
-	router = gin.Default()
-	gin.Logger()
+	//router = gin.Default()
+	router = gin.New()
+	router.Use(ginrus.Ginrus(logrus.New(), time.RFC3339, false))
+	router.Use(gin.Recovery())
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/static/index.html")
 	})

@@ -2,8 +2,8 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"go2music/service"
-	"log"
 	"net/http"
 )
 
@@ -65,7 +65,7 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 			user, err := service.GetPrincipal(username)
 			if err == nil && (user.Role == service.AdminRole) {
 				c.Set("principal", user)
-				log.Println("INFO Authorization OK - " + username + " with role " + user.Role)
+				log.Info("Authorization OK - " + username + " with role " + user.Role)
 				c.Next()
 				return
 			}

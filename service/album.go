@@ -2,37 +2,37 @@ package service
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
-	"log"
 )
 
 func InitializeAlbum() {
 	_, err := Database.Query("SELECT 1 FROM album LIMIT 1")
 	if err != nil {
-		log.Println("INFO Table album does not exists. Creating now.")
+		log.Info("Table album does not exists. Creating now.")
 		stmt, err := Database.Prepare("CREATE TABLE IF NOT EXISTS album (id BIGINT NOT NULL AUTO_INCREMENT, title varchar(255) NOT NULL, path varchar(255) NOT NULL, PRIMARY KEY (id));")
 		if err != nil {
-			log.Println("ERROR Error creating album table")
+			log.Error("Error creating album table")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Println("ERROR Error creating album table")
+			log.Error("Error creating album table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("INFO Album Table successfully created....")
+			log.Info("Album Table successfully created....")
 		}
 		stmt, err = Database.Prepare("ALTER TABLE album ADD UNIQUE INDEX album_path (path)")
 		if err != nil {
-			log.Print("ERROR Error creating album table index for path")
+			log.Error("Error creating album table index for path")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("ERROR Error creating album table index for path")
+			log.Error("Error creating album table index for path")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("INFO Index on path generated....")
+			log.Info("Index on path generated....")
 		}
 	}
 }

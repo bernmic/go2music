@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dhowden/tag"
+	log "github.com/sirupsen/logrus"
 	"github.com/xhenner/mp3-go"
 	"go2music/model"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -23,7 +23,7 @@ func readData(filename string) (*model.Song, error) {
 
 	id3tag, err := tag.ReadFrom(f)
 	if err != nil {
-		log.Printf("ERROR Error opening mp3 file %s: %v", filename, err)
+		log.Errorf("Error opening mp3 file %s: %v", filename, err)
 		return nil, err
 	}
 	song := new(model.Song)
@@ -87,11 +87,11 @@ func ID3Reader(filenames []string) {
 				song.Album, err = CreateIfNotExistsAlbum(*song.Album)
 				song, err = CreateSong(*song)
 				if err != nil {
-					log.Fatalf("FATAL Error creating song: %v", err)
+					log.Fatalf("Error creating song: %v", err)
 				}
 				counter++
 				if counter%100 == 0 {
-					log.Printf("INFO Proceeded %d songs", counter)
+					log.Infof("Proceeded %d songs", counter)
 				}
 			}
 		}
@@ -101,7 +101,7 @@ func ID3Reader(filenames []string) {
 func GetCoverFromID3(filename string) ([]byte, string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
-		fmt.Printf("error loading file: %v", err)
+		log.Errorf("error loading file: %v", err)
 		return nil, "", err
 	}
 	defer f.Close()

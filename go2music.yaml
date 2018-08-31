@@ -1,5 +1,6 @@
 application:
   mode: release
+  loglevel: debug
 server:
   port: 8080
 database:

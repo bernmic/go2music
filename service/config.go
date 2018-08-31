@@ -31,6 +31,10 @@ func GetConfiguration() *model.Config {
 			config.Application.Mode = "debug"
 		}
 
+		if config.Application.Loglevel == "" {
+			config.Application.Loglevel = "info"
+		}
+
 		if config.Server.Port == 0 {
 			config.Server.Port = 8080
 		}

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/patrickmn/go-cache"
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -48,7 +48,7 @@ func AuthenticateRequest(authHeader string) (*model.User, error) {
 	}
 	data, err := base64.StdEncoding.DecodeString(splittedHeader[1])
 	if err != nil {
-		log.Println("WARN error decoding base64", err)
+		log.Warn("error decoding base64", err)
 		return nil, errors.New("bad request")
 	}
 	userpwd := strings.Split(string(data), ":")

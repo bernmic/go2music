@@ -2,9 +2,9 @@ package service
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 )
 
 var createUserTableStatement = `
@@ -24,27 +24,27 @@ func InitializeUser() {
 		log.Print("Table user does not exists. Creating now.")
 		stmt, err := Database.Prepare(createUserTableStatement)
 		if err != nil {
-			log.Print("ERROR Error creating user table")
+			log.Error("Error creating user table")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("ERROR Error creating user table")
+			log.Error("Error creating user table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("INFO User Table successfully created....")
+			log.Info("User Table successfully created....")
 		}
 		stmt, err = Database.Prepare("ALTER TABLE user ADD UNIQUE INDEX user_username (username)")
 		if err != nil {
-			log.Print("ERROR Error creating user table index for username")
+			log.Error("Error creating user table index for username")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("ERROR Error creating user table index for username")
+			log.Error("Error creating user table index for username")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("INFO Index on username generated....")
+			log.Info("Index on username generated....")
 		}
 	}
 	var count int64

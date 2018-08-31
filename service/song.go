@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
-	"log"
 	"path/filepath"
 	"strings"
 )
@@ -66,30 +66,30 @@ LEFT JOIN album ON song.album_id = album.id
 func InitializeSong() {
 	_, err := Database.Query("SELECT 1 FROM song LIMIT 1")
 	if err != nil {
-		log.Print("INFO Table song does not exists. Creating now.")
+		log.Info("Table song does not exists. Creating now.")
 		stmt, err := Database.Prepare(createSongTableStatement)
 		if err != nil {
-			log.Print("ERROR Error creating song table")
+			log.Error("Error creating song table")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("ERROR Error creating song table")
+			log.Error("Error creating song table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("INFO Song Table successfully created....")
+			log.Info("Song Table successfully created....")
 		}
 		stmt, err = Database.Prepare("ALTER TABLE song ADD UNIQUE INDEX song_path (path)")
 		if err != nil {
-			log.Print("ERROR Error creating song table index for path")
+			log.Error("Error creating song table index for path")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("ERROR Error creating song table index for path")
+			log.Error("Error creating song table index for path")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("INFO Index on path generated....")
+			log.Info("Index on path generated....")
 		}
 	}
 }
@@ -151,7 +151,7 @@ func SongExists(path string) bool {
 		if err != sql.ErrNoRows {
 			// a real error happened! you should change your function return
 			// to "(bool, error)" and return "false, err" here
-			log.Println("ERROR Error reading song from database", err)
+			log.Error("Error reading song from database", err)
 		}
 
 		return false
@@ -477,7 +477,7 @@ func GetCoverForSong(song *model.Song) ([]byte, string, error) {
 	image, mimetype, err := GetCoverFromID3(song.Path)
 
 	if err != nil {
-		log.Println("INFO try to find cover in path")
+		log.Info("try to find cover in path")
 		image, mimetype, err = GetCoverFromPath(filepath.Dir(song.Path))
 	}
 

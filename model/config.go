@@ -16,7 +16,8 @@ type Media struct {
 }
 
 type Application struct {
-	Mode string `yaml:"mode,omitempty"`
+	Mode     string `yaml:"mode,omitempty"`
+	Loglevel string `yaml:"loglevel,omitempty"`
 }
 
 type Config struct {

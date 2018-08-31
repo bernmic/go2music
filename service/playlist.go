@@ -2,37 +2,37 @@ package service
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
-	"log"
 )
 
 func InitializePlaylist() {
 	_, err := Database.Query("SELECT 1 FROM playlist LIMIT 1")
 	if err != nil {
-		log.Print("INFO Table playlist does not exists. Creating now.")
+		log.Info("Table playlist does not exists. Creating now.")
 		stmt, err := Database.Prepare("CREATE TABLE IF NOT EXISTS playlist (id BIGINT NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, query varchar(255) NOT NULL, PRIMARY KEY (id));")
 		if err != nil {
-			log.Print("ERROR Error creating playlist table")
+			log.Error("Error creating playlist table")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("ERROR Error creating playlist table")
+			log.Error("Error creating playlist table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("INFO Playlist Table successfully created....")
+			log.Info("Playlist Table successfully created....")
 		}
 		stmt, err = Database.Prepare("ALTER TABLE playlist ADD UNIQUE INDEX playlist_name (name)")
 		if err != nil {
-			log.Print("ERROR Error creating playlist table index for name")
+			log.Error("Error creating playlist table index for name")
 			panic(fmt.Sprintf("%v", err))
 		}
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Print("ERROR Error creating playlist table index for name")
+			log.Error("Error creating playlist table index for name")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Println("INFO Index on name generated....")
+			log.Info("Index on name generated....")
 		}
 	}
 }

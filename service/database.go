@@ -3,7 +3,7 @@ package service
 import (
 	"database/sql"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os/user"
 	"strings"
 	"time"
@@ -15,11 +15,11 @@ func InitializeDatabase() *sql.DB {
 	c := GetConfiguration()
 	db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, c.Database.Url))
 	if err != nil {
-		log.Print("ERROR Error opening service " + c.Database.Url)
+		log.Errorf("Error opening service " + c.Database.Url)
 		panic(fmt.Sprintf("%v", err))
 	}
 	if err := db.Ping(); err != nil {
-		log.Printf("Error accessing database: %v\n", err)
+		log.Errorf("Error accessing database: %v\n", err)
 		return nil
 	}
 	Database = db
@@ -28,7 +28,7 @@ func InitializeDatabase() *sql.DB {
 	InitializeAlbum()
 	InitializeSong()
 	InitializePlaylist()
-	log.Print("INFO Database initialized....")
+	log.Info("Database initialized....")
 
 	go syncWithFilesystem(db)
 
@@ -36,15 +36,15 @@ func InitializeDatabase() *sql.DB {
 }
 
 func syncWithFilesystem(db *sql.DB) {
-	log.Print("INFO Start scanning filesystem....")
+	log.Info("Start scanning filesystem....")
 	start := time.Now()
 	path := replaceVariables(GetConfiguration().Media.Path)
 	result := Filescanner(path, ".mp3")
-	log.Printf("INFO Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
-	log.Print("INFO Start sync found files with service...")
+	log.Infof("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
+	log.Info("Start sync found files with service...")
 	start = time.Now()
 	ID3Reader(result)
-	log.Printf("INFO Sync finished...in %f seconds", time.Since(start).Seconds())
+	log.Infof("Sync finished...in %f seconds", time.Since(start).Seconds())
 }
 
 func replaceVariables(in string) string {

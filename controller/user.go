@@ -2,9 +2,9 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"go2music/service"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -45,7 +45,7 @@ func CreateUser(c *gin.Context) {
 	user := &model.User{}
 	err := c.BindJSON(user)
 	if err != nil {
-		log.Println("WARN cannot decode request", err)
+		log.Warn("cannot decode request", err)
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
@@ -61,7 +61,7 @@ func UpdateUser(c *gin.Context) {
 	user := &model.User{}
 	err := c.BindJSON(user)
 	if err != nil {
-		log.Println("WARN cannot decode request", err)
+		log.Warn("cannot decode request", err)
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
