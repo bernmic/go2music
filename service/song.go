@@ -63,11 +63,11 @@ LEFT JOIN album ON song.album_id = album.id
 `
 )
 
-func InitializeSong() {
-	_, err := Database.Query("SELECT 1 FROM song LIMIT 1")
+func (db *DB) initializeSong() {
+	_, err := db.Query("SELECT 1 FROM song LIMIT 1")
 	if err != nil {
 		log.Info("Table song does not exists. Creating now.")
-		stmt, err := Database.Prepare(createSongTableStatement)
+		stmt, err := db.Prepare(createSongTableStatement)
 		if err != nil {
 			log.Error("Error creating song table")
 			panic(fmt.Sprintf("%v", err))
@@ -79,7 +79,7 @@ func InitializeSong() {
 		} else {
 			log.Info("Song Table successfully created....")
 		}
-		stmt, err = Database.Prepare("ALTER TABLE song ADD UNIQUE INDEX song_path (path)")
+		stmt, err = db.Prepare("ALTER TABLE song ADD UNIQUE INDEX song_path (path)")
 		if err != nil {
 			log.Error("Error creating song table index for path")
 			panic(fmt.Sprintf("%v", err))
@@ -94,8 +94,8 @@ func InitializeSong() {
 	}
 }
 
-func CreateSong(song model.Song) (*model.Song, error) {
-	result, err := Database.Exec("INSERT IGNORE INTO song (path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, vbr, added, filedate, rating) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
+	result, err := db.Exec("INSERT IGNORE INTO song (path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, vbr, added, filedate, rating) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 		song.Path,
 		song.Title,
 		song.Artist.Id,
@@ -118,8 +118,8 @@ func CreateSong(song model.Song) (*model.Song, error) {
 	return &song, err
 }
 
-func UpdateSong(song model.Song) (*model.Song, error) {
-	_, err := Database.Exec("UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=?, bitrate=?, samplerate=?, duration=?, mode=?, vbr=?, added=?, filedate=?, rating=? WHERE id=?",
+func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
+	_, err := db.Exec("UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=?, bitrate=?, samplerate=?, duration=?, mode=?, vbr=?, added=?, filedate=?, rating=? WHERE id=?",
 		song.Path,
 		song.Title,
 		song.Artist.Id,
@@ -139,14 +139,14 @@ func UpdateSong(song model.Song) (*model.Song, error) {
 	return &song, err
 }
 
-func DeleteSong(id int64) error {
-	_, err := Database.Exec("DELETE FROM song WHERE id=?", id)
+func (db *DB) DeleteSong(id int64) error {
+	_, err := db.Exec("DELETE FROM song WHERE id=?", id)
 	return err
 }
 
-func SongExists(path string) bool {
+func (db *DB) SongExists(path string) bool {
 	sqlStmt := `SELECT path FROM song WHERE path = ?`
-	err := Database.QueryRow(sqlStmt, path).Scan(&path)
+	err := db.QueryRow(sqlStmt, path).Scan(&path)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			// a real error happened! you should change your function return
@@ -158,7 +158,7 @@ func SongExists(path string) bool {
 	}
 	return true
 }
-func FindOneSong(id int64) (*model.Song, error) {
+func (db *DB) FindOneSong(id int64) (*model.Song, error) {
 	stmt := selectSongStatement + ` 
 		WHERE
 			song.id=?
@@ -169,7 +169,7 @@ func FindOneSong(id int64) (*model.Song, error) {
 	var albumId sql.NullInt64
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
-	err := Database.QueryRow(stmt, id).Scan(
+	err := db.QueryRow(stmt, id).Scan(
 		&song.Id,
 		&song.Path,
 		&song.Title,
@@ -206,8 +206,8 @@ func FindOneSong(id int64) (*model.Song, error) {
 	return song, err
 }
 
-func FindAllSongs() ([]*model.Song, error) {
-	rows, err := Database.Query(selectSongStatement)
+func (db *DB) FindAllSongs() ([]*model.Song, error) {
+	rows, err := db.Query(selectSongStatement)
 	if err != nil {
 		log.Fatal("FATAL Error reading song table", err)
 	}
@@ -263,9 +263,9 @@ func FindAllSongs() ([]*model.Song, error) {
 	return songs, err
 }
 
-func FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
+func (db *DB) FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
 	stmt := selectSongStatement + ` WHERE album.id = ?`
-	rows, err := Database.Query(stmt, findAlbumId)
+	rows, err := db.Query(stmt, findAlbumId)
 	if err != nil {
 		log.Fatal("FATAL Error reading song table", err)
 	}
@@ -321,9 +321,9 @@ func FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
 	return songs, err
 }
 
-func FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
+func (db *DB) FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
 	stmt := selectSongStatement + `WHERE artist.id = ?	`
-	rows, err := Database.Query(stmt, findArtistId)
+	rows, err := db.Query(stmt, findArtistId)
 	if err != nil {
 		log.Fatal("FATAL Error reading song table", err)
 	}
@@ -379,7 +379,7 @@ func FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
 	return songs, err
 }
 
-func FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
+func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 	stmt := selectSongStatement
 	splittedBy := "="
 	splitted := strings.Split(query, "=")
@@ -417,7 +417,7 @@ func FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 		}
 	}
 
-	rows, err := Database.Query(stmt, searchItem)
+	rows, err := db.Query(stmt, searchItem)
 	if err != nil {
 		log.Fatal("FATAL Error reading song table", err)
 	}
@@ -473,7 +473,7 @@ func FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 	return songs, err
 }
 
-func GetCoverForSong(song *model.Song) ([]byte, string, error) {
+func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
 	image, mimetype, err := GetCoverFromID3(song.Path)
 
 	if err != nil {

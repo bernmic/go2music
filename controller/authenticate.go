@@ -18,7 +18,7 @@ func authenticate(c *gin.Context) {
 		respondWithError(http.StatusUnauthorized, "missing token", c)
 		return
 	}
-	user, err := service.AuthenticateRequest(authHeader)
+	user, err := database.AuthenticateRequest(authHeader)
 	if err != nil {
 		respondWithError(http.StatusUnauthorized, "username / password wrong", c)
 		return
@@ -42,7 +42,7 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 		}
 		username, b := service.AuthenticateJWTString(authHeader)
 		if b {
-			user, err := service.GetPrincipal(username)
+			user, err := database.GetPrincipal(username)
 			if err == nil && (user.Role == service.UserRole || user.Role == service.AdminRole) {
 				c.Set("principal", user)
 				log.Println("INFO Authorization OK - " + username + " with role " + user.Role)
@@ -62,7 +62,7 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 		}
 		username, b := service.AuthenticateJWTString(c.GetHeader("Authorization"))
 		if b {
-			user, err := service.GetPrincipal(username)
+			user, err := database.GetPrincipal(username)
 			if err == nil && (user.Role == service.AdminRole) {
 				c.Set("principal", user)
 				log.Info("Authorization OK - " + username + " with role " + user.Role)

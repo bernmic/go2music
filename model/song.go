@@ -23,3 +23,16 @@ type SongCollection struct {
 	Songs  []*Song `json:"songs,omitempty"`
 	Paging Paging  `json:"paging,omitempty"`
 }
+
+type SongManager interface {
+	CreateSong(song Song) (*Song, error)
+	UpdateSong(song Song) (*Song, error)
+	DeleteSong(id int64) error
+	SongExists(path string) bool
+	FindOneSong(id int64) (*Song, error)
+	FindAllSongs() ([]*Song, error)
+	FindSongsByAlbumId(findAlbumId int64) ([]*Song, error)
+	FindSongsByArtistId(findArtistId int64) ([]*Song, error)
+	FindSongsByPlaylistQuery(query string) ([]*Song, error)
+	GetCoverForSong(song *Song) ([]byte, string, error)
+}

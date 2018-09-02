@@ -3,8 +3,6 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"go2music/model"
-	"go2music/service"
-	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -18,7 +16,7 @@ func initSong(r *gin.RouterGroup) {
 }
 
 func GetSongs(c *gin.Context) {
-	songs, err := service.FindAllSongs()
+	songs, err := songManager.FindAllSongs()
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
 		c.JSON(http.StatusOK, songCollection)
@@ -34,7 +32,7 @@ func GetSong(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid song ID", c)
 		return
 	}
-	song, err := service.FindOneSong(id)
+	song, err := songManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
 		return
@@ -49,7 +47,7 @@ func StreamSong(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid song ID", c)
 		return
 	}
-	song, err := service.FindOneSong(id)
+	song, err := songManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
 		return
@@ -73,15 +71,17 @@ func StreamSong(c *gin.Context) {
 	fileStat, _ := file.Stat()                         //Get info from file
 	fileSize := strconv.FormatInt(fileStat.Size(), 10) //Get file size as a string
 
+	file.Close()
+
 	//Send the headers
 	c.Header("Content-Disposition", "attachment; filename="+song.Path)
 	c.Header("Content-Type", fileContentType)
 	c.Header("Content-Length", fileSize)
-
+	c.File(song.Path)
 	//Send the file
 	//We read 512 bytes from the file already so we reset the offset back to 0
-	file.Seek(0, 0)
-	io.Copy(c.Writer, file) //'Copy' the file to the client
+	//file.Seek(0, 0)
+	//io.Copy(c.Writer, file) //'Copy' the file to the client
 }
 
 func GetCover(c *gin.Context) {
@@ -91,12 +91,12 @@ func GetCover(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid song ID", c)
 		return
 	}
-	song, err := service.FindOneSong(id)
+	song, err := songManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
 		return
 	}
-	image, mimetype, err := service.GetCoverForSong(song)
+	image, mimetype, err := songManager.GetCoverForSong(song)
 
 	if image != nil {
 		c.Header("Content-Type", mimetype)

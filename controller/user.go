@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
-	"go2music/service"
 	"net/http"
 	"strconv"
 )
@@ -18,7 +17,7 @@ func initUser(r *gin.RouterGroup) {
 }
 
 func GetUsers(c *gin.Context) {
-	users, err := service.FindAllUsers()
+	users, err := userManager.FindAllUsers()
 	if err == nil {
 		c.JSON(http.StatusOK, users)
 		return
@@ -33,7 +32,7 @@ func GetUser(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid user ID", c)
 		return
 	}
-	user, err := service.FindUserById(id)
+	user, err := userManager.FindUserById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "user not found", c)
 		return
@@ -49,7 +48,7 @@ func CreateUser(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	user, err = service.CreateUser(*user)
+	user, err = userManager.CreateUser(*user)
 	if err != nil {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
@@ -65,7 +64,7 @@ func UpdateUser(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	user, err = service.UpdateUser(*user)
+	user, err = userManager.UpdateUser(*user)
 	if err != nil {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
@@ -80,7 +79,7 @@ func DeleteUser(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid user ID", c)
 		return
 	}
-	if service.DeleteUser(id) != nil {
+	if userManager.DeleteUser(id) != nil {
 		respondWithError(http.StatusBadRequest, "cannot delete user", c)
 		return
 	}

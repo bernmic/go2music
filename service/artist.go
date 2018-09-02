@@ -6,11 +6,11 @@ import (
 	"go2music/model"
 )
 
-func InitializeArtist() {
-	_, err := Database.Query("SELECT 1 FROM artist LIMIT 1")
+func (db *DB) initializeArtist() {
+	_, err := db.Query("SELECT 1 FROM artist LIMIT 1")
 	if err != nil {
 		log.Info("Table artist does not exists. Creating now.")
-		stmt, err := Database.Prepare("CREATE TABLE IF NOT EXISTS artist (id BIGINT NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, PRIMARY KEY (id));")
+		stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS artist (id BIGINT NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, PRIMARY KEY (id));")
 		if err != nil {
 			log.Error("Error creating artist table")
 			panic(fmt.Sprintf("%v", err))
@@ -22,7 +22,7 @@ func InitializeArtist() {
 		} else {
 			log.Info("Artist Table successfully created....")
 		}
-		stmt, err = Database.Prepare("ALTER TABLE artist ADD UNIQUE INDEX artist_name (name)")
+		stmt, err = db.Prepare("ALTER TABLE artist ADD UNIQUE INDEX artist_name (name)")
 		if err != nil {
 			log.Error("Error creating artist table index for name")
 			panic(fmt.Sprintf("%v", err))
@@ -37,8 +37,8 @@ func InitializeArtist() {
 	}
 }
 
-func CreateArtist(artist model.Artist) (*model.Artist, error) {
-	result, err := Database.Exec("INSERT IGNORE INTO artist (name) VALUES(?)", artist.Name)
+func (db *DB) CreateArtist(artist model.Artist) (*model.Artist, error) {
+	result, err := db.Exec("INSERT IGNORE INTO artist (name) VALUES(?)", artist.Name)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,12 +46,12 @@ func CreateArtist(artist model.Artist) (*model.Artist, error) {
 	return &artist, err
 }
 
-func CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error) {
-	existingArtist, findErr := FindArtistByName(artist.Name)
+func (db *DB) CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error) {
+	existingArtist, findErr := db.FindArtistByName(artist.Name)
 	if findErr == nil {
 		return existingArtist, findErr
 	}
-	result, err := Database.Exec("INSERT INTO artist (name) VALUES(?)", artist.Name)
+	result, err := db.Exec("INSERT INTO artist (name) VALUES(?)", artist.Name)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,36 +59,36 @@ func CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error) {
 	return &artist, err
 }
 
-func UpdateArtist(artist model.Artist) (*model.Artist, error) {
-	_, err := Database.Exec("UPDATE artist SET name=? WHERE id=?", artist.Name, artist.Id)
+func (db *DB) UpdateArtist(artist model.Artist) (*model.Artist, error) {
+	_, err := db.Exec("UPDATE artist SET name=? WHERE id=?", artist.Name, artist.Id)
 	return &artist, err
 }
 
-func DeleteArtist(id int64) error {
-	_, err := Database.Exec("DELETE FROM artist WHERE id=?", id)
+func (db *DB) DeleteArtist(id int64) error {
+	_, err := db.Exec("DELETE FROM artist WHERE id=?", id)
 	return err
 }
 
-func FindArtistById(id int64) (*model.Artist, error) {
+func (db *DB) FindArtistById(id int64) (*model.Artist, error) {
 	artist := new(model.Artist)
-	err := Database.QueryRow("SELECT id,name FROM artist WHERE id=?", id).Scan(&artist.Id, &artist.Name)
+	err := db.QueryRow("SELECT id,name FROM artist WHERE id=?", id).Scan(&artist.Id, &artist.Name)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return artist, err
 }
 
-func FindArtistByName(name string) (*model.Artist, error) {
+func (db *DB) FindArtistByName(name string) (*model.Artist, error) {
 	artist := new(model.Artist)
-	err := Database.QueryRow("SELECT id,name FROM artist WHERE name=?", name).Scan(&artist.Id, &artist.Name)
+	err := db.QueryRow("SELECT id,name FROM artist WHERE name=?", name).Scan(&artist.Id, &artist.Name)
 	if err != nil {
 		return artist, err
 	}
 	return artist, err
 }
 
-func FindAllArtists() ([]*model.Artist, error) {
-	rows, err := Database.Query("SELECT id, name FROM artist")
+func (db *DB) FindAllArtists() ([]*model.Artist, error) {
+	rows, err := db.Query("SELECT id, name FROM artist")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -14,15 +14,17 @@ var secrets = map[string]string{}
 type Secret string
 
 const (
+	ConfigFile     string = "go2music.yaml"
+	SecretsFile    string = "secrets.yaml"
 	PasswordSecret Secret = "password"
 	TokenSecret    Secret = "token"
 )
 
-func GetConfiguration() *model.Config {
+func Configuration() *model.Config {
 	if !configLoaded {
 		config = model.Config{}
 
-		configdata, err := ioutil.ReadFile("go2music.yaml")
+		configdata, err := ioutil.ReadFile(ConfigFile)
 		if err == nil {
 			yaml.Unmarshal([]byte(configdata), &config)
 		}
@@ -65,9 +67,9 @@ func GetConfiguration() *model.Config {
 	return &config
 }
 
-func GetSecret(secret Secret) string {
+func Secrets(secret Secret) string {
 	if len(secrets) == 0 {
-		secretdata, err := ioutil.ReadFile("secrets.yaml")
+		secretdata, err := ioutil.ReadFile(SecretsFile)
 		if err == nil {
 			yaml.Unmarshal([]byte(secretdata), &config)
 		}

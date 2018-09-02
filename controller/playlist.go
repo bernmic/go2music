@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
-	"go2music/service"
 	"net/http"
 	"strconv"
 )
@@ -19,7 +18,7 @@ func initPlaylist(r *gin.RouterGroup) {
 }
 
 func GetPlaylists(c *gin.Context) {
-	playlists, err := service.FindAllPlaylists()
+	playlists, err := playlistManager.FindAllPlaylists()
 	if err == nil {
 		playlistCollection := model.PlaylistCollection{Playlists: playlists}
 		c.JSON(http.StatusOK, playlistCollection)
@@ -35,7 +34,7 @@ func GetPlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid playlist ID", c)
 		return
 	}
-	playlist, err := service.FindPlaylistById(id)
+	playlist, err := playlistManager.FindPlaylistById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -50,13 +49,13 @@ func GetSongsForPlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid playlist ID", c)
 		return
 	}
-	playlist, err := service.FindPlaylistById(id)
+	playlist, err := database.FindPlaylistById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
 	}
 
-	songs, err := service.FindSongsByPlaylistQuery(playlist.Query)
+	songs, err := songManager.FindSongsByPlaylistQuery(playlist.Query)
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
 		c.JSON(http.StatusOK, songCollection)
@@ -73,7 +72,7 @@ func CreatePlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	playlist, err = service.CreatePlaylist(*playlist)
+	playlist, err = playlistManager.CreatePlaylist(*playlist)
 	if err != nil {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
@@ -89,7 +88,7 @@ func UpdatePlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	playlist, err = service.UpdatePlaylist(*playlist)
+	playlist, err = playlistManager.UpdatePlaylist(*playlist)
 	if err != nil {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
@@ -104,7 +103,7 @@ func DeletePlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid playlist ID", c)
 		return
 	}
-	if service.DeletePlaylist(id) != nil {
+	if playlistManager.DeletePlaylist(id) != nil {
 		respondWithError(http.StatusBadRequest, "cannot delete playlist", c)
 		return
 	}

@@ -41,7 +41,7 @@ func GenerateJWT(user *model.User) (tokenString string, err error) {
 	return tokenString, err
 }
 
-func AuthenticateRequest(authHeader string) (*model.User, error) {
+func (db *DB) AuthenticateRequest(authHeader string) (*model.User, error) {
 	splittedHeader := strings.Split(authHeader, " ")
 	if len(splittedHeader) != 2 || splittedHeader[0] != "Basic" {
 		return nil, errors.New("bad request")
@@ -53,7 +53,7 @@ func AuthenticateRequest(authHeader string) (*model.User, error) {
 	}
 	userpwd := strings.Split(string(data), ":")
 
-	user, err := FindUserByUsername(userpwd[0])
+	user, err := db.FindUserByUsername(userpwd[0])
 	if err != nil {
 		return nil, errors.New("usernameand/or password wrong")
 	}
@@ -90,11 +90,11 @@ func AuthenticateJWTString(authHeader string) (username string, valid bool) {
 	return "", false
 }
 
-func GetPrincipal(username string) (*model.User, error) {
+func (db *DB) GetPrincipal(username string) (*model.User, error) {
 	user, found := usersCache.Get(username)
 	if !found {
 		var err error
-		user, err = FindUserByUsername(username)
+		user, err = db.FindUserByUsername(username)
 		if err != nil {
 			return nil, err
 		}

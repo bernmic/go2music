@@ -18,11 +18,11 @@ var createUserTableStatement = `
 			PRIMARY KEY (id)
 		);`
 
-func InitializeUser() {
-	_, err := Database.Query("SELECT 1 FROM user LIMIT 1")
+func (db *DB) initializeUser() {
+	_, err := db.Query("SELECT 1 FROM user LIMIT 1")
 	if err != nil {
 		log.Print("Table user does not exists. Creating now.")
-		stmt, err := Database.Prepare(createUserTableStatement)
+		stmt, err := db.Prepare(createUserTableStatement)
 		if err != nil {
 			log.Error("Error creating user table")
 			panic(fmt.Sprintf("%v", err))
@@ -34,7 +34,7 @@ func InitializeUser() {
 		} else {
 			log.Info("User Table successfully created....")
 		}
-		stmt, err = Database.Prepare("ALTER TABLE user ADD UNIQUE INDEX user_username (username)")
+		stmt, err = db.Prepare("ALTER TABLE user ADD UNIQUE INDEX user_username (username)")
 		if err != nil {
 			log.Error("Error creating user table index for username")
 			panic(fmt.Sprintf("%v", err))
@@ -48,19 +48,19 @@ func InitializeUser() {
 		}
 	}
 	var count int64
-	Database.QueryRow("SELECT count(*) c FROM user").Scan(&count)
+	db.QueryRow("SELECT count(*) c FROM user").Scan(&count)
 	if count == 0 {
 		userPassword, _ := HashPassword("user")
 		adminPassword, _ := HashPassword("admin")
 		guestPassword, _ := HashPassword("guest")
-		CreateUser(model.User{Username: "user", Password: userPassword, Role: "user", Email: "user@example.com"})
-		CreateUser(model.User{Username: "admin", Password: adminPassword, Role: "admin", Email: "admin@example.com"})
-		CreateUser(model.User{Username: "guest", Password: guestPassword, Role: "guest", Email: "guest@example.com"})
+		db.CreateUser(model.User{Username: "user", Password: userPassword, Role: "user", Email: "user@example.com"})
+		db.CreateUser(model.User{Username: "admin", Password: adminPassword, Role: "admin", Email: "admin@example.com"})
+		db.CreateUser(model.User{Username: "guest", Password: guestPassword, Role: "guest", Email: "guest@example.com"})
 	}
 }
 
-func CreateUser(user model.User) (*model.User, error) {
-	result, err := Database.Exec(
+func (db *DB) CreateUser(user model.User) (*model.User, error) {
+	result, err := db.Exec(
 		"INSERT IGNORE INTO user (username,password,role,email) VALUES(?,?,?,?)",
 		user.Username,
 		user.Password,
@@ -73,12 +73,12 @@ func CreateUser(user model.User) (*model.User, error) {
 	return &user, err
 }
 
-func CreateIfNotExistsUser(user model.User) (*model.User, error) {
-	existingUser, findErr := FindUserByUsername(user.Username)
+func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
+	existingUser, findErr := db.FindUserByUsername(user.Username)
 	if findErr == nil {
 		return existingUser, findErr
 	}
-	result, err := Database.Exec(
+	result, err := db.Exec(
 		"INSERT INTO user (username,password,role,email) VALUES(?,?,?,?)",
 		user.Username,
 		user.Password,
@@ -91,8 +91,8 @@ func CreateIfNotExistsUser(user model.User) (*model.User, error) {
 	return &user, err
 }
 
-func UpdateUser(user model.User) (*model.User, error) {
-	_, err := Database.Exec(
+func (db *DB) UpdateUser(user model.User) (*model.User, error) {
+	_, err := db.Exec(
 		"UPDATE user SET username=?, password=?, role=?, email=? WHERE id=?",
 		user.Username,
 		user.Password,
@@ -102,14 +102,14 @@ func UpdateUser(user model.User) (*model.User, error) {
 	return &user, err
 }
 
-func DeleteUser(id int64) error {
-	_, err := Database.Exec("DELETE FROM user WHERE id=?", id)
+func (db *DB) DeleteUser(id int64) error {
+	_, err := db.Exec("DELETE FROM user WHERE id=?", id)
 	return err
 }
 
-func FindUserById(id int64) (*model.User, error) {
+func (db *DB) FindUserById(id int64) (*model.User, error) {
 	user := new(model.User)
-	err := Database.QueryRow(
+	err := db.QueryRow(
 		"SELECT id,username, password, role, email FROM user WHERE id=?", id).Scan(
 		&user.Id,
 		&user.Username,
@@ -122,9 +122,9 @@ func FindUserById(id int64) (*model.User, error) {
 	return user, err
 }
 
-func FindUserByUsername(name string) (*model.User, error) {
+func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 	user := new(model.User)
-	err := Database.QueryRow(
+	err := db.QueryRow(
 		"SELECT id,username, password, role, email FROM user WHERE username=?", name).Scan(
 		&user.Id,
 		&user.Username,
@@ -137,8 +137,8 @@ func FindUserByUsername(name string) (*model.User, error) {
 	return user, err
 }
 
-func FindAllUsers() ([]*model.User, error) {
-	rows, err := Database.Query("SELECT id, username, password, role, email FROM user")
+func (db *DB) FindAllUsers() ([]*model.User, error) {
+	rows, err := db.Query("SELECT id, username, password, role, email FROM user")
 	if err != nil {
 		log.Fatal(err)
 	}

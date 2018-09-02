@@ -74,18 +74,18 @@ func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 	return nil, err
 }
 
-func ID3Reader(filenames []string) {
+func ID3Reader(filenames []string, db *DB) {
 	counter := 0
 	for _, filename := range filenames {
-		if !SongExists(filename) {
+		if !db.SongExists(filename) {
 			song, err := readData(filename)
 			if err == nil {
 				song, err = readMetaData(filename, song)
 			}
 			if err == nil {
-				song.Artist, err = CreateIfNotExistsArtist(*song.Artist)
-				song.Album, err = CreateIfNotExistsAlbum(*song.Album)
-				song, err = CreateSong(*song)
+				song.Artist, err = db.CreateIfNotExistsArtist(*song.Artist)
+				song.Album, err = db.CreateIfNotExistsAlbum(*song.Album)
+				song, err = db.CreateSong(*song)
 				if err != nil {
 					log.Fatalf("Error creating song: %v", err)
 				}

@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"go2music/model"
-	"go2music/service"
 	"net/http"
 	"strconv"
 )
@@ -16,7 +15,7 @@ func initAlbum(r *gin.RouterGroup) {
 }
 
 func GetAlbums(c *gin.Context) {
-	albums, err := service.FindAllAlbums()
+	albums, err := albumManager.FindAllAlbums()
 	if err == nil {
 		albumCollection := model.AlbumCollection{Albums: albums}
 		c.JSON(http.StatusOK, albumCollection)
@@ -32,7 +31,7 @@ func GetAlbum(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid album ID", c)
 		return
 	}
-	album, err := service.FindAlbumById(id)
+	album, err := albumManager.FindAlbumById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "album not found", c)
 		return
@@ -47,7 +46,7 @@ func GetSongForAlbum(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid album ID", c)
 		return
 	}
-	songs, err := service.FindSongsByAlbumId(id)
+	songs, err := songManager.FindSongsByAlbumId(id)
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
 		c.JSON(http.StatusOK, songCollection)
@@ -63,13 +62,13 @@ func GetCoverForAlbum(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "Invalid album ID", c)
 		return
 	}
-	songs, err := service.FindSongsByAlbumId(id)
+	songs, err := database.FindSongsByAlbumId(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "album not found", c)
 		return
 	}
 	if len(songs) > 0 {
-		image, mimetype, _ := service.GetCoverForSong(songs[0])
+		image, mimetype, _ := songManager.GetCoverForSong(songs[0])
 
 		if image != nil {
 			c.Header("Content-Type", mimetype)

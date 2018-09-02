@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	loglevel := service.GetConfiguration().Application.Loglevel
+	loglevel := service.Configuration().Application.Loglevel
 	switch loglevel {
 	case "panic":
 		log.SetLevel(log.DebugLevel)
@@ -22,6 +22,6 @@ func main() {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
 	}
-	service.InitializeDatabase()
-	controller.Run()
+	db, _ := service.New()
+	controller.Run(db)
 }
