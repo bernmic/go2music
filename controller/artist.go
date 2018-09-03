@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"net/http"
-	"strconv"
 )
 
 func initArtist(r *gin.RouterGroup) {
@@ -24,12 +23,7 @@ func GetArtists(c *gin.Context) {
 }
 
 func GetArtist(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid artist ID", c)
-		return
-	}
+	id := c.Param("id")
 	artist, err := artistManager.FindArtistById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "artist not found", c)
@@ -39,12 +33,7 @@ func GetArtist(c *gin.Context) {
 }
 
 func GetSongForArtist(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid artist ID", c)
-		return
-	}
+	id := c.Param("id")
 	songs, err := songManager.FindSongsByArtistId(id)
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}

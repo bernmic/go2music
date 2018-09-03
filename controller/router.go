@@ -5,8 +5,9 @@ import (
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"go2music/model"
-	"go2music/service"
+	"go2music/configuration"
+	"go2music/database"
+	"go2music/mysql"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -14,16 +15,16 @@ import (
 
 var (
 	router          *gin.Engine
-	database        *service.DB
-	albumManager    model.AlbumManager
-	artistManager   model.ArtistManager
-	playlistManager model.PlaylistManager
-	songManager     model.SongManager
-	userManager     model.UserManager
+	db              *mysql.DB
+	albumManager    database.AlbumManager
+	artistManager   database.ArtistManager
+	playlistManager database.PlaylistManager
+	songManager     database.SongManager
+	userManager     database.UserManager
 )
 
 func initRouter() {
-	gin.SetMode(service.Configuration().Application.Mode)
+	gin.SetMode(configuration.Configuration().Application.Mode)
 
 	router = gin.New()
 	router.Use(ginrus.Ginrus(logrus.New(), time.RFC3339, false))
@@ -49,15 +50,15 @@ func initRouter() {
 	}
 }
 
-func Run(db *service.DB) {
-	database = db
+func Run(dbi *mysql.DB) {
+	db = dbi
 	albumManager = db
 	artistManager = db
 	playlistManager = db
 	songManager = db
 	userManager = db
 	initRouter()
-	serverAddress := fmt.Sprintf(":%d", service.Configuration().Server.Port)
+	serverAddress := fmt.Sprintf(":%d", configuration.Configuration().Server.Port)
 	router.Run(serverAddress)
 }
 

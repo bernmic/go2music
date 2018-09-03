@@ -26,12 +26,7 @@ func GetSongs(c *gin.Context) {
 }
 
 func GetSong(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid song ID", c)
-		return
-	}
+	id := c.Param("id")
 	song, err := songManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
@@ -41,12 +36,7 @@ func GetSong(c *gin.Context) {
 }
 
 func StreamSong(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid song ID", c)
-		return
-	}
+	id := c.Param("id")
 	song, err := songManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
@@ -85,12 +75,7 @@ func StreamSong(c *gin.Context) {
 }
 
 func GetCover(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid song ID", c)
-		return
-	}
+	id := c.Param("id")
 	song, err := songManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)

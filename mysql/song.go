@@ -1,11 +1,13 @@
-package service
+package mysql
 
 import (
 	"database/sql"
 	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
+	"go2music/fs"
 	"go2music/model"
 	"path/filepath"
 	"strings"
@@ -14,11 +16,11 @@ import (
 const (
 	createSongTableStatement = `
 	CREATE TABLE IF NOT EXISTS song (
-		id BIGINT NOT NULL AUTO_INCREMENT,
+		id varchar(32),
 		path VARCHAR(255) NOT NULL,
 		title VARCHAR(255),
-		artist_id BIGINT NULL,
-		album_id BIGINT NULL,
+		artist_id varchar(32) NULL,
+		album_id varchar(32) NULL,
 		genre VARCHAR(255) NULL,
 		track INT NULL,
 		yearpublished VARCHAR(32) NULL,
@@ -95,7 +97,9 @@ func (db *DB) initializeSong() {
 }
 
 func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
-	result, err := db.Exec("INSERT IGNORE INTO song (path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, vbr, added, filedate, rating) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	song.Id = xid.New().String()
+	_, err := db.Exec("INSERT IGNORE INTO song (id, path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, vbr, added, filedate, rating) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+		song.Id,
 		song.Path,
 		song.Title,
 		song.Artist.Id,
@@ -114,7 +118,6 @@ func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	song.Id, _ = result.LastInsertId()
 	return &song, err
 }
 
@@ -139,7 +142,7 @@ func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
 	return &song, err
 }
 
-func (db *DB) DeleteSong(id int64) error {
+func (db *DB) DeleteSong(id string) error {
 	_, err := db.Exec("DELETE FROM song WHERE id=?", id)
 	return err
 }
@@ -158,15 +161,15 @@ func (db *DB) SongExists(path string) bool {
 	}
 	return true
 }
-func (db *DB) FindOneSong(id int64) (*model.Song, error) {
+func (db *DB) FindOneSong(id string) (*model.Song, error) {
 	stmt := selectSongStatement + ` 
 		WHERE
 			song.id=?
 	`
 	song := new(model.Song)
-	var artistId sql.NullInt64
+	var artistId sql.NullString
 	var artistName sql.NullString
-	var albumId sql.NullInt64
+	var albumId sql.NullString
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
 	err := db.QueryRow(stmt, id).Scan(
@@ -194,12 +197,12 @@ func (db *DB) FindOneSong(id int64) (*model.Song, error) {
 	}
 	if artistId.Valid {
 		song.Artist = new(model.Artist)
-		song.Artist.Id = artistId.Int64
+		song.Artist.Id = artistId.String
 		song.Artist.Name = artistName.String
 	}
 	if albumId.Valid {
 		song.Album = new(model.Album)
-		song.Album.Id = albumId.Int64
+		song.Album.Id = albumId.String
 		song.Album.Title = albumTitle.String
 		song.Album.Path = albumPath.String
 	}
@@ -213,9 +216,9 @@ func (db *DB) FindAllSongs() ([]*model.Song, error) {
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
-	var artistId sql.NullInt64
+	var artistId sql.NullString
 	var artistName sql.NullString
-	var albumId sql.NullInt64
+	var albumId sql.NullString
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
 	for rows.Next() {
@@ -245,12 +248,12 @@ func (db *DB) FindAllSongs() ([]*model.Song, error) {
 		}
 		if artistId.Valid {
 			song.Artist = new(model.Artist)
-			song.Artist.Id = artistId.Int64
+			song.Artist.Id = artistId.String
 			song.Artist.Name = artistName.String
 		}
 		if albumId.Valid {
 			song.Album = new(model.Album)
-			song.Album.Id = albumId.Int64
+			song.Album.Id = albumId.String
 			song.Album.Title = albumTitle.String
 			song.Album.Path = albumPath.String
 		}
@@ -263,7 +266,7 @@ func (db *DB) FindAllSongs() ([]*model.Song, error) {
 	return songs, err
 }
 
-func (db *DB) FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
+func (db *DB) FindSongsByAlbumId(findAlbumId string) ([]*model.Song, error) {
 	stmt := selectSongStatement + ` WHERE album.id = ?`
 	rows, err := db.Query(stmt, findAlbumId)
 	if err != nil {
@@ -271,9 +274,9 @@ func (db *DB) FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
-	var artistId sql.NullInt64
+	var artistId sql.NullString
 	var artistName sql.NullString
-	var albumId sql.NullInt64
+	var albumId sql.NullString
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
 	for rows.Next() {
@@ -303,12 +306,12 @@ func (db *DB) FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
 		}
 		if artistId.Valid {
 			song.Artist = new(model.Artist)
-			song.Artist.Id = artistId.Int64
+			song.Artist.Id = artistId.String
 			song.Artist.Name = artistName.String
 		}
 		if albumId.Valid {
 			song.Album = new(model.Album)
-			song.Album.Id = albumId.Int64
+			song.Album.Id = albumId.String
 			song.Album.Title = albumTitle.String
 			song.Album.Path = albumPath.String
 		}
@@ -321,7 +324,7 @@ func (db *DB) FindSongsByAlbumId(findAlbumId int64) ([]*model.Song, error) {
 	return songs, err
 }
 
-func (db *DB) FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
+func (db *DB) FindSongsByArtistId(findArtistId string) ([]*model.Song, error) {
 	stmt := selectSongStatement + `WHERE artist.id = ?	`
 	rows, err := db.Query(stmt, findArtistId)
 	if err != nil {
@@ -329,9 +332,9 @@ func (db *DB) FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
-	var artistId sql.NullInt64
+	var artistId sql.NullString
 	var artistName sql.NullString
-	var albumId sql.NullInt64
+	var albumId sql.NullString
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
 	for rows.Next() {
@@ -361,12 +364,12 @@ func (db *DB) FindSongsByArtistId(findArtistId int64) ([]*model.Song, error) {
 		}
 		if artistId.Valid {
 			song.Artist = new(model.Artist)
-			song.Artist.Id = artistId.Int64
+			song.Artist.Id = artistId.String
 			song.Artist.Name = artistName.String
 		}
 		if albumId.Valid {
 			song.Album = new(model.Album)
-			song.Album.Id = albumId.Int64
+			song.Album.Id = albumId.String
 			song.Album.Title = albumTitle.String
 			song.Album.Path = albumPath.String
 		}
@@ -423,9 +426,9 @@ func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
-	var artistId sql.NullInt64
+	var artistId sql.NullString
 	var artistName sql.NullString
-	var albumId sql.NullInt64
+	var albumId sql.NullString
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
 	for rows.Next() {
@@ -455,12 +458,12 @@ func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 		}
 		if artistId.Valid {
 			song.Artist = new(model.Artist)
-			song.Artist.Id = artistId.Int64
+			song.Artist.Id = artistId.String
 			song.Artist.Name = artistName.String
 		}
 		if albumId.Valid {
 			song.Album = new(model.Album)
-			song.Album.Id = albumId.Int64
+			song.Album.Id = albumId.String
 			song.Album.Title = albumTitle.String
 			song.Album.Path = albumPath.String
 		}
@@ -474,11 +477,11 @@ func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 }
 
 func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
-	image, mimetype, err := GetCoverFromID3(song.Path)
+	image, mimetype, err := fs.GetCoverFromID3(song.Path)
 
 	if err != nil {
 		log.Info("try to find cover in path")
-		image, mimetype, err = GetCoverFromPath(filepath.Dir(song.Path))
+		image, mimetype, err = fs.GetCoverFromPath(filepath.Dir(song.Path))
 	}
 
 	return image, mimetype, err

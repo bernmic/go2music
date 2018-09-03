@@ -1,13 +1,12 @@
-package service
+package mysql
 
 import (
 	"database/sql"
 	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"os/user"
-	"strings"
-	"time"
+	"go2music/configuration"
+	"go2music/fs"
 )
 
 type DB struct {
@@ -17,7 +16,7 @@ type DB struct {
 var database DB
 
 func New() (*DB, error) {
-	c := Configuration()
+	c := configuration.Configuration()
 	url := c.Database.Url + "/" + c.Database.Schema
 	db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, url))
 	if err != nil {
@@ -36,33 +35,11 @@ func New() (*DB, error) {
 	database.initializePlaylist()
 	log.Info("Database initialized....")
 
-	go syncWithFilesystem()
+	go fs.SyncWithFilesystem(&database, &database, &database)
 
 	return &database, nil
 }
 
 func Database() *DB {
 	return &database
-}
-
-func syncWithFilesystem() {
-	log.Info("Start scanning filesystem....")
-	start := time.Now()
-	path := replaceVariables(Configuration().Media.Path)
-	result := Filescanner(path, ".mp3")
-	log.Infof("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
-	log.Info("Start sync found files with service...")
-	start = time.Now()
-	ID3Reader(result, &database)
-	log.Infof("Sync finished...in %f seconds", time.Since(start).Seconds())
-}
-
-func replaceVariables(in string) string {
-	homeDir := ""
-	usr, err := user.Current()
-	if err == nil {
-		homeDir = usr.HomeDir
-	}
-
-	return strings.Replace(in, "${home}", homeDir, -1)
 }

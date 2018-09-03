@@ -1,4 +1,4 @@
-package service
+package fs
 
 import (
 	"errors"
@@ -6,12 +6,38 @@ import (
 	"github.com/dhowden/tag"
 	log "github.com/sirupsen/logrus"
 	"github.com/xhenner/mp3-go"
+	"go2music/configuration"
+	"go2music/database"
 	"go2music/model"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
+
+func SyncWithFilesystem(albumManager database.AlbumManager, artistManager database.ArtistManager, songManager database.SongManager) {
+	log.Info("Start scanning filesystem....")
+	start := time.Now()
+	path := replaceVariables(configuration.Configuration().Media.Path)
+	result := Filescanner(path, ".mp3")
+	log.Infof("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
+	log.Info("Start sync found files with service...")
+	start = time.Now()
+	ID3Reader(result, albumManager, artistManager, songManager)
+	log.Infof("Sync finished...in %f seconds", time.Since(start).Seconds())
+}
+
+func replaceVariables(in string) string {
+	homeDir := ""
+	usr, err := user.Current()
+	if err == nil {
+		homeDir = usr.HomeDir
+	}
+
+	return strings.Replace(in, "${home}", homeDir, -1)
+}
 
 func readData(filename string) (*model.Song, error) {
 	f, err := os.Open(filename)
@@ -74,18 +100,18 @@ func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 	return nil, err
 }
 
-func ID3Reader(filenames []string, db *DB) {
+func ID3Reader(filenames []string, albumManager database.AlbumManager, artistManager database.ArtistManager, songManager database.SongManager) {
 	counter := 0
 	for _, filename := range filenames {
-		if !db.SongExists(filename) {
+		if !songManager.SongExists(filename) {
 			song, err := readData(filename)
 			if err == nil {
 				song, err = readMetaData(filename, song)
 			}
 			if err == nil {
-				song.Artist, err = db.CreateIfNotExistsArtist(*song.Artist)
-				song.Album, err = db.CreateIfNotExistsAlbum(*song.Album)
-				song, err = db.CreateSong(*song)
+				song.Artist, err = artistManager.CreateIfNotExistsArtist(*song.Artist)
+				song.Album, err = albumManager.CreateIfNotExistsAlbum(*song.Album)
+				song, err = songManager.CreateSong(*song)
 				if err != nil {
 					log.Fatalf("Error creating song: %v", err)
 				}

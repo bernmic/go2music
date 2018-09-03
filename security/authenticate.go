@@ -1,4 +1,4 @@
-package service
+package security
 
 import (
 	"encoding/base64"
@@ -7,7 +7,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
+	"go2music/database"
 	"go2music/model"
+	"go2music/mysql"
 	"net/http"
 	"strings"
 	"time"
@@ -41,7 +43,7 @@ func GenerateJWT(user *model.User) (tokenString string, err error) {
 	return tokenString, err
 }
 
-func (db *DB) AuthenticateRequest(authHeader string) (*model.User, error) {
+func AuthenticateRequest(authHeader string, userManager database.UserManager) (*model.User, error) {
 	splittedHeader := strings.Split(authHeader, " ")
 	if len(splittedHeader) != 2 || splittedHeader[0] != "Basic" {
 		return nil, errors.New("bad request")
@@ -53,11 +55,11 @@ func (db *DB) AuthenticateRequest(authHeader string) (*model.User, error) {
 	}
 	userpwd := strings.Split(string(data), ":")
 
-	user, err := db.FindUserByUsername(userpwd[0])
+	user, err := userManager.FindUserByUsername(userpwd[0])
 	if err != nil {
 		return nil, errors.New("usernameand/or password wrong")
 	}
-	if CheckPasswordHash(userpwd[1], user.Password) {
+	if mysql.CheckPasswordHash(userpwd[1], user.Password) {
 		return user, nil
 	}
 	return nil, errors.New("username and/or password wrong")
@@ -90,11 +92,11 @@ func AuthenticateJWTString(authHeader string) (username string, valid bool) {
 	return "", false
 }
 
-func (db *DB) GetPrincipal(username string) (*model.User, error) {
+func GetPrincipal(username string, userManager database.UserManager) (*model.User, error) {
 	user, found := usersCache.Get(username)
 	if !found {
 		var err error
-		user, err = db.FindUserByUsername(username)
+		user, err = userManager.FindUserByUsername(username)
 		if err != nil {
 			return nil, err
 		}

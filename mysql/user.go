@@ -1,16 +1,17 @@
-package service
+package mysql
 
 import (
 	"fmt"
+	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var createUserTableStatement = `
+const createUserTableStatement = `
 	CREATE TABLE IF NOT EXISTS 
 		user (
-			id BIGINT NOT NULL AUTO_INCREMENT, 
+			id varchar(32), 
 			username varchar(255) NOT NULL, 
 			password varchar(255) NOT NULL, 
 			role varchar(255) NOT NULL, 
@@ -60,8 +61,10 @@ func (db *DB) initializeUser() {
 }
 
 func (db *DB) CreateUser(user model.User) (*model.User, error) {
-	result, err := db.Exec(
-		"INSERT IGNORE INTO user (username,password,role,email) VALUES(?,?,?,?)",
+	user.Id = xid.New().String()
+	_, err := db.Exec(
+		"INSERT IGNORE INTO user (id,username,password,role,email) VALUES(?,?,?,?,?)",
+		user.Id,
 		user.Username,
 		user.Password,
 		user.Role,
@@ -69,7 +72,6 @@ func (db *DB) CreateUser(user model.User) (*model.User, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	user.Id, _ = result.LastInsertId()
 	return &user, err
 }
 
@@ -78,8 +80,10 @@ func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 	if findErr == nil {
 		return existingUser, findErr
 	}
-	result, err := db.Exec(
-		"INSERT INTO user (username,password,role,email) VALUES(?,?,?,?)",
+	user.Id = xid.New().String()
+	_, err := db.Exec(
+		"INSERT INTO user (id,username,password,role,email) VALUES(?,?,?,?,?)",
+		user.Id,
 		user.Username,
 		user.Password,
 		user.Role,
@@ -87,7 +91,6 @@ func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	user.Id, _ = result.LastInsertId()
 	return &user, err
 }
 
@@ -102,12 +105,12 @@ func (db *DB) UpdateUser(user model.User) (*model.User, error) {
 	return &user, err
 }
 
-func (db *DB) DeleteUser(id int64) error {
+func (db *DB) DeleteUser(id string) error {
 	_, err := db.Exec("DELETE FROM user WHERE id=?", id)
 	return err
 }
 
-func (db *DB) FindUserById(id int64) (*model.User, error) {
+func (db *DB) FindUserById(id string) (*model.User, error) {
 	user := new(model.User)
 	err := db.QueryRow(
 		"SELECT id,username, password, role, email FROM user WHERE id=?", id).Scan(

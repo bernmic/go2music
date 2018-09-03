@@ -3,7 +3,16 @@ package mongodb
 import (
 	"errors"
 	"github.com/globalsign/mgo"
+	"go2music/configuration"
 	"go2music/service"
+)
+
+const (
+	COLLECTION_ALBUM    = "album"
+	COLLECTION_ARTIST   = "artist"
+	COLLECTION_PLAYLIST = "playlist"
+	COLLECTION_SONG     = "song"
+	COLLECTION_USER     = "user"
 )
 
 type MongoDB struct {
@@ -13,7 +22,7 @@ type MongoDB struct {
 var database MongoDB
 
 func New() (*MongoDB, error) {
-	c := service.Configuration()
+	c := configuration.Configuration()
 	session, err := mgo.Dial(c.Database.Url)
 	if err != nil {
 		return nil, errors.New("unsable to open MongoDB database :" + c.Database.Url)

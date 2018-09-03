@@ -1,7 +1,8 @@
-package service
+package mysql
 
 import (
 	"fmt"
+	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
 )
@@ -10,7 +11,7 @@ func (db *DB) initializePlaylist() {
 	_, err := db.Query("SELECT 1 FROM playlist LIMIT 1")
 	if err != nil {
 		log.Info("Table playlist does not exists. Creating now.")
-		stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS playlist (id BIGINT NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, query varchar(255) NOT NULL, PRIMARY KEY (id));")
+		stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS playlist (id varchar(32), name varchar(255) NOT NULL, query varchar(255) NOT NULL, PRIMARY KEY (id));")
 		if err != nil {
 			log.Error("Error creating playlist table")
 			panic(fmt.Sprintf("%v", err))
@@ -38,11 +39,11 @@ func (db *DB) initializePlaylist() {
 }
 
 func (db *DB) CreatePlaylist(playlist model.Playlist) (*model.Playlist, error) {
-	result, err := db.Exec("INSERT IGNORE INTO playlist (name,query) VALUES(?,?)", playlist.Name, playlist.Query)
+	playlist.Id = xid.New().String()
+	_, err := db.Exec("INSERT IGNORE INTO playlist (id,name,query) VALUES(?,?,?)", playlist.Id, playlist.Name, playlist.Query)
 	if err != nil {
 		log.Fatal(err)
 	}
-	playlist.Id, _ = result.LastInsertId()
 	return &playlist, err
 }
 
@@ -51,11 +52,11 @@ func (db *DB) CreateIfNotExistsPlaylist(playlist model.Playlist) (*model.Playlis
 	if findErr == nil {
 		return existingPlaylist, findErr
 	}
-	result, err := db.Exec("INSERT INTO playlist (name,query) VALUES(?,?)", playlist.Name, playlist.Query)
+	playlist.Id = xid.New().String()
+	_, err := db.Exec("INSERT INTO playlist (id,name,query) VALUES(?,?,?)", playlist.Id, playlist.Name, playlist.Query)
 	if err != nil {
 		log.Fatal(err)
 	}
-	playlist.Id, _ = result.LastInsertId()
 	return &playlist, err
 }
 
@@ -64,12 +65,12 @@ func (db *DB) UpdatePlaylist(playlist model.Playlist) (*model.Playlist, error) {
 	return &playlist, err
 }
 
-func (db *DB) DeletePlaylist(id int64) error {
+func (db *DB) DeletePlaylist(id string) error {
 	_, err := db.Exec("DELETE FROM playlist WHERE id=?", id)
 	return err
 }
 
-func (db *DB) FindPlaylistById(id int64) (*model.Playlist, error) {
+func (db *DB) FindPlaylistById(id string) (*model.Playlist, error) {
 	playlist := new(model.Playlist)
 	err := db.QueryRow("SELECT id,name,query FROM playlist WHERE id=?", id).Scan(&playlist.Id, &playlist.Name, &playlist.Query)
 	if err != nil {

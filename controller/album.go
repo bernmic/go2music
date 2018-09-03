@@ -25,12 +25,7 @@ func GetAlbums(c *gin.Context) {
 }
 
 func GetAlbum(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid album ID", c)
-		return
-	}
+	id := c.Param("id")
 	album, err := albumManager.FindAlbumById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "album not found", c)
@@ -40,12 +35,7 @@ func GetAlbum(c *gin.Context) {
 }
 
 func GetSongForAlbum(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid album ID", c)
-		return
-	}
+	id := c.Param("id")
 	songs, err := songManager.FindSongsByAlbumId(id)
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
@@ -56,13 +46,8 @@ func GetSongForAlbum(c *gin.Context) {
 }
 
 func GetCoverForAlbum(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid album ID", c)
-		return
-	}
-	songs, err := database.FindSongsByAlbumId(id)
+	id := c.Param("id")
+	songs, err := songManager.FindSongsByAlbumId(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "album not found", c)
 		return

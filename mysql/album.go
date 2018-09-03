@@ -1,7 +1,8 @@
-package service
+package mysql
 
 import (
 	"fmt"
+	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
 )
@@ -10,7 +11,7 @@ func (db *DB) initializeAlbum() {
 	_, err := db.Query("SELECT 1 FROM album LIMIT 1")
 	if err != nil {
 		log.Info("Table album does not exists. Creating now.")
-		stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS album (id BIGINT NOT NULL AUTO_INCREMENT, title varchar(255) NOT NULL, path varchar(255) NOT NULL, PRIMARY KEY (id));")
+		stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS album (id varchar(32), title varchar(255) NOT NULL, path varchar(255) NOT NULL, PRIMARY KEY (id));")
 		if err != nil {
 			log.Error("Error creating album table")
 			panic(fmt.Sprintf("%v", err))
@@ -38,24 +39,24 @@ func (db *DB) initializeAlbum() {
 }
 
 func (db *DB) CreateAlbum(album model.Album) (*model.Album, error) {
-	result, err := db.Exec("INSERT IGNORE INTO album (title, path) VALUES(?, ?)", album.Title, album.Path)
+	album.Id = xid.New().String()
+	_, err := db.Exec("INSERT IGNORE INTO album (id, title, path) VALUES(?, ?, ?)", album.Id, album.Title, album.Path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	album.Id, _ = result.LastInsertId()
 	return &album, err
 }
 
 func (db *DB) CreateIfNotExistsAlbum(album model.Album) (*model.Album, error) {
+	album.Id = xid.New().String()
 	existingAlbum, findErr := db.FindAlbumByPath(album.Path)
 	if findErr == nil {
 		return existingAlbum, findErr
 	}
-	result, err := db.Exec("INSERT INTO album (title, path) VALUES(?, ?)", album.Title, album.Path)
+	_, err := db.Exec("INSERT INTO album (id, title, path) VALUES(?, ?, ?)", album.Id, album.Title, album.Path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	album.Id, _ = result.LastInsertId()
 	return &album, err
 }
 
@@ -64,12 +65,12 @@ func (db *DB) UpdateAlbum(album model.Album) (*model.Album, error) {
 	return &album, err
 }
 
-func (db *DB) DeleteAlbum(id int64) error {
+func (db *DB) DeleteAlbum(id string) error {
 	_, err := db.Exec("DELETE FROM album WHERE id=?", id)
 	return err
 }
 
-func (db *DB) FindAlbumById(id int64) (*model.Album, error) {
+func (db *DB) FindAlbumById(id string) (*model.Album, error) {
 	album := new(model.Album)
 	err := db.QueryRow("SELECT id,title,path FROM album WHERE id=?", id).Scan(&album.Id, &album.Title, &album.Path)
 	if err != nil {

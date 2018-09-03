@@ -5,7 +5,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"net/http"
-	"strconv"
 )
 
 func initUser(r *gin.RouterGroup) {
@@ -26,12 +25,7 @@ func GetUsers(c *gin.Context) {
 }
 
 func GetUser(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid user ID", c)
-		return
-	}
+	id := c.Param("id")
 	user, err := userManager.FindUserById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "user not found", c)
@@ -73,12 +67,7 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid user ID", c)
-		return
-	}
+	id := c.Param("id")
 	if userManager.DeleteUser(id) != nil {
 		respondWithError(http.StatusBadRequest, "cannot delete user", c)
 		return

@@ -2,12 +2,13 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
+	"go2music/configuration"
 	"go2music/controller"
-	"go2music/service"
+	"go2music/mysql"
 )
 
 func main() {
-	loglevel := service.Configuration().Application.Loglevel
+	loglevel := configuration.Configuration().Application.Loglevel
 	switch loglevel {
 	case "panic":
 		log.SetLevel(log.DebugLevel)
@@ -22,6 +23,6 @@ func main() {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
 	}
-	db, _ := service.New()
+	db, _ := mysql.New()
 	controller.Run(db)
 }

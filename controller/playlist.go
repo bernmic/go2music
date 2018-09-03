@@ -5,7 +5,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"net/http"
-	"strconv"
 )
 
 func initPlaylist(r *gin.RouterGroup) {
@@ -28,12 +27,7 @@ func GetPlaylists(c *gin.Context) {
 }
 
 func GetPlaylist(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid playlist ID", c)
-		return
-	}
+	id := c.Param("id")
 	playlist, err := playlistManager.FindPlaylistById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
@@ -43,13 +37,8 @@ func GetPlaylist(c *gin.Context) {
 }
 
 func GetSongsForPlaylist(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid playlist ID", c)
-		return
-	}
-	playlist, err := database.FindPlaylistById(id)
+	id := c.Param("id")
+	playlist, err := playlistManager.FindPlaylistById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -97,12 +86,7 @@ func UpdatePlaylist(c *gin.Context) {
 }
 
 func DeletePlaylist(c *gin.Context) {
-	idString := c.Param("id")
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		respondWithError(http.StatusBadRequest, "Invalid playlist ID", c)
-		return
-	}
+	id := c.Param("id")
 	if playlistManager.DeletePlaylist(id) != nil {
 		respondWithError(http.StatusBadRequest, "cannot delete playlist", c)
 		return

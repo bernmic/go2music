@@ -10,4 +10,4 @@ database:
   type: mysql
   url: tcp(localhost:3306)
 media:
-  path: /Users/bernmic/Music
+  path: d:/music

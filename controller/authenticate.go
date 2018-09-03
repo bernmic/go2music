@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"go2music/service"
+	"go2music/security"
 	"net/http"
 )
 
@@ -18,12 +18,12 @@ func authenticate(c *gin.Context) {
 		respondWithError(http.StatusUnauthorized, "missing token", c)
 		return
 	}
-	user, err := database.AuthenticateRequest(authHeader)
+	user, err := security.AuthenticateRequest(authHeader, userManager)
 	if err != nil {
 		respondWithError(http.StatusUnauthorized, "username / password wrong", c)
 		return
 	}
-	token, err := service.GenerateJWT(user)
+	token, err := security.GenerateJWT(user)
 	if err != nil {
 		respondWithError(http.StatusInternalServerError, "unknown error", c)
 		return
@@ -40,10 +40,10 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 				authHeader = "Bearer " + bearer
 			}
 		}
-		username, b := service.AuthenticateJWTString(authHeader)
+		username, b := security.AuthenticateJWTString(authHeader)
 		if b {
-			user, err := database.GetPrincipal(username)
-			if err == nil && (user.Role == service.UserRole || user.Role == service.AdminRole) {
+			user, err := security.GetPrincipal(username, userManager)
+			if err == nil && (user.Role == security.UserRole || user.Role == security.AdminRole) {
 				c.Set("principal", user)
 				log.Println("INFO Authorization OK - " + username + " with role " + user.Role)
 				c.Next()
@@ -60,10 +60,10 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 		if bearer != "" {
 			c.Header("Authorization", "Bearer "+bearer)
 		}
-		username, b := service.AuthenticateJWTString(c.GetHeader("Authorization"))
+		username, b := security.AuthenticateJWTString(c.GetHeader("Authorization"))
 		if b {
-			user, err := database.GetPrincipal(username)
-			if err == nil && (user.Role == service.AdminRole) {
+			user, err := security.GetPrincipal(username, userManager)
+			if err == nil && (user.Role == security.AdminRole) {
 				c.Set("principal", user)
 				log.Info("Authorization OK - " + username + " with role " + user.Role)
 				c.Next()
