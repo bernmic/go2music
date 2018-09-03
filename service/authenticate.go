@@ -82,7 +82,7 @@ func AuthenticateJWTString(authHeader string) (username string, valid bool) {
 		return []byte("secret"), nil
 	})
 
-	if token.Valid {
+	if token != nil && token.Valid {
 		return claims.User, true
 	} else {
 		return "", false

@@ -7,6 +7,7 @@ type Server struct {
 type Database struct {
 	Username string `yaml:"username,omitempty"`
 	Password string `yaml:"password,omitempty"`
+	Schema   string `yaml:"schema,omitempty"`
 	Type     string `yaml:"type,omitempty"`
 	Url      string `yaml:"url,omitempty"`
 }

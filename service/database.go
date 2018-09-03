@@ -18,9 +18,10 @@ var database DB
 
 func New() (*DB, error) {
 	c := Configuration()
-	db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, c.Database.Url))
+	url := c.Database.Url + "/" + c.Database.Schema
+	db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, url))
 	if err != nil {
-		log.Errorf("Error opening service " + c.Database.Url)
+		log.Errorf("Error opening service " + url)
 		panic(fmt.Sprintf("%v", err))
 	}
 	if err := db.Ping(); err != nil {

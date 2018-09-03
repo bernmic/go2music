@@ -52,10 +52,14 @@ func Configuration() *model.Config {
 			if config.Database.Password == "" {
 				config.Database.Password = "go2music"
 			}
+			config.Database.Schema = os.Getenv("GO2MUSIC_SCHEMA")
+			if config.Database.Schema == "" {
+				config.Database.Schema = "go2music"
+			}
 			config.Database.Url = os.Getenv("GO2MUSIC_DBURL")
 			if config.Database.Url == "" {
 				//dburl = "tcp(newmedia:3307)/go2music"
-				config.Database.Url = "tcp(localhost:3306)/go2music"
+				config.Database.Url = "tcp(localhost:3306)"
 			}
 			config.Database.Type = os.Getenv("GO2MUSIC_DBTYPE")
 			if config.Database.Type == "" {

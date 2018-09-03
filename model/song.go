@@ -2,7 +2,7 @@ package model
 
 type Song struct {
 	Id            int64   `json:"songId,omitempty"`
-	Path          string  `json:"path,omitempty"`
+	Path          string  `json:"-"`
 	Title         string  `json:"title,omitempty"`
 	Artist        *Artist `json:"artist"`
 	Album         *Album  `json:"album"`

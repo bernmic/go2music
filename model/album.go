@@ -3,7 +3,7 @@ package model
 type Album struct {
 	Id    int64  `json:"albumId,omitempty"`
 	Title string `json:"title,omitempty"`
-	Path  string `json:"path,omitempty"`
+	Path  string `json:"-"`
 }
 
 type AlbumCollection struct {
