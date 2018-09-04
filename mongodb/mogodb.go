@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/globalsign/mgo"
 	"go2music/configuration"
-	"go2music/service"
 )
 
 const (
