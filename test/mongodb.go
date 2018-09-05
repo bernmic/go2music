@@ -22,7 +22,7 @@ func main() {
 
 	albums, err := db.FindAllAlbums()
 
-	fmt.Println("Len = %d\n", len(albums))
+	fmt.Printf("Len = %d\n", len(albums))
 	for _, album := range albums {
 		fmt.Printf("%v\n", album)
 	}
