@@ -38,7 +38,7 @@ func (db *DB) initializeAlbum() {
 	}
 }
 
-func (db *DB) CreateAlbum(album model.Album) (model.Album, error) {
+func (db *DB) CreateAlbum(album *model.Album) (*model.Album, error) {
 	album.Id = xid.New().String()
 	_, err := db.Exec("INSERT IGNORE INTO album (id, title, path) VALUES(?, ?, ?)", album.Id, album.Title, album.Path)
 	if err != nil {
@@ -47,7 +47,7 @@ func (db *DB) CreateAlbum(album model.Album) (model.Album, error) {
 	return album, err
 }
 
-func (db *DB) CreateIfNotExistsAlbum(album model.Album) (model.Album, error) {
+func (db *DB) CreateIfNotExistsAlbum(album *model.Album) (*model.Album, error) {
 	album.Id = xid.New().String()
 	existingAlbum, findErr := db.FindAlbumByPath(album.Path)
 	if findErr == nil {
@@ -60,7 +60,7 @@ func (db *DB) CreateIfNotExistsAlbum(album model.Album) (model.Album, error) {
 	return album, err
 }
 
-func (db *DB) UpdateAlbum(album model.Album) (model.Album, error) {
+func (db *DB) UpdateAlbum(album *model.Album) (*model.Album, error) {
 	_, err := db.Exec("UPDATE album SET title=?, path=? WHERE id=?", album.Title, album.Path, album.Id)
 	return album, err
 }
@@ -70,28 +70,28 @@ func (db *DB) DeleteAlbum(id string) error {
 	return err
 }
 
-func (db *DB) FindAlbumById(id string) (model.Album, error) {
+func (db *DB) FindAlbumById(id string) (*model.Album, error) {
 	album := model.Album{}
 	err := db.QueryRow("SELECT id,title,path FROM album WHERE id=?", id).Scan(&album.Id, &album.Title, &album.Path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return album, err
+	return &album, err
 }
 
-func (db *DB) FindAlbumByPath(path string) (model.Album, error) {
+func (db *DB) FindAlbumByPath(path string) (*model.Album, error) {
 	album := model.Album{}
 	err := db.QueryRow("SELECT id,title,path FROM album WHERE path=?", path).Scan(&album.Id, &album.Title, &album.Path)
-	return album, err
+	return &album, err
 }
 
-func (db *DB) FindAllAlbums() ([]model.Album, error) {
+func (db *DB) FindAllAlbums() ([]*model.Album, error) {
 	rows, err := db.Query("SELECT id, title, path FROM album")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	albums := make([]model.Album, 0)
+	albums := make([]*model.Album, 0)
 	for rows.Next() {
 		album := new(model.Album)
 		err := rows.Scan(&album.Id, &album.Title, &album.Path)

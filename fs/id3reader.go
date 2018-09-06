@@ -110,7 +110,7 @@ func ID3Reader(filenames []string, albumManager database.AlbumManager, artistMan
 			}
 			if err == nil {
 				song.Artist, err = artistManager.CreateIfNotExistsArtist(*song.Artist)
-				song.Album, err = albumManager.CreateIfNotExistsAlbum(*song.Album)
+				song.Album, err = albumManager.CreateIfNotExistsAlbum(song.Album)
 				song, err = songManager.CreateSong(*song)
 				if err != nil {
 					log.Fatalf("Error creating song: %v", err)
