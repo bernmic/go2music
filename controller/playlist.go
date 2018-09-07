@@ -17,7 +17,12 @@ func initPlaylist(r *gin.RouterGroup) {
 }
 
 func GetPlaylists(c *gin.Context) {
-	playlists, err := playlistManager.FindAllPlaylists()
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
+	playlists, err := playlistManager.FindAllPlaylists(user.(*model.User).Id)
 	if err == nil {
 		playlistCollection := model.PlaylistCollection{Playlists: playlists}
 		c.JSON(http.StatusOK, playlistCollection)
@@ -27,8 +32,13 @@ func GetPlaylists(c *gin.Context) {
 }
 
 func GetPlaylist(c *gin.Context) {
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
 	id := c.Param("id")
-	playlist, err := playlistManager.FindPlaylistById(id)
+	playlist, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -37,14 +47,25 @@ func GetPlaylist(c *gin.Context) {
 }
 
 func GetSongsForPlaylist(c *gin.Context) {
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
 	id := c.Param("id")
-	playlist, err := playlistManager.FindPlaylistById(id)
+	playlist, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
 	}
 
-	songs, err := songManager.FindSongsByPlaylistQuery(playlist.Query)
+	var songs []*model.Song
+
+	if playlist.Query != "" {
+		songs, err = songManager.FindSongsByPlaylistQuery(playlist.Query)
+	} else {
+		songs, err = songManager.FindSongsByPlaylist(playlist.Id)
+	}
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
 		c.JSON(http.StatusOK, songCollection)
@@ -54,7 +75,13 @@ func GetSongsForPlaylist(c *gin.Context) {
 }
 
 func CreatePlaylist(c *gin.Context) {
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
 	playlist := &model.Playlist{}
+	playlist.User = *(user.(*model.User))
 	err := c.BindJSON(playlist)
 	if err != nil {
 		log.Warn("cannot decode request", err)
@@ -70,7 +97,13 @@ func CreatePlaylist(c *gin.Context) {
 }
 
 func UpdatePlaylist(c *gin.Context) {
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
 	playlist := &model.Playlist{}
+	playlist.User = *(user.(*model.User))
 	err := c.BindJSON(playlist)
 	if err != nil {
 		log.Warn("cannot decode request", err)
@@ -86,8 +119,13 @@ func UpdatePlaylist(c *gin.Context) {
 }
 
 func DeletePlaylist(c *gin.Context) {
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
 	id := c.Param("id")
-	if playlistManager.DeletePlaylist(id) != nil {
+	if playlistManager.DeletePlaylist(id, user.(*model.User).Id) != nil {
 		respondWithError(http.StatusBadRequest, "cannot delete playlist", c)
 		return
 	}

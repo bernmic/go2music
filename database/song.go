@@ -11,6 +11,7 @@ type SongManager interface {
 	FindAllSongs() ([]*model.Song, error)
 	FindSongsByAlbumId(findAlbumId string) ([]*model.Song, error)
 	FindSongsByArtistId(findArtistId string) ([]*model.Song, error)
+	FindSongsByPlaylist(playlistId string) ([]*model.Song, error)
 	FindSongsByPlaylistQuery(query string) ([]*model.Song, error)
 	GetCoverForSong(song *model.Song) ([]byte, string, error)
 }

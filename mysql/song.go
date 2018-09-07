@@ -476,6 +476,64 @@ func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 	return songs, err
 }
 
+func (db *DB) FindSongsByPlaylist(playlistId string) ([]*model.Song, error) {
+	stmt := selectSongStatement + `WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)	`
+	rows, err := db.Query(stmt, playlistId)
+	if err != nil {
+		log.Fatal("FATAL Error reading song table", err)
+	}
+	defer rows.Close()
+	songs := make([]*model.Song, 0)
+	var artistId sql.NullString
+	var artistName sql.NullString
+	var albumId sql.NullString
+	var albumTitle sql.NullString
+	var albumPath sql.NullString
+	for rows.Next() {
+		song := new(model.Song)
+		err := rows.Scan(
+			&song.Id,
+			&song.Path,
+			&song.Title,
+			&song.Genre,
+			&song.Track,
+			&song.YearPublished,
+			&song.Bitrate,
+			&song.Samplerate,
+			&song.Duration,
+			&song.Mode,
+			&song.Vbr,
+			&song.Added,
+			&song.Filedate,
+			&song.Rating,
+			&artistId,
+			&artistName,
+			&albumId,
+			&albumTitle,
+			&albumPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if artistId.Valid {
+			song.Artist = new(model.Artist)
+			song.Artist.Id = artistId.String
+			song.Artist.Name = artistName.String
+		}
+		if albumId.Valid {
+			song.Album = new(model.Album)
+			song.Album.Id = albumId.String
+			song.Album.Title = albumTitle.String
+			song.Album.Path = albumPath.String
+		}
+		songs = append(songs, song)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return songs, err
+}
+
 func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
 	image, mimetype, err := fs.GetCoverFromID3(song.Path)
 
