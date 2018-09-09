@@ -37,6 +37,10 @@ func Configuration() *model.Config {
 			config.Application.Loglevel = "info"
 		}
 
+		if config.Application.Cors == "" {
+			config.Application.Cors = "direct"
+		}
+
 		if config.Server.Port == 0 {
 			config.Server.Port = 8080
 		}

@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"go2music/configuration"
 	"go2music/database"
 	"go2music/mysql"
 	"io/ioutil"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -27,12 +28,17 @@ func initRouter() {
 	gin.SetMode(configuration.Configuration().Application.Mode)
 
 	router = gin.New()
-	router.Use(ginrus.Ginrus(logrus.New(), time.RFC3339, false))
+	if configuration.Configuration().Application.Cors == "all" {
+		router.Use(CorsMiddleware())
+	}
+
+	router.Use(ginrus.Ginrus(log.New(), time.RFC3339, false))
 	router.Use(gin.Recovery())
+
 	staticRoutes("/", "./static", &router.RouterGroup)
 	router.Static("/assets", "./static/assets")
 
-	initAuthentication()
+	initAuthentication(&router.RouterGroup)
 
 	api := router.Group("/api/")
 	api.Use(TokenAuthMiddleware())
@@ -84,6 +90,19 @@ func staticRoutes(relativePath, root string, r *gin.RouterGroup) {
 			}
 		}
 	} else {
-		logrus.Warn("directory not found: " + root)
+		log.Warn("directory not found: " + root)
+	}
+}
+
+func CorsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Headers", "Authorization, Content-type")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, HEAD")
+		if c.Request.Method == "OPTIONS" {
+			c.Data(http.StatusOK, "text/plain", nil)
+			c.Abort()
+		}
+		c.Next()
 	}
 }

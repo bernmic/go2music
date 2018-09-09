@@ -19,6 +19,7 @@ type Media struct {
 type Application struct {
 	Mode     string `yaml:"mode,omitempty"`
 	Loglevel string `yaml:"loglevel,omitempty"`
+	Cors     string `yaml:"cors,omitempty"`
 }
 
 type Config struct {

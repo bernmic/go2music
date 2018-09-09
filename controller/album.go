@@ -38,7 +38,15 @@ func GetSongForAlbum(c *gin.Context) {
 	id := c.Param("id")
 	songs, err := songManager.FindSongsByAlbumId(id)
 	if err == nil {
-		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		var description string
+		if len(songs) > 0 {
+			if allSameArtist(songs) {
+				description = songs[0].Artist.Name + " - " + songs[0].Album.Title
+			} else {
+				description = songs[0].Album.Title
+			}
+		}
+		songCollection := model.SongCollection{Songs: songs, Description: description, Paging: model.Paging{Page: 1, Size: len(songs)}}
 		c.JSON(http.StatusOK, songCollection)
 		return
 	}
@@ -63,4 +71,13 @@ func GetCoverForAlbum(c *gin.Context) {
 		}
 	}
 	respondWithError(http.StatusNotFound, "No cover found", c)
+}
+
+func allSameArtist(s []*model.Song) bool {
+	for i := 1; i < len(s); i++ {
+		if s[i].Artist.Name != s[0].Artist.Name {
+			return false
+		}
+	}
+	return true
 }

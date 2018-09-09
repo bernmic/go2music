@@ -10,4 +10,7 @@ type PlaylistManager interface {
 	FindPlaylistById(id string, user_id string) (*model.Playlist, error)
 	FindPlaylistByName(name string, user_id string) (*model.Playlist, error)
 	FindAllPlaylists(user_id string) ([]*model.Playlist, error)
+	AddSongsToPlaylist(playlistId string, songIds []string) int
+	RemoveSongsFromPlaylist(playlistId string, songIds []string) int
+	SetSongsOfPlaylist(playlistId string, songIds []string) (int, int)
 }

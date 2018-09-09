@@ -1,8 +1,9 @@
 application:
   mode: debug
   loglevel: debug
+  cors: all
 server:
-  port: 8080
+  port: 7000
 database:
   username: go2music
   password: go2music

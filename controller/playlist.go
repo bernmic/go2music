@@ -7,10 +7,15 @@ import (
 	"net/http"
 )
 
+type songIds []string
+
 func initPlaylist(r *gin.RouterGroup) {
 	r.GET("/playlist", GetPlaylists)
 	r.GET("/playlist/:id", GetPlaylist)
 	r.GET("/playlist/:id/songs", GetSongsForPlaylist)
+	r.POST("/playlist/:id/songs", AddSongsToPlaylist)
+	r.PUT("/playlist/:id/songs", SetSongsOfPlaylist)
+	r.DELETE("/playlist/:id/songs", RemoveSongsFromPlaylist)
 	r.POST("/playlist", CreatePlaylist)
 	r.PUT("/playlist", UpdatePlaylist)
 	r.DELETE("/playlist/:id", DeletePlaylist)
@@ -67,7 +72,7 @@ func GetSongsForPlaylist(c *gin.Context) {
 		songs, err = songManager.FindSongsByPlaylist(playlist.Id)
 	}
 	if err == nil {
-		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		songCollection := model.SongCollection{Songs: songs, Description: "Playlist: " + playlist.Name, Paging: model.Paging{Page: 1, Size: len(songs)}}
 		c.JSON(http.StatusOK, songCollection)
 		return
 	}
@@ -130,4 +135,73 @@ func DeletePlaylist(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, "")
+}
+
+func AddSongsToPlaylist(c *gin.Context) {
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
+	id := c.Param("id")
+	_, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "playlist not found", c)
+		return
+	}
+	songIdsToAdd := songIds{}
+	err = c.BindJSON(&songIdsToAdd)
+	if err != nil {
+		log.Warn("cannot decode request", err)
+		respondWithError(http.StatusBadRequest, "bad request", c)
+		return
+	}
+	addedSongs := playlistManager.AddSongsToPlaylist(id, songIdsToAdd)
+	c.JSON(http.StatusOK, gin.H{"added": addedSongs})
+}
+
+func RemoveSongsFromPlaylist(c *gin.Context) {
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
+	id := c.Param("id")
+	_, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "playlist not found", c)
+		return
+	}
+	songIdsToRemove := songIds{}
+	err = c.BindJSON(&songIdsToRemove)
+	if err != nil {
+		log.Warn("cannot decode request", err)
+		respondWithError(http.StatusBadRequest, "bad request", c)
+		return
+	}
+	removedSongs := playlistManager.RemoveSongsFromPlaylist(id, songIdsToRemove)
+	c.JSON(http.StatusOK, gin.H{"removed": removedSongs})
+}
+
+func SetSongsOfPlaylist(c *gin.Context) {
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
+	id := c.Param("id")
+	_, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "playlist not found", c)
+		return
+	}
+	songIdsToSet := songIds{}
+	err = c.BindJSON(&songIdsToSet)
+	if err != nil {
+		log.Warn("cannot decode request", err)
+		respondWithError(http.StatusBadRequest, "bad request", c)
+		return
+	}
+	removedSongs, addedSongs := playlistManager.SetSongsOfPlaylist(id, songIdsToSet)
+	c.JSON(http.StatusOK, gin.H{"removed": removedSongs, "added": addedSongs})
 }

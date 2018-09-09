@@ -7,9 +7,9 @@ import (
 	"net/http"
 )
 
-func initAuthentication() {
-	router.POST("/api/authenticate", authenticate)
-	router.GET("/token", authenticate)
+func initAuthentication(r *gin.RouterGroup) {
+	r.POST("/api/authenticate", authenticate)
+	r.GET("/token", authenticate)
 }
 
 func authenticate(c *gin.Context) {

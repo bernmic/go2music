@@ -36,7 +36,11 @@ func GetSongForArtist(c *gin.Context) {
 	id := c.Param("id")
 	songs, err := songManager.FindSongsByArtistId(id)
 	if err == nil {
-		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		var description string
+		if len(songs) > 0 {
+			description = "Artist: " + songs[0].Artist.Name
+		}
+		songCollection := model.SongCollection{Songs: songs, Description: description, Paging: model.Paging{Page: 1, Size: len(songs)}}
 		c.JSON(http.StatusOK, songCollection)
 		return
 	}

@@ -20,6 +20,7 @@ type Song struct {
 }
 
 type SongCollection struct {
-	Songs  []*Song `json:"songs,omitempty"`
-	Paging Paging  `json:"paging,omitempty"`
+	Songs       []*Song `json:"songs,omitempty"`
+	Description string  `json:"description,omitempty"`
+	Paging      Paging  `json:"paging,omitempty"`
 }

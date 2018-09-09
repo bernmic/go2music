@@ -151,3 +151,66 @@ func (db *DB) FindAllPlaylists(user_id string) ([]*model.Playlist, error) {
 
 	return playlists, err
 }
+
+func (db *DB) AddSongsToPlaylist(playlistId string, songIds []string) int {
+	var count int
+	tx, err := db.Begin()
+	if err != nil {
+		log.Errorf("Error beginning transaction: %v", err)
+	}
+	defer tx.Rollback()
+	for _, songId := range songIds {
+		_, err := tx.Exec("INSERT IGNORE INTO playlist_song (playlist_id,song_id) VALUES(?,?)", playlistId, songId)
+		if err != nil {
+			log.Error(err)
+		} else {
+			count++
+		}
+	}
+	tx.Commit()
+	return count
+}
+
+func (db *DB) RemoveSongsFromPlaylist(playlistId string, songIds []string) int {
+	var count int
+	tx, err := db.Begin()
+	if err != nil {
+		log.Errorf("Error beginning transaction: %v", err)
+	}
+	defer tx.Rollback()
+	for _, songId := range songIds {
+		_, err := tx.Exec("DELETE FROM playlist_song WHERE playlist_id=? AND song_id=?", playlistId, songId)
+		if err != nil {
+			log.Error(err)
+		} else {
+			count++
+		}
+	}
+	tx.Commit()
+	return count
+}
+
+func (db *DB) SetSongsOfPlaylist(playlistId string, songIds []string) (removed int, added int) {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Errorf("Error beginning transaction: %v", err)
+	}
+	defer tx.Rollback()
+	result, err := tx.Exec("DELETE FROM playlist_song WHERE playlist_id=?", playlistId)
+	if err == nil {
+		removed64, _ := result.RowsAffected()
+		removed = int(removed64)
+	} else {
+		log.Errorf("Error removing songs from playlist %v", err)
+	}
+	for _, songId := range songIds {
+		_, err := tx.Exec("INSERT IGNORE INTO playlist_song (playlist_id,song_id) VALUES(?,?)", playlistId, songId)
+		if err != nil {
+			log.Error(err)
+		} else {
+			added++
+		}
+	}
+	tx.Commit()
+	return
+}
