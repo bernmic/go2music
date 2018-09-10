@@ -1,9 +1,14 @@
 package controller
 
 import (
+	"expvar"
 	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"net/http"
+)
+
+var (
+	counterArtist = expvar.NewMap("artist")
 )
 
 func initArtist(r *gin.RouterGroup) {
@@ -13,6 +18,7 @@ func initArtist(r *gin.RouterGroup) {
 }
 
 func GetArtists(c *gin.Context) {
+	counterArtist.Add("GET /", 1)
 	artists, err := artistManager.FindAllArtists()
 	if err == nil {
 		artistCollection := model.ArtistCollection{Artists: artists}
@@ -23,6 +29,7 @@ func GetArtists(c *gin.Context) {
 }
 
 func GetArtist(c *gin.Context) {
+	counterArtist.Add("GET /:id", 1)
 	id := c.Param("id")
 	artist, err := artistManager.FindArtistById(id)
 	if err != nil {
@@ -33,6 +40,7 @@ func GetArtist(c *gin.Context) {
 }
 
 func GetSongForArtist(c *gin.Context) {
+	counterArtist.Add("GET /:id/songs", 1)
 	id := c.Param("id")
 	songs, err := songManager.FindSongsByArtistId(id)
 	if err == nil {

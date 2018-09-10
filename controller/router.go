@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"github.com/gin-gonic/contrib/expvar"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -34,6 +35,8 @@ func initRouter() {
 
 	router.Use(ginrus.Ginrus(log.New(), time.RFC3339, false))
 	router.Use(gin.Recovery())
+
+	router.GET("/debug/vars", expvar.Handler())
 
 	staticRoutes("/", "./static", &router.RouterGroup)
 	router.Static("/assets", "./static/assets")

@@ -23,24 +23,14 @@ func (db *DB) initializeUser() {
 	_, err := db.Query("SELECT 1 FROM user LIMIT 1")
 	if err != nil {
 		log.Print("Table user does not exists. Creating now.")
-		stmt, err := db.Prepare(createUserTableStatement)
-		if err != nil {
-			log.Error("Error creating user table")
-			panic(fmt.Sprintf("%v", err))
-		}
-		_, err = stmt.Exec()
+		_, err := db.Exec(createUserTableStatement)
 		if err != nil {
 			log.Error("Error creating user table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("User Table successfully created....")
 		}
-		stmt, err = db.Prepare("ALTER TABLE user ADD UNIQUE INDEX user_username (username)")
-		if err != nil {
-			log.Error("Error creating user table index for username")
-			panic(fmt.Sprintf("%v", err))
-		}
-		_, err = stmt.Exec()
+		_, err = db.Exec("ALTER TABLE user ADD UNIQUE INDEX user_username (username)")
 		if err != nil {
 			log.Error("Error creating user table index for username")
 			panic(fmt.Sprintf("%v", err))
@@ -63,14 +53,14 @@ func (db *DB) initializeUser() {
 func (db *DB) CreateUser(user model.User) (*model.User, error) {
 	user.Id = xid.New().String()
 	_, err := db.Exec(
-		"INSERT IGNORE INTO user (id,username,password,role,email) VALUES(?,?,?,?,?)",
+		"INSERT INTO user (id,username,password,role,email) VALUES(?,?,?,?,?)",
 		user.Id,
 		user.Username,
 		user.Password,
 		user.Role,
 		user.Email)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	return &user, err
 }
@@ -89,7 +79,7 @@ func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 		user.Role,
 		user.Email)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	return &user, err
 }
@@ -120,7 +110,7 @@ func (db *DB) FindUserById(id string) (*model.User, error) {
 		&user.Role,
 		&user.Email)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	return user, err
 }
@@ -143,7 +133,7 @@ func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 func (db *DB) FindAllUsers() ([]*model.User, error) {
 	rows, err := db.Query("SELECT id, username, password, role, email FROM user")
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	defer rows.Close()
 	users := make([]*model.User, 0)
@@ -156,12 +146,12 @@ func (db *DB) FindAllUsers() ([]*model.User, error) {
 			&user.Role,
 			&user.Email)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		users = append(users, user)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return users, err

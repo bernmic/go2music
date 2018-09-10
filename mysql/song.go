@@ -69,24 +69,14 @@ func (db *DB) initializeSong() {
 	_, err := db.Query("SELECT 1 FROM song LIMIT 1")
 	if err != nil {
 		log.Info("Table song does not exists. Creating now.")
-		stmt, err := db.Prepare(createSongTableStatement)
-		if err != nil {
-			log.Error("Error creating song table")
-			panic(fmt.Sprintf("%v", err))
-		}
-		_, err = stmt.Exec()
+		_, err := db.Exec(createSongTableStatement)
 		if err != nil {
 			log.Error("Error creating song table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("Song Table successfully created....")
 		}
-		stmt, err = db.Prepare("ALTER TABLE song ADD UNIQUE INDEX song_path (path)")
-		if err != nil {
-			log.Error("Error creating song table index for path")
-			panic(fmt.Sprintf("%v", err))
-		}
-		_, err = stmt.Exec()
+		_, err = db.Exec("ALTER TABLE song ADD UNIQUE INDEX song_path (path)")
 		if err != nil {
 			log.Error("Error creating song table index for path")
 			panic(fmt.Sprintf("%v", err))
@@ -116,7 +106,7 @@ func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 		song.Filedate,
 		song.Rating)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	return &song, err
 }
@@ -212,7 +202,7 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 func (db *DB) FindAllSongs() ([]*model.Song, error) {
 	rows, err := db.Query(selectSongStatement)
 	if err != nil {
-		log.Fatal("FATAL Error reading song table", err)
+		log.Error("Error reading song table", err)
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
@@ -244,7 +234,7 @@ func (db *DB) FindAllSongs() ([]*model.Song, error) {
 			&albumTitle,
 			&albumPath)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		if artistId.Valid {
 			song.Artist = new(model.Artist)
@@ -260,7 +250,7 @@ func (db *DB) FindAllSongs() ([]*model.Song, error) {
 		songs = append(songs, song)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return songs, err
@@ -270,7 +260,7 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string) ([]*model.Song, error) {
 	stmt := selectSongStatement + ` WHERE album.id = ?`
 	rows, err := db.Query(stmt, findAlbumId)
 	if err != nil {
-		log.Fatal("FATAL Error reading song table", err)
+		log.Error("Error reading song table", err)
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
@@ -302,7 +292,7 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string) ([]*model.Song, error) {
 			&albumTitle,
 			&albumPath)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		if artistId.Valid {
 			song.Artist = new(model.Artist)
@@ -318,7 +308,7 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string) ([]*model.Song, error) {
 		songs = append(songs, song)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return songs, err
@@ -328,7 +318,7 @@ func (db *DB) FindSongsByArtistId(findArtistId string) ([]*model.Song, error) {
 	stmt := selectSongStatement + `WHERE artist.id = ?	`
 	rows, err := db.Query(stmt, findArtistId)
 	if err != nil {
-		log.Fatal("FATAL Error reading song table", err)
+		log.Error("Error reading song table", err)
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
@@ -376,7 +366,7 @@ func (db *DB) FindSongsByArtistId(findArtistId string) ([]*model.Song, error) {
 		songs = append(songs, song)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return songs, err
@@ -422,7 +412,7 @@ func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 
 	rows, err := db.Query(stmt, searchItem)
 	if err != nil {
-		log.Fatal("FATAL Error reading song table", err)
+		log.Error("Error reading song table", err)
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
@@ -454,7 +444,7 @@ func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 			&albumTitle,
 			&albumPath)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		if artistId.Valid {
 			song.Artist = new(model.Artist)
@@ -470,7 +460,7 @@ func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 		songs = append(songs, song)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return songs, err
@@ -480,7 +470,7 @@ func (db *DB) FindSongsByPlaylist(playlistId string) ([]*model.Song, error) {
 	stmt := selectSongStatement + `WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)	`
 	rows, err := db.Query(stmt, playlistId)
 	if err != nil {
-		log.Fatal("FATAL Error reading song table", err)
+		log.Error("Error reading song table", err)
 	}
 	defer rows.Close()
 	songs := make([]*model.Song, 0)
@@ -512,7 +502,7 @@ func (db *DB) FindSongsByPlaylist(playlistId string) ([]*model.Song, error) {
 			&albumTitle,
 			&albumPath)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		if artistId.Valid {
 			song.Artist = new(model.Artist)
@@ -528,7 +518,7 @@ func (db *DB) FindSongsByPlaylist(playlistId string) ([]*model.Song, error) {
 		songs = append(songs, song)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return songs, err

@@ -34,24 +34,14 @@ func (db *DB) initializePlaylist() {
 	_, err := db.Query("SELECT 1 FROM playlist LIMIT 1")
 	if err != nil {
 		log.Info("Table playlist does not exists. Creating now.")
-		stmt, err := db.Prepare(createPlaylistTableStatement)
-		if err != nil {
-			log.Error("Error creating playlist table")
-			panic(fmt.Sprintf("%v", err))
-		}
-		_, err = stmt.Exec()
+		_, err := db.Exec(createPlaylistTableStatement)
 		if err != nil {
 			log.Error("Error creating playlist table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("Playlist Table successfully created....")
 		}
-		stmt, err = db.Prepare("ALTER TABLE playlist ADD UNIQUE INDEX playlist_name (name)")
-		if err != nil {
-			log.Error("Error creating playlist table index for name")
-			panic(fmt.Sprintf("%v", err))
-		}
-		_, err = stmt.Exec()
+		_, err = db.Exec("ALTER TABLE playlist ADD UNIQUE INDEX playlist_name (name)")
 		if err != nil {
 			log.Error("Error creating playlist table index for name")
 			panic(fmt.Sprintf("%v", err))
@@ -61,12 +51,7 @@ func (db *DB) initializePlaylist() {
 		_, err = db.Query("SELECT 1 FROM playlist_song LIMIT 1")
 		if err != nil {
 			log.Info("Table playlist_song does not exists. Creating now.")
-			stmt, err := db.Prepare(createPlaylistSongTableStatement)
-			if err != nil {
-				log.Error("Error creating playlist_song table")
-				panic(fmt.Sprintf("%v", err))
-			}
-			_, err = stmt.Exec()
+			_, err := db.Exec(createPlaylistSongTableStatement)
 			if err != nil {
 				log.Error("Error creating playlist_song table")
 				panic(fmt.Sprintf("%v", err))
@@ -81,7 +66,7 @@ func (db *DB) CreatePlaylist(playlist model.Playlist) (*model.Playlist, error) {
 	playlist.Id = xid.New().String()
 	_, err := db.Exec("INSERT IGNORE INTO playlist (id,name,query,user_id) VALUES(?,?,?,?)", playlist.Id, playlist.Name, playlist.Query, playlist.User.Id)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	return &playlist, err
 }
@@ -94,7 +79,7 @@ func (db *DB) CreateIfNotExistsPlaylist(playlist model.Playlist) (*model.Playlis
 	playlist.Id = xid.New().String()
 	_, err := db.Exec("INSERT INTO playlist (id,name,query,user_id) VALUES(?,?,?,?)", playlist.Id, playlist.Name, playlist.Query, playlist.User.Id)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	return &playlist, err
 }
@@ -116,7 +101,7 @@ func (db *DB) FindPlaylistById(id string, user_id string) (*model.Playlist, erro
 	playlist := new(model.Playlist)
 	err := db.QueryRow("SELECT id,name,query FROM playlist WHERE id=? AND user_id=?", id, user_id).Scan(&playlist.Id, &playlist.Name, &playlist.Query)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	return playlist, err
 }
@@ -141,12 +126,12 @@ func (db *DB) FindAllPlaylists(user_id string) ([]*model.Playlist, error) {
 		playlist := new(model.Playlist)
 		err := rows.Scan(&playlist.Id, &playlist.Name, &playlist.Query)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		playlists = append(playlists, playlist)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return playlists, err

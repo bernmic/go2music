@@ -1,10 +1,15 @@
 package controller
 
 import (
+	"expvar"
 	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"net/http"
 	"strconv"
+)
+
+var (
+	counterAlbum = expvar.NewMap("album")
 )
 
 func initAlbum(r *gin.RouterGroup) {
@@ -15,6 +20,7 @@ func initAlbum(r *gin.RouterGroup) {
 }
 
 func GetAlbums(c *gin.Context) {
+	counterAlbum.Add("GET /", 1)
 	albums, err := albumManager.FindAllAlbums()
 	if err == nil {
 		albumCollection := model.AlbumCollection{Albums: albums}
@@ -25,6 +31,7 @@ func GetAlbums(c *gin.Context) {
 }
 
 func GetAlbum(c *gin.Context) {
+	counterAlbum.Add("GET /:id", 1)
 	id := c.Param("id")
 	album, err := albumManager.FindAlbumById(id)
 	if err != nil {
@@ -35,6 +42,7 @@ func GetAlbum(c *gin.Context) {
 }
 
 func GetSongForAlbum(c *gin.Context) {
+	counterAlbum.Add("GET /:id/songs", 1)
 	id := c.Param("id")
 	songs, err := songManager.FindSongsByAlbumId(id)
 	if err == nil {
@@ -54,6 +62,7 @@ func GetSongForAlbum(c *gin.Context) {
 }
 
 func GetCoverForAlbum(c *gin.Context) {
+	counterAlbum.Add("GET /:id/cover", 1)
 	id := c.Param("id")
 	songs, err := songManager.FindSongsByAlbumId(id)
 	if err != nil {

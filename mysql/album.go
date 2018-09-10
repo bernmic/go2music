@@ -11,24 +11,14 @@ func (db *DB) initializeAlbum() {
 	_, err := db.Query("SELECT 1 FROM album LIMIT 1")
 	if err != nil {
 		log.Info("Table album does not exists. Creating now.")
-		stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS album (id varchar(32), title varchar(255) NOT NULL, path varchar(255) NOT NULL, PRIMARY KEY (id));")
-		if err != nil {
-			log.Error("Error creating album table")
-			panic(fmt.Sprintf("%v", err))
-		}
-		_, err = stmt.Exec()
+		_, err := db.Exec("CREATE TABLE IF NOT EXISTS album (id varchar(32), title varchar(255) NOT NULL, path varchar(255) NOT NULL, PRIMARY KEY (id));")
 		if err != nil {
 			log.Error("Error creating album table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("Album Table successfully created....")
 		}
-		stmt, err = db.Prepare("ALTER TABLE album ADD UNIQUE INDEX album_path (path)")
-		if err != nil {
-			log.Error("Error creating album table index for path")
-			panic(fmt.Sprintf("%v", err))
-		}
-		_, err = stmt.Exec()
+		_, err = db.Exec("ALTER TABLE album ADD UNIQUE INDEX album_path (path)")
 		if err != nil {
 			log.Error("Error creating album table index for path")
 			panic(fmt.Sprintf("%v", err))
@@ -38,16 +28,16 @@ func (db *DB) initializeAlbum() {
 	}
 }
 
-func (db *DB) CreateAlbum(album *model.Album) (*model.Album, error) {
+func (db *DB) CreateAlbum(album model.Album) (*model.Album, error) {
 	album.Id = xid.New().String()
-	_, err := db.Exec("INSERT IGNORE INTO album (id, title, path) VALUES(?, ?, ?)", album.Id, album.Title, album.Path)
+	_, err := db.Exec("INSERT INTO album (id, title, path) VALUES(?, ?, ?)", album.Id, album.Title, album.Path)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
-	return album, err
+	return &album, err
 }
 
-func (db *DB) CreateIfNotExistsAlbum(album *model.Album) (*model.Album, error) {
+func (db *DB) CreateIfNotExistsAlbum(album model.Album) (*model.Album, error) {
 	album.Id = xid.New().String()
 	existingAlbum, findErr := db.FindAlbumByPath(album.Path)
 	if findErr == nil {
@@ -55,14 +45,14 @@ func (db *DB) CreateIfNotExistsAlbum(album *model.Album) (*model.Album, error) {
 	}
 	_, err := db.Exec("INSERT INTO album (id, title, path) VALUES(?, ?, ?)", album.Id, album.Title, album.Path)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
-	return album, err
+	return &album, err
 }
 
-func (db *DB) UpdateAlbum(album *model.Album) (*model.Album, error) {
+func (db *DB) UpdateAlbum(album model.Album) (*model.Album, error) {
 	_, err := db.Exec("UPDATE album SET title=?, path=? WHERE id=?", album.Title, album.Path, album.Id)
-	return album, err
+	return &album, err
 }
 
 func (db *DB) DeleteAlbum(id string) error {
@@ -74,7 +64,7 @@ func (db *DB) FindAlbumById(id string) (*model.Album, error) {
 	album := model.Album{}
 	err := db.QueryRow("SELECT id,title,path FROM album WHERE id=?", id).Scan(&album.Id, &album.Title, &album.Path)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	return &album, err
 }
@@ -96,12 +86,12 @@ func (db *DB) FindAllAlbums() ([]*model.Album, error) {
 		album := new(model.Album)
 		err := rows.Scan(&album.Id, &album.Title, &album.Path)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		albums = append(albums, album)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return albums, err

@@ -1,11 +1,16 @@
 package controller
 
 import (
+	"expvar"
 	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"net/http"
 	"os"
 	"strconv"
+)
+
+var (
+	counterSong = expvar.NewMap("song")
 )
 
 func initSong(r *gin.RouterGroup) {
@@ -16,6 +21,7 @@ func initSong(r *gin.RouterGroup) {
 }
 
 func GetSongs(c *gin.Context) {
+	counterSong.Add("GET /", 1)
 	songs, err := songManager.FindAllSongs()
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
@@ -26,6 +32,7 @@ func GetSongs(c *gin.Context) {
 }
 
 func GetSong(c *gin.Context) {
+	counterSong.Add("GET /:id", 1)
 	id := c.Param("id")
 	song, err := songManager.FindOneSong(id)
 	if err != nil {
@@ -36,6 +43,7 @@ func GetSong(c *gin.Context) {
 }
 
 func StreamSong(c *gin.Context) {
+	counterSong.Add("GET /:id/stream", 1)
 	id := c.Param("id")
 	song, err := songManager.FindOneSong(id)
 	if err != nil {
@@ -75,6 +83,7 @@ func StreamSong(c *gin.Context) {
 }
 
 func GetCover(c *gin.Context) {
+	counterSong.Add("GET /:id/cover", 1)
 	id := c.Param("id")
 	song, err := songManager.FindOneSong(id)
 	if err != nil {

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"expvar"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
@@ -8,6 +9,10 @@ import (
 )
 
 type songIds []string
+
+var (
+	counterPlaylist = expvar.NewMap("playlist")
+)
 
 func initPlaylist(r *gin.RouterGroup) {
 	r.GET("/playlist", GetPlaylists)
@@ -22,6 +27,7 @@ func initPlaylist(r *gin.RouterGroup) {
 }
 
 func GetPlaylists(c *gin.Context) {
+	counterPlaylist.Add("GET /", 1)
 	user, ok := c.Get("principal")
 	if !ok {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
@@ -37,6 +43,7 @@ func GetPlaylists(c *gin.Context) {
 }
 
 func GetPlaylist(c *gin.Context) {
+	counterPlaylist.Add("GET /:id", 1)
 	user, ok := c.Get("principal")
 	if !ok {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
@@ -52,6 +59,7 @@ func GetPlaylist(c *gin.Context) {
 }
 
 func GetSongsForPlaylist(c *gin.Context) {
+	counterPlaylist.Add("GET /:id/songs", 1)
 	user, ok := c.Get("principal")
 	if !ok {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
@@ -80,6 +88,7 @@ func GetSongsForPlaylist(c *gin.Context) {
 }
 
 func CreatePlaylist(c *gin.Context) {
+	counterPlaylist.Add("POST /:id", 1)
 	user, ok := c.Get("principal")
 	if !ok {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
@@ -102,6 +111,7 @@ func CreatePlaylist(c *gin.Context) {
 }
 
 func UpdatePlaylist(c *gin.Context) {
+	counterPlaylist.Add("PUT /:id", 1)
 	user, ok := c.Get("principal")
 	if !ok {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
@@ -124,6 +134,7 @@ func UpdatePlaylist(c *gin.Context) {
 }
 
 func DeletePlaylist(c *gin.Context) {
+	counterPlaylist.Add("DELETE /:id", 1)
 	user, ok := c.Get("principal")
 	if !ok {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
@@ -138,6 +149,7 @@ func DeletePlaylist(c *gin.Context) {
 }
 
 func AddSongsToPlaylist(c *gin.Context) {
+	counterPlaylist.Add("POST /:id/songs", 1)
 	user, ok := c.Get("principal")
 	if !ok {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
@@ -161,6 +173,7 @@ func AddSongsToPlaylist(c *gin.Context) {
 }
 
 func RemoveSongsFromPlaylist(c *gin.Context) {
+	counterPlaylist.Add("DELETE /:id/songs", 1)
 	user, ok := c.Get("principal")
 	if !ok {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
@@ -184,6 +197,7 @@ func RemoveSongsFromPlaylist(c *gin.Context) {
 }
 
 func SetSongsOfPlaylist(c *gin.Context) {
+	counterPlaylist.Add("PUT /:id/songs", 1)
 	user, ok := c.Get("principal")
 	if !ok {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
