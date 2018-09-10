@@ -8,7 +8,7 @@ type SongManager interface {
 	DeleteSong(id string) error
 	SongExists(path string) bool
 	FindOneSong(id string) (*model.Song, error)
-	FindAllSongs() ([]*model.Song, error)
+	FindAllSongs(paging model.Paging) ([]*model.Song, error)
 	FindSongsByAlbumId(findAlbumId string) ([]*model.Song, error)
 	FindSongsByArtistId(findArtistId string) ([]*model.Song, error)
 	FindSongsByPlaylist(playlistId string) ([]*model.Song, error)

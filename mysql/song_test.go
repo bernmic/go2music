@@ -1,12 +1,41 @@
 package mysql
 
 import (
+	"go2music/model"
 	"testing"
 )
 
 func Test_InitializeSong(t *testing.T) {
 	if !chechTableExists("song") {
 		t.Fatalf("Table song not created\n")
+	}
+}
+
+func Test_PagingSong(t *testing.T) {
+	paging := model.Paging{}
+	s := createOrderAndLimitForSong(paging)
+	if s != "" {
+		t.Error("Expected empty string. got " + s)
+	}
+	paging.Sort = "title"
+	s = createOrderAndLimitForSong(paging)
+	if s != " ORDER BY song.title" {
+		t.Error("Expected 'ORDER BY song.title'. got " + s)
+	}
+	paging.Direction = "desc"
+	s = createOrderAndLimitForSong(paging)
+	if s != " ORDER BY song.title DESC" {
+		t.Error("Expected 'ORDER BY song.title DESC'. got " + s)
+	}
+	paging.Size = 2
+	s = createOrderAndLimitForSong(paging)
+	if s != " ORDER BY song.title DESC LIMIT 0,2" {
+		t.Error("Expected 'ORDER BY song.title DESC LIMIT 0,2'. got " + s)
+	}
+	paging.Page = 1
+	s = createOrderAndLimitForSong(paging)
+	if s != " ORDER BY song.title DESC LIMIT 2,2" {
+		t.Error("Expected 'ORDER BY song.title DESC LIMIT 2,2'. got " + s)
 	}
 }
 

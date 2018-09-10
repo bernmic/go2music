@@ -22,9 +22,10 @@ func initSong(r *gin.RouterGroup) {
 
 func GetSongs(c *gin.Context) {
 	counterSong.Add("GET /", 1)
-	songs, err := songManager.FindAllSongs()
+	paging := extractPagingFromRequest(c)
+	songs, err := songManager.FindAllSongs(paging)
 	if err == nil {
-		songCollection := model.SongCollection{Songs: songs, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		songCollection := model.SongCollection{Songs: songs, Paging: paging}
 		c.JSON(http.StatusOK, songCollection)
 		return
 	}

@@ -199,8 +199,8 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 	return song, err
 }
 
-func (db *DB) FindAllSongs() ([]*model.Song, error) {
-	rows, err := db.Query(selectSongStatement)
+func (db *DB) FindAllSongs(paging model.Paging) ([]*model.Song, error) {
+	rows, err := db.Query(selectSongStatement + createOrderAndLimitForSong(paging))
 	if err != nil {
 		log.Error("Error reading song table", err)
 	}
@@ -533,4 +533,33 @@ func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
 	}
 
 	return image, mimetype, err
+}
+
+func createOrderAndLimitForSong(paging model.Paging) string {
+	s := ""
+	if paging.Sort != "" {
+		switch paging.Sort {
+		case "title":
+			s += " ORDER BY song.title"
+		case "album":
+			s += " ORDER BY album.title"
+		case "artist":
+			s += " ORDER BY artist.name"
+		case "genre":
+			s += " ORDER BY song.genre"
+		case "track":
+			s += " ORDER BY song.track"
+		case "year":
+			s += " ORDER BY song.yearpublished"
+		}
+		if paging.Direction == "asc" {
+			s += " ASC"
+		} else if paging.Direction == "desc" {
+			s += " DESC"
+		}
+	}
+	if paging.Size > 0 {
+		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+	}
+	return s
 }
