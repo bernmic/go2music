@@ -7,3 +7,8 @@ type User struct {
 	Role     string `json:"role,omitempty"`
 	Email    string `json:"email,omitempty"`
 }
+
+type UserCollection struct {
+	Users []*User `json:"users,omitempty"`
+	Paging
+}

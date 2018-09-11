@@ -41,7 +41,7 @@ func Test_CRUD_Artist(t *testing.T) {
 		t.Errorf("Updated artist ist not identical to artist")
 	}
 
-	artists, err := testDatabase.FindAllArtists()
+	artists, err := testDatabase.FindAllArtists(model.Paging{})
 	if err != nil || len(artists) != 1 {
 		t.Error("Expected one item in artist table")
 	}
@@ -51,7 +51,7 @@ func Test_CRUD_Artist(t *testing.T) {
 		t.Error("Could not delete artist")
 	}
 
-	artists, err = testDatabase.FindAllArtists()
+	artists, err = testDatabase.FindAllArtists(model.Paging{})
 	if err != nil || len(artists) != 0 {
 		t.Error("Expected zero items in artist table")
 	}
@@ -77,4 +77,32 @@ func Test_CINE_Artist(t *testing.T) {
 		t.Errorf("Expected to get the same artist again")
 	}
 	testDatabase.DeleteArtist(savedId)
+}
+
+func Test_PagingArtist(t *testing.T) {
+	paging := model.Paging{}
+	s := createOrderAndLimitForArtist(paging)
+	if s != "" {
+		t.Error("Expected empty string. got " + s)
+	}
+	paging.Sort = "name"
+	s = createOrderAndLimitForArtist(paging)
+	if s != " ORDER BY name" {
+		t.Error("Expected 'ORDER BY name'. got " + s)
+	}
+	paging.Direction = "desc"
+	s = createOrderAndLimitForArtist(paging)
+	if s != " ORDER BY name DESC" {
+		t.Error("Expected 'ORDER BY name DESC'. got " + s)
+	}
+	paging.Size = 2
+	s = createOrderAndLimitForArtist(paging)
+	if s != " ORDER BY name DESC LIMIT 0,2" {
+		t.Error("Expected 'ORDER BY name DESC LIMIT 0,2'. got " + s)
+	}
+	paging.Page = 1
+	s = createOrderAndLimitForArtist(paging)
+	if s != " ORDER BY name DESC LIMIT 2,2" {
+		t.Error("Expected 'ORDER BY name DESC LIMIT 2,2'. got " + s)
+	}
 }

@@ -75,8 +75,8 @@ func (db *DB) FindAlbumByPath(path string) (*model.Album, error) {
 	return &album, err
 }
 
-func (db *DB) FindAllAlbums() ([]*model.Album, error) {
-	rows, err := db.Query("SELECT id, title, path FROM album")
+func (db *DB) FindAllAlbums(paging model.Paging) ([]*model.Album, error) {
+	rows, err := db.Query("SELECT id, title, path FROM album" + createOrderAndLimitForAlbum(paging))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,4 +95,25 @@ func (db *DB) FindAllAlbums() ([]*model.Album, error) {
 	}
 
 	return albums, err
+}
+
+func createOrderAndLimitForAlbum(paging model.Paging) string {
+	s := ""
+	if paging.Sort != "" {
+		switch paging.Sort {
+		case "title":
+			s += " ORDER BY title"
+		}
+		if s != "" {
+			if paging.Direction == "asc" {
+				s += " ASC"
+			} else if paging.Direction == "desc" {
+				s += " DESC"
+			}
+		}
+	}
+	if paging.Size > 0 {
+		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+	}
+	return s
 }

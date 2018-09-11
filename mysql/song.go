@@ -256,8 +256,8 @@ func (db *DB) FindAllSongs(paging model.Paging) ([]*model.Song, error) {
 	return songs, err
 }
 
-func (db *DB) FindSongsByAlbumId(findAlbumId string) ([]*model.Song, error) {
-	stmt := selectSongStatement + ` WHERE album.id = ?`
+func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*model.Song, error) {
+	stmt := selectSongStatement + ` WHERE album.id = ?` + createOrderAndLimitForSong(paging)
 	rows, err := db.Query(stmt, findAlbumId)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -314,8 +314,8 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string) ([]*model.Song, error) {
 	return songs, err
 }
 
-func (db *DB) FindSongsByArtistId(findArtistId string) ([]*model.Song, error) {
-	stmt := selectSongStatement + `WHERE artist.id = ?	`
+func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*model.Song, error) {
+	stmt := selectSongStatement + `WHERE artist.id = ?	` + createOrderAndLimitForSong(paging)
 	rows, err := db.Query(stmt, findArtistId)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -372,7 +372,7 @@ func (db *DB) FindSongsByArtistId(findArtistId string) ([]*model.Song, error) {
 	return songs, err
 }
 
-func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
+func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*model.Song, error) {
 	stmt := selectSongStatement
 	splittedBy := "="
 	splitted := strings.Split(query, "=")
@@ -409,6 +409,8 @@ func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 			searchItem = "%" + strings.ToLower(searchItem) + "%"
 		}
 	}
+
+	stmt += createOrderAndLimitForSong(paging)
 
 	rows, err := db.Query(stmt, searchItem)
 	if err != nil {
@@ -466,8 +468,8 @@ func (db *DB) FindSongsByPlaylistQuery(query string) ([]*model.Song, error) {
 	return songs, err
 }
 
-func (db *DB) FindSongsByPlaylist(playlistId string) ([]*model.Song, error) {
-	stmt := selectSongStatement + `WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)	`
+func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*model.Song, error) {
+	stmt := selectSongStatement + `WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)` + createOrderAndLimitForSong(paging)
 	rows, err := db.Query(stmt, playlistId)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -552,10 +554,12 @@ func createOrderAndLimitForSong(paging model.Paging) string {
 		case "year":
 			s += " ORDER BY song.yearpublished"
 		}
-		if paging.Direction == "asc" {
-			s += " ASC"
-		} else if paging.Direction == "desc" {
-			s += " DESC"
+		if s != "" {
+			if paging.Direction == "asc" {
+				s += " ASC"
+			} else if paging.Direction == "desc" {
+				s += " DESC"
+			}
 		}
 	}
 	if paging.Size > 0 {

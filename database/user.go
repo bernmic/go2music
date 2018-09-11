@@ -9,5 +9,5 @@ type UserManager interface {
 	DeleteUser(id string) error
 	FindUserById(id string) (*model.User, error)
 	FindUserByUsername(name string) (*model.User, error)
-	FindAllUsers() ([]*model.User, error)
+	FindAllUsers(paging model.Paging) ([]*model.User, error)
 }

@@ -33,9 +33,10 @@ func GetPlaylists(c *gin.Context) {
 		respondWithError(http.StatusUnauthorized, "not allowed", c)
 		return
 	}
-	playlists, err := playlistManager.FindAllPlaylists(user.(*model.User).Id)
+	paging := extractPagingFromRequest(c)
+	playlists, err := playlistManager.FindAllPlaylists(user.(*model.User).Id, paging)
 	if err == nil {
-		playlistCollection := model.PlaylistCollection{Playlists: playlists}
+		playlistCollection := model.PlaylistCollection{Playlists: playlists, Paging: paging}
 		c.JSON(http.StatusOK, playlistCollection)
 		return
 	}
@@ -75,9 +76,9 @@ func GetSongsForPlaylist(c *gin.Context) {
 	var songs []*model.Song
 
 	if playlist.Query != "" {
-		songs, err = songManager.FindSongsByPlaylistQuery(playlist.Query)
+		songs, err = songManager.FindSongsByPlaylistQuery(playlist.Query, model.Paging{})
 	} else {
-		songs, err = songManager.FindSongsByPlaylist(playlist.Id)
+		songs, err = songManager.FindSongsByPlaylist(playlist.Id, model.Paging{})
 	}
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Description: "Playlist: " + playlist.Name, Paging: model.Paging{Page: 1, Size: len(songs)}}

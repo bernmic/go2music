@@ -130,8 +130,8 @@ func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 	return user, err
 }
 
-func (db *DB) FindAllUsers() ([]*model.User, error) {
-	rows, err := db.Query("SELECT id, username, password, role, email FROM user")
+func (db *DB) FindAllUsers(paging model.Paging) ([]*model.User, error) {
+	rows, err := db.Query("SELECT id, username, password, role, email FROM user" + createOrderAndLimitForUser(paging))
 	if err != nil {
 		log.Error(err)
 	}
@@ -165,4 +165,29 @@ func HashPassword(password string) (string, error) {
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func createOrderAndLimitForUser(paging model.Paging) string {
+	s := ""
+	if paging.Sort != "" {
+		switch paging.Sort {
+		case "username":
+			s += " ORDER BY username"
+		case "role":
+			s += " ORDER BY role"
+		case "email":
+			s += " ORDER BY email"
+		}
+		if s != "" {
+			if paging.Direction == "asc" {
+				s += " ASC"
+			} else if paging.Direction == "desc" {
+				s += " DESC"
+			}
+		}
+	}
+	if paging.Size > 0 {
+		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+	}
+	return s
 }

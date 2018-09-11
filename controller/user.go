@@ -16,9 +16,10 @@ func initUser(r *gin.RouterGroup) {
 }
 
 func GetUsers(c *gin.Context) {
-	users, err := userManager.FindAllUsers()
+	paging := extractPagingFromRequest(c)
+	users, err := userManager.FindAllUsers(paging)
 	if err == nil {
-		c.JSON(http.StatusOK, users)
+		c.JSON(http.StatusOK, model.UserCollection{users, paging})
 		return
 	}
 	respondWithError(http.StatusInternalServerError, "Cound not read users", c)

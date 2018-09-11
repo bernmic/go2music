@@ -115,8 +115,8 @@ func (db *DB) FindPlaylistByName(name string, user_id string) (*model.Playlist, 
 	return playlist, err
 }
 
-func (db *DB) FindAllPlaylists(user_id string) ([]*model.Playlist, error) {
-	rows, err := db.Query("SELECT id, name, query FROM playlist WHERE user_id=?", user_id)
+func (db *DB) FindAllPlaylists(user_id string, paging model.Paging) ([]*model.Playlist, error) {
+	rows, err := db.Query("SELECT id, name, query FROM playlist WHERE user_id=?"+createOrderAndLimitForPlaylist(paging), user_id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -198,4 +198,25 @@ func (db *DB) SetSongsOfPlaylist(playlistId string, songIds []string) (removed i
 	}
 	tx.Commit()
 	return
+}
+
+func createOrderAndLimitForPlaylist(paging model.Paging) string {
+	s := ""
+	if paging.Sort != "" {
+		switch paging.Sort {
+		case "name":
+			s += " ORDER BY name"
+		}
+		if s != "" {
+			if paging.Direction == "asc" {
+				s += " ASC"
+			} else if paging.Direction == "desc" {
+				s += " DESC"
+			}
+		}
+	}
+	if paging.Size > 0 {
+		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+	}
+	return s
 }

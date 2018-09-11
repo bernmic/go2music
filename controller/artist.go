@@ -19,9 +19,10 @@ func initArtist(r *gin.RouterGroup) {
 
 func GetArtists(c *gin.Context) {
 	counterArtist.Add("GET /", 1)
-	artists, err := artistManager.FindAllArtists()
+	paging := extractPagingFromRequest(c)
+	artists, err := artistManager.FindAllArtists(paging)
 	if err == nil {
-		artistCollection := model.ArtistCollection{Artists: artists}
+		artistCollection := model.ArtistCollection{Artists: artists, Paging: paging}
 		c.JSON(http.StatusOK, artistCollection)
 		return
 	}
@@ -42,7 +43,7 @@ func GetArtist(c *gin.Context) {
 func GetSongForArtist(c *gin.Context) {
 	counterArtist.Add("GET /:id/songs", 1)
 	id := c.Param("id")
-	songs, err := songManager.FindSongsByArtistId(id)
+	songs, err := songManager.FindSongsByArtistId(id, model.Paging{})
 	if err == nil {
 		var description string
 		if len(songs) > 0 {
