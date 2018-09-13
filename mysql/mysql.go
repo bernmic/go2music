@@ -43,3 +43,10 @@ func New() (*DB, error) {
 func Database() *DB {
 	return &database
 }
+
+func (db *DB) countRows(sql string, args ...interface{}) int {
+	var count int
+	rows := db.QueryRow(sql, args...)
+	rows.Scan(&count)
+	return count
+}

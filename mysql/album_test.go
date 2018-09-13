@@ -46,8 +46,8 @@ func Test_CRUD_Album(t *testing.T) {
 		t.Errorf("Updated album ist not identical to album")
 	}
 
-	albums, err := testDatabase.FindAllAlbums(model.Paging{})
-	if err != nil || len(albums) != 1 {
+	albums, total, err := testDatabase.FindAllAlbums(model.Paging{})
+	if err != nil || len(albums) != 1 || total != 1 {
 		t.Error("Exprected one item in album table")
 	}
 
@@ -56,8 +56,8 @@ func Test_CRUD_Album(t *testing.T) {
 		t.Error("Could not delete album")
 	}
 
-	albums, err = testDatabase.FindAllAlbums(model.Paging{})
-	if err != nil || len(albums) != 0 {
+	albums, total, err = testDatabase.FindAllAlbums(model.Paging{})
+	if err != nil || len(albums) != 0 || total != 0 {
 		t.Error("Exprected zero items in album table")
 	}
 }
@@ -86,27 +86,30 @@ func Test_CINE_Album(t *testing.T) {
 
 func Test_PagingAlbum(t *testing.T) {
 	paging := model.Paging{}
-	s := createOrderAndLimitForAlbum(paging)
-	if s != "" {
+	s, l := createOrderAndLimitForAlbum(paging)
+	if s != "" || l == true {
 		t.Error("Expected empty string. got " + s)
 	}
 	paging.Sort = "title"
-	s = createOrderAndLimitForAlbum(paging)
+	s, _ = createOrderAndLimitForAlbum(paging)
 	if s != " ORDER BY title" {
 		t.Error("Expected 'ORDER BY title'. got " + s)
 	}
 	paging.Direction = "desc"
-	s = createOrderAndLimitForAlbum(paging)
+	s, _ = createOrderAndLimitForAlbum(paging)
 	if s != " ORDER BY title DESC" {
 		t.Error("Expected 'ORDER BY title DESC'. got " + s)
 	}
 	paging.Size = 2
-	s = createOrderAndLimitForAlbum(paging)
+	s, l = createOrderAndLimitForAlbum(paging)
 	if s != " ORDER BY title DESC LIMIT 0,2" {
 		t.Error("Expected 'ORDER BY title DESC LIMIT 0,2'. got " + s)
 	}
+	if !l {
+		t.Error("Expected limit == true, got false")
+	}
 	paging.Page = 1
-	s = createOrderAndLimitForAlbum(paging)
+	s, _ = createOrderAndLimitForAlbum(paging)
 	if s != " ORDER BY title DESC LIMIT 2,2" {
 		t.Error("Expected 'ORDER BY title DESC LIMIT 2,2'. got " + s)
 	}

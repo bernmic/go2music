@@ -16,27 +16,30 @@ func Test_InitializePlaylist(t *testing.T) {
 
 func Test_PagingPlaylist(t *testing.T) {
 	paging := model.Paging{}
-	s := createOrderAndLimitForPlaylist(paging)
-	if s != "" {
-		t.Error("Expected empty string. got " + s)
+	s, l := createOrderAndLimitForPlaylist(paging)
+	if s != "" || l {
+		t.Error("Expected empty string and limit flag == false. got " + s)
 	}
 	paging.Sort = "name"
-	s = createOrderAndLimitForPlaylist(paging)
+	s, _ = createOrderAndLimitForPlaylist(paging)
 	if s != " ORDER BY name" {
 		t.Error("Expected 'ORDER BY name'. got " + s)
 	}
 	paging.Direction = "desc"
-	s = createOrderAndLimitForPlaylist(paging)
+	s, _ = createOrderAndLimitForPlaylist(paging)
 	if s != " ORDER BY name DESC" {
 		t.Error("Expected 'ORDER BY name DESC'. got " + s)
 	}
 	paging.Size = 2
-	s = createOrderAndLimitForPlaylist(paging)
+	s, l = createOrderAndLimitForPlaylist(paging)
 	if s != " ORDER BY name DESC LIMIT 0,2" {
 		t.Error("Expected 'ORDER BY name DESC LIMIT 0,2'. got " + s)
 	}
+	if !l {
+		t.Error("Expected limit flag == true. Got false")
+	}
 	paging.Page = 1
-	s = createOrderAndLimitForPlaylist(paging)
+	s, _ = createOrderAndLimitForPlaylist(paging)
 	if s != " ORDER BY name DESC LIMIT 2,2" {
 		t.Error("Expected 'ORDER BY name DESC LIMIT 2,2'. got " + s)
 	}

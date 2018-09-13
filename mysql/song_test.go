@@ -13,27 +13,30 @@ func Test_InitializeSong(t *testing.T) {
 
 func Test_PagingSong(t *testing.T) {
 	paging := model.Paging{}
-	s := createOrderAndLimitForSong(paging)
-	if s != "" {
-		t.Error("Expected empty string. got " + s)
+	s, l := createOrderAndLimitForSong(paging)
+	if s != "" || l {
+		t.Error("Expected empty string and limit flag == false. got " + s)
 	}
 	paging.Sort = "title"
-	s = createOrderAndLimitForSong(paging)
+	s, _ = createOrderAndLimitForSong(paging)
 	if s != " ORDER BY song.title" {
 		t.Error("Expected 'ORDER BY song.title'. got " + s)
 	}
 	paging.Direction = "desc"
-	s = createOrderAndLimitForSong(paging)
+	s, _ = createOrderAndLimitForSong(paging)
 	if s != " ORDER BY song.title DESC" {
 		t.Error("Expected 'ORDER BY song.title DESC'. got " + s)
 	}
 	paging.Size = 2
-	s = createOrderAndLimitForSong(paging)
+	s, l = createOrderAndLimitForSong(paging)
 	if s != " ORDER BY song.title DESC LIMIT 0,2" {
 		t.Error("Expected 'ORDER BY song.title DESC LIMIT 0,2'. got " + s)
 	}
+	if !l {
+		t.Error("Expected limit flag == true. Got false.")
+	}
 	paging.Page = 1
-	s = createOrderAndLimitForSong(paging)
+	s, _ = createOrderAndLimitForSong(paging)
 	if s != " ORDER BY song.title DESC LIMIT 2,2" {
 		t.Error("Expected 'ORDER BY song.title DESC LIMIT 2,2'. got " + s)
 	}

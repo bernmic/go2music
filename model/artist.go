@@ -7,5 +7,6 @@ type Artist struct {
 
 type ArtistCollection struct {
 	Artists []*Artist `json:"artists,omitempty"`
-	Paging
+	Paging  Paging    `json:"paging,omitempty"`
+	Total   int       `json:"total,omitempty"`
 }

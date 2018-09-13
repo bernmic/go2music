@@ -34,9 +34,9 @@ func GetPlaylists(c *gin.Context) {
 		return
 	}
 	paging := extractPagingFromRequest(c)
-	playlists, err := playlistManager.FindAllPlaylists(user.(*model.User).Id, paging)
+	playlists, total, err := playlistManager.FindAllPlaylists(user.(*model.User).Id, paging)
 	if err == nil {
-		playlistCollection := model.PlaylistCollection{Playlists: playlists, Paging: paging}
+		playlistCollection := model.PlaylistCollection{Playlists: playlists, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, playlistCollection)
 		return
 	}
@@ -75,13 +75,15 @@ func GetSongsForPlaylist(c *gin.Context) {
 
 	var songs []*model.Song
 
+	paging := extractPagingFromRequest(c)
+	var total int
 	if playlist.Query != "" {
-		songs, err = songManager.FindSongsByPlaylistQuery(playlist.Query, model.Paging{})
+		songs, total, err = songManager.FindSongsByPlaylistQuery(playlist.Query, paging)
 	} else {
-		songs, err = songManager.FindSongsByPlaylist(playlist.Id, model.Paging{})
+		songs, total, err = songManager.FindSongsByPlaylist(playlist.Id, paging)
 	}
 	if err == nil {
-		songCollection := model.SongCollection{Songs: songs, Description: "Playlist: " + playlist.Name, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		songCollection := model.SongCollection{Songs: songs, Description: "Playlist: " + playlist.Name, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, songCollection)
 		return
 	}

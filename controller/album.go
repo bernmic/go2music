@@ -22,9 +22,9 @@ func initAlbum(r *gin.RouterGroup) {
 func GetAlbums(c *gin.Context) {
 	counterAlbum.Add("GET /", 1)
 	paging := extractPagingFromRequest(c)
-	albums, err := albumManager.FindAllAlbums(paging)
+	albums, total, err := albumManager.FindAllAlbums(paging)
 	if err == nil {
-		albumCollection := model.AlbumCollection{Albums: albums, Paging: paging}
+		albumCollection := model.AlbumCollection{Albums: albums, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, albumCollection)
 		return
 	}
@@ -45,7 +45,8 @@ func GetAlbum(c *gin.Context) {
 func GetSongForAlbum(c *gin.Context) {
 	counterAlbum.Add("GET /:id/songs", 1)
 	id := c.Param("id")
-	songs, err := songManager.FindSongsByAlbumId(id, model.Paging{})
+	paging := extractPagingFromRequest(c)
+	songs, total, err := songManager.FindSongsByAlbumId(id, paging)
 	if err == nil {
 		var description string
 		if len(songs) > 0 {
@@ -55,7 +56,7 @@ func GetSongForAlbum(c *gin.Context) {
 				description = songs[0].Album.Title
 			}
 		}
-		songCollection := model.SongCollection{Songs: songs, Description: description, Paging: model.Paging{Page: 1, Size: len(songs)}}
+		songCollection := model.SongCollection{Songs: songs, Description: description, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, songCollection)
 		return
 	}
@@ -65,7 +66,7 @@ func GetSongForAlbum(c *gin.Context) {
 func GetCoverForAlbum(c *gin.Context) {
 	counterAlbum.Add("GET /:id/cover", 1)
 	id := c.Param("id")
-	songs, err := songManager.FindSongsByAlbumId(id, model.Paging{Size: 1})
+	songs, _, err := songManager.FindSongsByAlbumId(id, model.Paging{Size: 1})
 	if err != nil {
 		respondWithError(http.StatusNotFound, "album not found", c)
 		return

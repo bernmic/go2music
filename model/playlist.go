@@ -9,5 +9,6 @@ type Playlist struct {
 
 type PlaylistCollection struct {
 	Playlists []*Playlist `json:"playlists,omitempty"`
-	Paging
+	Paging    Paging      `json:"paging,omitempty"`
+	Total     int         `json:"total,omitempty"`
 }

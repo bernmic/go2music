@@ -199,8 +199,9 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 	return song, err
 }
 
-func (db *DB) FindAllSongs(paging model.Paging) ([]*model.Song, error) {
-	rows, err := db.Query(selectSongStatement + createOrderAndLimitForSong(paging))
+func (db *DB) FindAllSongs(paging model.Paging) ([]*model.Song, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForSong(paging)
+	rows, err := db.Query(selectSongStatement + orderAndLimit)
 	if err != nil {
 		log.Error("Error reading song table", err)
 	}
@@ -252,12 +253,16 @@ func (db *DB) FindAllSongs(paging model.Paging) ([]*model.Song, error) {
 	if err = rows.Err(); err != nil {
 		log.Error(err)
 	}
-
-	return songs, err
+	total := len(songs)
+	if limit {
+		total = db.countRows("SELECT COUNT(*) FROM song")
+	}
+	return songs, total, err
 }
 
-func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*model.Song, error) {
-	stmt := selectSongStatement + ` WHERE album.id = ?` + createOrderAndLimitForSong(paging)
+func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*model.Song, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForSong(paging)
+	stmt := selectSongStatement + ` WHERE album.id = ?` + orderAndLimit
 	rows, err := db.Query(stmt, findAlbumId)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -310,12 +315,16 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*mo
 	if err = rows.Err(); err != nil {
 		log.Error(err)
 	}
-
-	return songs, err
+	total := len(songs)
+	if limit {
+		total = db.countRows("SELECT COUNT(*) FROM song WHERE album_id = ?", findAlbumId)
+	}
+	return songs, total, err
 }
 
-func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*model.Song, error) {
-	stmt := selectSongStatement + `WHERE artist.id = ?	` + createOrderAndLimitForSong(paging)
+func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*model.Song, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForSong(paging)
+	stmt := selectSongStatement + `WHERE artist.id = ?	` + orderAndLimit
 	rows, err := db.Query(stmt, findArtistId)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -369,50 +378,55 @@ func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*
 		log.Error(err)
 	}
 
-	return songs, err
+	total := len(songs)
+	if limit {
+		total = db.countRows("SELECT COUNT(*) FROM song WHERE artist_id = ?", findArtistId)
+	}
+	return songs, total, err
 }
 
-func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*model.Song, error) {
+func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*model.Song, int, error) {
 	stmt := selectSongStatement
 	splittedBy := "="
 	splitted := strings.Split(query, "=")
 	if len(splitted) != 2 {
 		splitted = strings.Split(query, "~")
 		if len(splitted) != 2 {
-			return nil, errors.New("incorrect query")
+			return nil, 0, errors.New("incorrect query")
 		}
 		splittedBy = "~"
 	}
 
 	searchItem := splitted[1]
 
+	where := ""
 	switch strings.ToLower(splitted[0]) {
 	case "album":
 		if splittedBy == "=" {
-			stmt += " WHERE album.title = ?"
+			where = " WHERE album.title = ?"
 		} else {
-			stmt += " WHERE LOWER(album.title) LIKE ?"
+			where = " WHERE LOWER(album.title) LIKE ?"
 			searchItem = "%" + strings.ToLower(searchItem) + "%"
 		}
 	case "artist":
 		if splittedBy == "=" {
-			stmt += " WHERE artist.name = ?"
+			where = " WHERE artist.name = ?"
 		} else {
-			stmt += " WHERE LOWER(artist.name) LIKE ?"
+			where = " WHERE LOWER(artist.name) LIKE ?"
 			searchItem = "%" + strings.ToLower(searchItem) + "%"
 		}
 	case "title":
 		if splittedBy == "=" {
-			stmt += " WHERE song.title = ?"
+			where = " WHERE song.title = ?"
 		} else {
-			stmt += " WHERE LOWER(song.title) LIKE ?"
+			where = " WHERE LOWER(song.title) LIKE ?"
 			searchItem = "%" + strings.ToLower(searchItem) + "%"
 		}
 	}
 
-	stmt += createOrderAndLimitForSong(paging)
+	orderAndLimit, limit := createOrderAndLimitForSong(paging)
 
-	rows, err := db.Query(stmt, searchItem)
+	rows, err := db.Query(stmt+where+orderAndLimit, searchItem)
 	if err != nil {
 		log.Error("Error reading song table", err)
 	}
@@ -465,11 +479,16 @@ func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*mo
 		log.Error(err)
 	}
 
-	return songs, err
+	total := len(songs)
+	if limit {
+		total = db.countRows("SELECT COUNT(*) FROM song"+where, searchItem)
+	}
+	return songs, total, err
 }
 
-func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*model.Song, error) {
-	stmt := selectSongStatement + `WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)` + createOrderAndLimitForSong(paging)
+func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*model.Song, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForSong(paging)
+	stmt := selectSongStatement + " WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)" + orderAndLimit
 	rows, err := db.Query(stmt, playlistId)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -522,8 +541,11 @@ func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*mo
 	if err = rows.Err(); err != nil {
 		log.Error(err)
 	}
-
-	return songs, err
+	total := len(songs)
+	if limit {
+		total = db.countRows("SELECT COUNT(*) FROM song WHERE id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)", playlistId)
+	}
+	return songs, total, err
 }
 
 func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
@@ -537,8 +559,9 @@ func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
 	return image, mimetype, err
 }
 
-func createOrderAndLimitForSong(paging model.Paging) string {
+func createOrderAndLimitForSong(paging model.Paging) (string, bool) {
 	s := ""
+	l := false
 	if paging.Sort != "" {
 		switch paging.Sort {
 		case "title":
@@ -564,6 +587,7 @@ func createOrderAndLimitForSong(paging model.Paging) string {
 	}
 	if paging.Size > 0 {
 		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+		l = true
 	}
-	return s
+	return s, l
 }

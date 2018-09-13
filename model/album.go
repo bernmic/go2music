@@ -8,5 +8,6 @@ type Album struct {
 
 type AlbumCollection struct {
 	Albums []*Album `json:"albums,omitempty"`
-	Paging
+	Paging Paging   `json:"paging,omitempty"`
+	Total  int      `json:"total,omitempty"`
 }

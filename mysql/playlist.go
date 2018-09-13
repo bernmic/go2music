@@ -115,8 +115,9 @@ func (db *DB) FindPlaylistByName(name string, user_id string) (*model.Playlist, 
 	return playlist, err
 }
 
-func (db *DB) FindAllPlaylists(user_id string, paging model.Paging) ([]*model.Playlist, error) {
-	rows, err := db.Query("SELECT id, name, query FROM playlist WHERE user_id=?"+createOrderAndLimitForPlaylist(paging), user_id)
+func (db *DB) FindAllPlaylists(user_id string, paging model.Paging) ([]*model.Playlist, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForPlaylist(paging)
+	rows, err := db.Query("SELECT id, name, query FROM playlist WHERE user_id=?"+orderAndLimit, user_id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -133,8 +134,11 @@ func (db *DB) FindAllPlaylists(user_id string, paging model.Paging) ([]*model.Pl
 	if err = rows.Err(); err != nil {
 		log.Error(err)
 	}
-
-	return playlists, err
+	total := len(playlists)
+	if limit {
+		total = db.countRows("SELECT COUNT(*) FROM playlist WHERE user_id=?", user_id)
+	}
+	return playlists, total, err
 }
 
 func (db *DB) AddSongsToPlaylist(playlistId string, songIds []string) int {
@@ -200,8 +204,9 @@ func (db *DB) SetSongsOfPlaylist(playlistId string, songIds []string) (removed i
 	return
 }
 
-func createOrderAndLimitForPlaylist(paging model.Paging) string {
+func createOrderAndLimitForPlaylist(paging model.Paging) (string, bool) {
 	s := ""
+	l := false
 	if paging.Sort != "" {
 		switch paging.Sort {
 		case "name":
@@ -217,6 +222,7 @@ func createOrderAndLimitForPlaylist(paging model.Paging) string {
 	}
 	if paging.Size > 0 {
 		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+		l = true
 	}
-	return s
+	return s, l
 }

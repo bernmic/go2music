@@ -9,5 +9,5 @@ type AlbumManager interface {
 	DeleteAlbum(id string) error
 	FindAlbumById(id string) (*model.Album, error)
 	FindAlbumByPath(path string) (*model.Album, error)
-	FindAllAlbums(paging model.Paging) ([]*model.Album, error)
+	FindAllAlbums(paging model.Paging) ([]*model.Album, int, error)
 }

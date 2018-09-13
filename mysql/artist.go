@@ -78,8 +78,9 @@ func (db *DB) FindArtistByName(name string) (*model.Artist, error) {
 	return artist, err
 }
 
-func (db *DB) FindAllArtists(paging model.Paging) ([]*model.Artist, error) {
-	rows, err := db.Query("SELECT id, name FROM artist" + createOrderAndLimitForArtist(paging))
+func (db *DB) FindAllArtists(paging model.Paging) ([]*model.Artist, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForArtist(paging)
+	rows, err := db.Query("SELECT id, name FROM artist" + orderAndLimit)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,12 +97,16 @@ func (db *DB) FindAllArtists(paging model.Paging) ([]*model.Artist, error) {
 	if err = rows.Err(); err != nil {
 		log.Error(err)
 	}
-
-	return artists, err
+	total := len(artists)
+	if limit {
+		total = db.countRows("SELECT COUNT(*) FROM artist")
+	}
+	return artists, total, err
 }
 
-func createOrderAndLimitForArtist(paging model.Paging) string {
+func createOrderAndLimitForArtist(paging model.Paging) (string, bool) {
 	s := ""
+	l := false
 	if paging.Sort != "" {
 		switch paging.Sort {
 		case "name":
@@ -117,6 +122,7 @@ func createOrderAndLimitForArtist(paging model.Paging) string {
 	}
 	if paging.Size > 0 {
 		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+		l = true
 	}
-	return s
+	return s, l
 }

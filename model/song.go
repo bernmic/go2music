@@ -23,4 +23,5 @@ type SongCollection struct {
 	Songs       []*Song `json:"songs,omitempty"`
 	Description string  `json:"description,omitempty"`
 	Paging      Paging  `json:"paging,omitempty"`
+	Total       int     `json:"total,omitempty"`
 }

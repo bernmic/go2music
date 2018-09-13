@@ -9,5 +9,5 @@ type ArtistManager interface {
 	DeleteArtist(id string) error
 	FindArtistById(id string) (*model.Artist, error)
 	FindArtistByName(name string) (*model.Artist, error)
-	FindAllArtists(paging model.Paging) ([]*model.Artist, error)
+	FindAllArtists(paging model.Paging) ([]*model.Artist, int, error)
 }

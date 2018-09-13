@@ -8,10 +8,10 @@ type SongManager interface {
 	DeleteSong(id string) error
 	SongExists(path string) bool
 	FindOneSong(id string) (*model.Song, error)
-	FindAllSongs(paging model.Paging) ([]*model.Song, error)
-	FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*model.Song, error)
-	FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*model.Song, error)
-	FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*model.Song, error)
-	FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*model.Song, error)
+	FindAllSongs(paging model.Paging) ([]*model.Song, int, error)
+	FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*model.Song, int, error)
+	FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*model.Song, int, error)
+	FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*model.Song, int, error)
+	FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*model.Song, int, error)
 	GetCoverForSong(song *model.Song) ([]byte, string, error)
 }
