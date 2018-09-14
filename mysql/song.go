@@ -566,16 +566,18 @@ func createOrderAndLimitForSong(paging model.Paging) (string, bool) {
 		switch paging.Sort {
 		case "title":
 			s += " ORDER BY song.title"
-		case "album":
+		case "album", "album.title":
 			s += " ORDER BY album.title"
-		case "artist":
+		case "artist", "artist.name":
 			s += " ORDER BY artist.name"
 		case "genre":
 			s += " ORDER BY song.genre"
 		case "track":
 			s += " ORDER BY song.track"
-		case "year":
+		case "year", "yearPublished":
 			s += " ORDER BY song.yearpublished"
+		case "duration":
+			s += " ORDER BY song.duration"
 		}
 		if s != "" {
 			if paging.Direction == "asc" {
