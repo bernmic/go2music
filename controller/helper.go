@@ -26,3 +26,11 @@ func extractPagingFromRequest(c *gin.Context) model.Paging {
 
 	return paging
 }
+
+func extractFilterFromRequest(c *gin.Context) string {
+	values := c.Request.URL.Query()
+	if p := values.Get("filter"); p != "" {
+		return p
+	}
+	return ""
+}

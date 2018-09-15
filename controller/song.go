@@ -23,7 +23,8 @@ func initSong(r *gin.RouterGroup) {
 func GetSongs(c *gin.Context) {
 	counterSong.Add("GET /", 1)
 	paging := extractPagingFromRequest(c)
-	songs, total, err := songManager.FindAllSongs(paging)
+	filter := extractFilterFromRequest(c)
+	songs, total, err := songManager.FindAllSongs(filter, paging)
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, songCollection)

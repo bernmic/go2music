@@ -63,6 +63,15 @@ FROM
 LEFT JOIN artist ON song.artist_id = artist.id
 LEFT JOIN album ON song.album_id = album.id
 `
+
+	selectCountSongStatement = `
+SELECT
+	count(*)
+FROM
+	song
+LEFT JOIN artist ON song.artist_id = artist.id
+LEFT JOIN album ON song.album_id = album.id
+`
 )
 
 func (db *DB) initializeSong() {
@@ -199,8 +208,15 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 	return song, err
 }
 
-func (db *DB) FindAllSongs(paging model.Paging) ([]*model.Song, int, error) {
+func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
+	whereClause := ""
+	if filter != "" {
+		whereClause = " WHERE LOWER(song.title) LIKE '%" + strings.ToLower(filter) + "%'" +
+			" OR LOWER(album.title) LIKE '%" + strings.ToLower(filter) + "%'" +
+			" OR LOWER(artist.name) LIKE '%" + strings.ToLower(filter) + "%'"
+		orderAndLimit = whereClause + orderAndLimit
+	}
 	rows, err := db.Query(selectSongStatement + orderAndLimit)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -255,7 +271,7 @@ func (db *DB) FindAllSongs(paging model.Paging) ([]*model.Song, int, error) {
 	}
 	total := len(songs)
 	if limit {
-		total = db.countRows("SELECT COUNT(*) FROM song")
+		total = db.countRows(selectCountSongStatement + whereClause)
 	}
 	return songs, total, err
 }
