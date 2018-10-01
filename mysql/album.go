@@ -18,7 +18,7 @@ func (db *DB) initializeAlbum() {
 		} else {
 			log.Info("Album Table successfully created....")
 		}
-		_, err = db.Exec("ALTER TABLE album ADD UNIQUE INDEX album_path (path)")
+		_, err = db.Exec("CREATE UNIQUE INDEX album_path ON album (path)")
 		if err != nil {
 			log.Error("Error creating album table index for path")
 			panic(fmt.Sprintf("%v", err))
@@ -30,7 +30,7 @@ func (db *DB) initializeAlbum() {
 
 func (db *DB) CreateAlbum(album model.Album) (*model.Album, error) {
 	album.Id = xid.New().String()
-	_, err := db.Exec("INSERT INTO album (id, title, path) VALUES(?, ?, ?)", album.Id, album.Title, album.Path)
+	_, err := db.Exec(sanitizePlaceholder("INSERT INTO album (id, title, path) VALUES(?, ?, ?)"), album.Id, album.Title, album.Path)
 	if err != nil {
 		log.Error(err)
 	}
@@ -43,7 +43,7 @@ func (db *DB) CreateIfNotExistsAlbum(album model.Album) (*model.Album, error) {
 	if findErr == nil {
 		return existingAlbum, findErr
 	}
-	_, err := db.Exec("INSERT INTO album (id, title, path) VALUES(?, ?, ?)", album.Id, album.Title, album.Path)
+	_, err := db.Exec(sanitizePlaceholder("INSERT INTO album (id, title, path) VALUES(?, ?, ?)"), album.Id, album.Title, album.Path)
 	if err != nil {
 		log.Error(err)
 	}
@@ -51,18 +51,18 @@ func (db *DB) CreateIfNotExistsAlbum(album model.Album) (*model.Album, error) {
 }
 
 func (db *DB) UpdateAlbum(album model.Album) (*model.Album, error) {
-	_, err := db.Exec("UPDATE album SET title=?, path=? WHERE id=?", album.Title, album.Path, album.Id)
+	_, err := db.Exec(sanitizePlaceholder("UPDATE album SET title=?, path=? WHERE id=?"), album.Title, album.Path, album.Id)
 	return &album, err
 }
 
 func (db *DB) DeleteAlbum(id string) error {
-	_, err := db.Exec("DELETE FROM album WHERE id=?", id)
+	_, err := db.Exec(sanitizePlaceholder("DELETE FROM album WHERE id=?"), id)
 	return err
 }
 
 func (db *DB) FindAlbumById(id string) (*model.Album, error) {
 	album := model.Album{}
-	err := db.QueryRow("SELECT id,title,path FROM album WHERE id=?", id).Scan(&album.Id, &album.Title, &album.Path)
+	err := db.QueryRow(sanitizePlaceholder("SELECT id,title,path FROM album WHERE id=?"), id).Scan(&album.Id, &album.Title, &album.Path)
 	if err != nil {
 		log.Error(err)
 	}
@@ -71,13 +71,13 @@ func (db *DB) FindAlbumById(id string) (*model.Album, error) {
 
 func (db *DB) FindAlbumByPath(path string) (*model.Album, error) {
 	album := model.Album{}
-	err := db.QueryRow("SELECT id,title,path FROM album WHERE path=?", path).Scan(&album.Id, &album.Title, &album.Path)
+	err := db.QueryRow(sanitizePlaceholder("SELECT id,title,path FROM album WHERE path=?"), path).Scan(&album.Id, &album.Title, &album.Path)
 	return &album, err
 }
 
 func (db *DB) FindAllAlbums(paging model.Paging) ([]*model.Album, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForAlbum(paging)
-	rows, err := db.Query("SELECT id, title, path FROM album" + orderAndLimit)
+	rows, err := db.Query(sanitizePlaceholder("SELECT id, title, path FROM album" + orderAndLimit))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -97,7 +97,7 @@ func (db *DB) FindAllAlbums(paging model.Paging) ([]*model.Album, int, error) {
 
 	total := len(albums)
 	if limit {
-		total = db.countRows("SELECT COUNT(*) FROM album")
+		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM album"))
 	}
 	return albums, total, err
 }

@@ -15,7 +15,7 @@ const (
 		query VARCHAR(255) NOT NULL,
 		user_id varchar(32) NOT NULL,
 		PRIMARY KEY (id),
-		FOREIGN KEY (user_id) REFERENCES user(id)
+		FOREIGN KEY (user_id) REFERENCES guser(id)
 		);
 	`
 
@@ -41,7 +41,7 @@ func (db *DB) initializePlaylist() {
 		} else {
 			log.Info("Playlist Table successfully created....")
 		}
-		_, err = db.Exec("ALTER TABLE playlist ADD UNIQUE INDEX playlist_name (name)")
+		_, err = db.Exec("CREATE UNIQUE INDEX playlist_name ON playlist (name)")
 		if err != nil {
 			log.Error("Error creating playlist table index for name")
 			panic(fmt.Sprintf("%v", err))
@@ -64,7 +64,7 @@ func (db *DB) initializePlaylist() {
 
 func (db *DB) CreatePlaylist(playlist model.Playlist) (*model.Playlist, error) {
 	playlist.Id = xid.New().String()
-	_, err := db.Exec("INSERT IGNORE INTO playlist (id,name,query,user_id) VALUES(?,?,?,?)", playlist.Id, playlist.Name, playlist.Query, playlist.User.Id)
+	_, err := db.Exec(sanitizePlaceholder("INSERT IGNORE INTO playlist (id,name,query,user_id) VALUES(?,?,?,?)"), playlist.Id, playlist.Name, playlist.Query, playlist.User.Id)
 	if err != nil {
 		log.Error(err)
 	}
@@ -77,7 +77,7 @@ func (db *DB) CreateIfNotExistsPlaylist(playlist model.Playlist) (*model.Playlis
 		return existingPlaylist, findErr
 	}
 	playlist.Id = xid.New().String()
-	_, err := db.Exec("INSERT INTO playlist (id,name,query,user_id) VALUES(?,?,?,?)", playlist.Id, playlist.Name, playlist.Query, playlist.User.Id)
+	_, err := db.Exec(sanitizePlaceholder("INSERT INTO playlist (id,name,query,user_id) VALUES(?,?,?,?)"), playlist.Id, playlist.Name, playlist.Query, playlist.User.Id)
 	if err != nil {
 		log.Error(err)
 	}
@@ -85,21 +85,21 @@ func (db *DB) CreateIfNotExistsPlaylist(playlist model.Playlist) (*model.Playlis
 }
 
 func (db *DB) UpdatePlaylist(playlist model.Playlist) (*model.Playlist, error) {
-	_, err := db.Exec("UPDATE playlist SET name=?,query=? WHERE id=?", playlist.Name, playlist.Query, playlist.Id)
+	_, err := db.Exec(sanitizePlaceholder("UPDATE playlist SET name=?,query=? WHERE id=?"), playlist.Name, playlist.Query, playlist.Id)
 	return &playlist, err
 }
 
 func (db *DB) DeletePlaylist(id string, user_id string) error {
-	_, err := db.Exec("DELETE FROM playlist_song WHERE playlist_id=?", id)
+	_, err := db.Exec(sanitizePlaceholder("DELETE FROM playlist_song WHERE playlist_id=?"), id)
 	if err == nil {
-		_, err = db.Exec("DELETE FROM playlist WHERE id=? AND user_id=?", id, user_id)
+		_, err = db.Exec(sanitizePlaceholder("DELETE FROM playlist WHERE id=? AND user_id=?"), id, user_id)
 	}
 	return err
 }
 
 func (db *DB) FindPlaylistById(id string, user_id string) (*model.Playlist, error) {
 	playlist := new(model.Playlist)
-	err := db.QueryRow("SELECT id,name,query FROM playlist WHERE id=? AND user_id=?", id, user_id).Scan(&playlist.Id, &playlist.Name, &playlist.Query)
+	err := db.QueryRow(sanitizePlaceholder("SELECT id,name,query FROM playlist WHERE id=? AND user_id=?"), id, user_id).Scan(&playlist.Id, &playlist.Name, &playlist.Query)
 	if err != nil {
 		log.Error(err)
 	}
@@ -108,7 +108,7 @@ func (db *DB) FindPlaylistById(id string, user_id string) (*model.Playlist, erro
 
 func (db *DB) FindPlaylistByName(name string, user_id string) (*model.Playlist, error) {
 	playlist := new(model.Playlist)
-	err := db.QueryRow("SELECT id,name,query FROM playlist WHERE name=? AND user_id=?", name, user_id).Scan(&playlist.Id, &playlist.Name, &playlist.Query)
+	err := db.QueryRow(sanitizePlaceholder("SELECT id,name,query FROM playlist WHERE name=? AND user_id=?"), name, user_id).Scan(&playlist.Id, &playlist.Name, &playlist.Query)
 	if err != nil {
 		return playlist, err
 	}
@@ -117,7 +117,7 @@ func (db *DB) FindPlaylistByName(name string, user_id string) (*model.Playlist, 
 
 func (db *DB) FindAllPlaylists(user_id string, paging model.Paging) ([]*model.Playlist, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForPlaylist(paging)
-	rows, err := db.Query("SELECT id, name, query FROM playlist WHERE user_id=?"+orderAndLimit, user_id)
+	rows, err := db.Query(sanitizePlaceholder("SELECT id, name, query FROM playlist WHERE user_id=?"+orderAndLimit), user_id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -136,7 +136,7 @@ func (db *DB) FindAllPlaylists(user_id string, paging model.Paging) ([]*model.Pl
 	}
 	total := len(playlists)
 	if limit {
-		total = db.countRows("SELECT COUNT(*) FROM playlist WHERE user_id=?", user_id)
+		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM playlist WHERE user_id=?"), user_id)
 	}
 	return playlists, total, err
 }
@@ -149,7 +149,7 @@ func (db *DB) AddSongsToPlaylist(playlistId string, songIds []string) int {
 	}
 	defer tx.Rollback()
 	for _, songId := range songIds {
-		_, err := tx.Exec("INSERT IGNORE INTO playlist_song (playlist_id,song_id) VALUES(?,?)", playlistId, songId)
+		_, err := tx.Exec(sanitizePlaceholder("INSERT IGNORE INTO playlist_song (playlist_id,song_id) VALUES(?,?)"), playlistId, songId)
 		if err != nil {
 			log.Error(err)
 		} else {
@@ -168,7 +168,7 @@ func (db *DB) RemoveSongsFromPlaylist(playlistId string, songIds []string) int {
 	}
 	defer tx.Rollback()
 	for _, songId := range songIds {
-		_, err := tx.Exec("DELETE FROM playlist_song WHERE playlist_id=? AND song_id=?", playlistId, songId)
+		_, err := tx.Exec(sanitizePlaceholder("DELETE FROM playlist_song WHERE playlist_id=? AND song_id=?"), playlistId, songId)
 		if err != nil {
 			log.Error(err)
 		} else {
@@ -185,7 +185,7 @@ func (db *DB) SetSongsOfPlaylist(playlistId string, songIds []string) (removed i
 		log.Errorf("Error beginning transaction: %v", err)
 	}
 	defer tx.Rollback()
-	result, err := tx.Exec("DELETE FROM playlist_song WHERE playlist_id=?", playlistId)
+	result, err := tx.Exec(sanitizePlaceholder("DELETE FROM playlist_song WHERE playlist_id=?"), playlistId)
 	if err == nil {
 		removed64, _ := result.RowsAffected()
 		removed = int(removed64)
@@ -193,7 +193,7 @@ func (db *DB) SetSongsOfPlaylist(playlistId string, songIds []string) (removed i
 		log.Errorf("Error removing songs from playlist %v", err)
 	}
 	for _, songId := range songIds {
-		_, err := tx.Exec("INSERT IGNORE INTO playlist_song (playlist_id,song_id) VALUES(?,?)", playlistId, songId)
+		_, err := tx.Exec(sanitizePlaceholder("INSERT IGNORE INTO playlist_song (playlist_id,song_id) VALUES(?,?)"), playlistId, songId)
 		if err != nil {
 			log.Error(err)
 		} else {

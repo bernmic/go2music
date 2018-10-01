@@ -18,7 +18,7 @@ func (db *DB) initializeArtist() {
 		} else {
 			log.Info("Artist Table successfully created....")
 		}
-		_, err = db.Exec("ALTER TABLE artist ADD UNIQUE INDEX artist_name (name)")
+		_, err = db.Exec("CREATE UNIQUE INDEX artist_name ON artist (name)")
 		if err != nil {
 			log.Error("Error creating artist table index for name")
 			panic(fmt.Sprintf("%v", err))
@@ -30,7 +30,7 @@ func (db *DB) initializeArtist() {
 
 func (db *DB) CreateArtist(artist model.Artist) (*model.Artist, error) {
 	artist.Id = xid.New().String()
-	_, err := db.Exec("INSERT INTO artist (id, name) VALUES(?, ?)", artist.Id, artist.Name)
+	_, err := db.Exec(sanitizePlaceholder("INSERT INTO artist (id, name) VALUES(?, ?)"), artist.Id, artist.Name)
 	if err != nil {
 		log.Error(err)
 	}
@@ -43,7 +43,7 @@ func (db *DB) CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error
 		return existingArtist, findErr
 	}
 	artist.Id = xid.New().String()
-	_, err := db.Exec("INSERT INTO artist (id, name) VALUES(?, ?)", artist.Id, artist.Name)
+	_, err := db.Exec(sanitizePlaceholder("INSERT INTO artist (id, name) VALUES(?, ?)"), artist.Id, artist.Name)
 	if err != nil {
 		log.Error(err)
 	}
@@ -51,18 +51,18 @@ func (db *DB) CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error
 }
 
 func (db *DB) UpdateArtist(artist model.Artist) (*model.Artist, error) {
-	_, err := db.Exec("UPDATE artist SET name=? WHERE id=?", artist.Name, artist.Id)
+	_, err := db.Exec(sanitizePlaceholder("UPDATE artist SET name=? WHERE id=?"), artist.Name, artist.Id)
 	return &artist, err
 }
 
 func (db *DB) DeleteArtist(id string) error {
-	_, err := db.Exec("DELETE FROM artist WHERE id=?", id)
+	_, err := db.Exec(sanitizePlaceholder("DELETE FROM artist WHERE id=?"), id)
 	return err
 }
 
 func (db *DB) FindArtistById(id string) (*model.Artist, error) {
 	artist := new(model.Artist)
-	err := db.QueryRow("SELECT id,name FROM artist WHERE id=?", id).Scan(&artist.Id, &artist.Name)
+	err := db.QueryRow(sanitizePlaceholder("SELECT id,name FROM artist WHERE id=?"), id).Scan(&artist.Id, &artist.Name)
 	if err != nil {
 		log.Error(err)
 	}
@@ -71,7 +71,7 @@ func (db *DB) FindArtistById(id string) (*model.Artist, error) {
 
 func (db *DB) FindArtistByName(name string) (*model.Artist, error) {
 	artist := new(model.Artist)
-	err := db.QueryRow("SELECT id,name FROM artist WHERE name=?", name).Scan(&artist.Id, &artist.Name)
+	err := db.QueryRow(sanitizePlaceholder("SELECT id,name FROM artist WHERE name=?"), name).Scan(&artist.Id, &artist.Name)
 	if err != nil {
 		return artist, err
 	}
@@ -80,7 +80,7 @@ func (db *DB) FindArtistByName(name string) (*model.Artist, error) {
 
 func (db *DB) FindAllArtists(paging model.Paging) ([]*model.Artist, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForArtist(paging)
-	rows, err := db.Query("SELECT id, name FROM artist" + orderAndLimit)
+	rows, err := db.Query(sanitizePlaceholder("SELECT id, name FROM artist" + orderAndLimit))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,7 +99,7 @@ func (db *DB) FindAllArtists(paging model.Paging) ([]*model.Artist, int, error) 
 	}
 	total := len(artists)
 	if limit {
-		total = db.countRows("SELECT COUNT(*) FROM artist")
+		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM artist"))
 	}
 	return artists, total, err
 }

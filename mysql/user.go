@@ -9,8 +9,8 @@ import (
 )
 
 const createUserTableStatement = `
-	CREATE TABLE IF NOT EXISTS 
-		user (
+	CREATE TABLE IF NOT EXISTS
+		guser (
 			id varchar(32), 
 			username varchar(255) NOT NULL, 
 			password varchar(255) NOT NULL, 
@@ -20,17 +20,17 @@ const createUserTableStatement = `
 		);`
 
 func (db *DB) initializeUser() {
-	_, err := db.Query("SELECT 1 FROM user LIMIT 1")
+	_, err := db.Query("SELECT 1 FROM guser LIMIT 1")
 	if err != nil {
-		log.Print("Table user does not exists. Creating now.")
-		_, err := db.Exec(createUserTableStatement)
+		log.Print("Table guser does not exists. Creating now.")
+		result, err := db.Exec(createUserTableStatement)
 		if err != nil {
-			log.Error("Error creating user table")
+			log.Error("Error creating guser table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Info("User Table successfully created....")
+			log.Infof("User Table successfully created....%v", result)
 		}
-		_, err = db.Exec("ALTER TABLE user ADD UNIQUE INDEX user_username (username)")
+		_, err = db.Exec("CREATE UNIQUE INDEX guser_username ON guser (username)")
 		if err != nil {
 			log.Error("Error creating user table index for username")
 			panic(fmt.Sprintf("%v", err))
@@ -39,7 +39,7 @@ func (db *DB) initializeUser() {
 		}
 	}
 	var count int64
-	db.QueryRow("SELECT count(*) c FROM user").Scan(&count)
+	db.QueryRow(sanitizePlaceholder("SELECT count(*) c FROM guser")).Scan(&count)
 	if count == 0 {
 		userPassword, _ := HashPassword("user")
 		adminPassword, _ := HashPassword("admin")
@@ -53,7 +53,7 @@ func (db *DB) initializeUser() {
 func (db *DB) CreateUser(user model.User) (*model.User, error) {
 	user.Id = xid.New().String()
 	_, err := db.Exec(
-		"INSERT INTO user (id,username,password,role,email) VALUES(?,?,?,?,?)",
+		sanitizePlaceholder("INSERT INTO guser (id,username,password,role,email) VALUES(?,?,?,?,?)"),
 		user.Id,
 		user.Username,
 		user.Password,
@@ -72,7 +72,7 @@ func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 	}
 	user.Id = xid.New().String()
 	_, err := db.Exec(
-		"INSERT INTO user (id,username,password,role,email) VALUES(?,?,?,?,?)",
+		sanitizePlaceholder("INSERT INTO guser (id,username,password,role,email) VALUES(?,?,?,?,?)"),
 		user.Id,
 		user.Username,
 		user.Password,
@@ -86,7 +86,7 @@ func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 
 func (db *DB) UpdateUser(user model.User) (*model.User, error) {
 	_, err := db.Exec(
-		"UPDATE user SET username=?, password=?, role=?, email=? WHERE id=?",
+		sanitizePlaceholder("UPDATE guser SET username=?, password=?, role=?, email=? WHERE id=?"),
 		user.Username,
 		user.Password,
 		user.Role,
@@ -96,14 +96,14 @@ func (db *DB) UpdateUser(user model.User) (*model.User, error) {
 }
 
 func (db *DB) DeleteUser(id string) error {
-	_, err := db.Exec("DELETE FROM user WHERE id=?", id)
+	_, err := db.Exec(sanitizePlaceholder("DELETE FROM guser WHERE id=?"), id)
 	return err
 }
 
 func (db *DB) FindUserById(id string) (*model.User, error) {
 	user := new(model.User)
 	err := db.QueryRow(
-		"SELECT id,username, password, role, email FROM user WHERE id=?", id).Scan(
+		sanitizePlaceholder("SELECT id,username, password, role, email FROM guser WHERE id=?"), id).Scan(
 		&user.Id,
 		&user.Username,
 		&user.Password,
@@ -118,7 +118,7 @@ func (db *DB) FindUserById(id string) (*model.User, error) {
 func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 	user := new(model.User)
 	err := db.QueryRow(
-		"SELECT id,username, password, role, email FROM user WHERE username=?", name).Scan(
+		sanitizePlaceholder("SELECT id,username, password, role, email FROM guser WHERE username=?"), name).Scan(
 		&user.Id,
 		&user.Username,
 		&user.Password,
@@ -131,7 +131,7 @@ func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 }
 
 func (db *DB) FindAllUsers(paging model.Paging) ([]*model.User, error) {
-	rows, err := db.Query("SELECT id, username, password, role, email FROM user" + createOrderAndLimitForUser(paging))
+	rows, err := db.Query(sanitizePlaceholder("SELECT id, username, password, role, email FROM guser" + createOrderAndLimitForUser(paging)))
 	if err != nil {
 		log.Error(err)
 	}

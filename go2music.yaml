@@ -9,6 +9,12 @@ database:
   password: go2music
   schema: go2music
   type: mysql
-  url: tcp(localhost:3306)
+  url: ${username}:${password}@tcp(localhost:3306)/${schema}
+databasep:
+  username: root
+  password:
+  schema: go2music?sslmode=disable
+  type: postgres
+  url: postgresql://${username}:${password}@localhost:26257/${schema}
 media:
   path: d:/music

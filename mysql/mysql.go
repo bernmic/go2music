@@ -4,9 +4,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"go2music/configuration"
 	"go2music/fs"
+	"go2music/model"
+	"strings"
 )
 
 type DB struct {
@@ -17,8 +21,10 @@ var database DB
 
 func New() (*DB, error) {
 	c := configuration.Configuration()
-	url := c.Database.Url + "/" + c.Database.Schema
-	db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, url))
+	//url := c.Database.Url + "/" + c.Database.Schema
+	//db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, url))
+	url := createUrl(c.Database)
+	db, err := sql.Open(c.Database.Type, url)
 	if err != nil {
 		log.Errorf("Error opening service " + url)
 		panic(fmt.Sprintf("%v", err))
@@ -49,4 +55,23 @@ func (db *DB) countRows(sql string, args ...interface{}) int {
 	rows := db.QueryRow(sql, args...)
 	rows.Scan(&count)
 	return count
+}
+
+// postgres can't handle ? placeholder in sql. so we have to chanbge them to $n
+func sanitizePlaceholder(sql string) string {
+	if configuration.Configuration().Database.Type == "postgres" {
+		counter := 1
+		for strings.Contains(sql, "?") {
+			sql = strings.Replace(sql, "?", fmt.Sprintf("$%d", counter), 1)
+			counter++
+		}
+	}
+	return sql
+}
+
+func createUrl(dbParam model.Database) string {
+	result := strings.Replace(dbParam.Url, "${username}", dbParam.Username, -1)
+	result = strings.Replace(result, "${password}", dbParam.Password, -1)
+	result = strings.Replace(result, "${schema}", dbParam.Schema, -1)
+	return result
 }
