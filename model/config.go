@@ -13,7 +13,9 @@ type Database struct {
 }
 
 type Media struct {
-	Path string `yaml:"path,omitempty"`
+	Path          string `yaml:"path,omitempty"`
+	Syncfrequency string `yaml:"syncfrequency,omitempty"`
+	SyncAtStart   bool   `yaml:"syncatstart,omitempty"`
 }
 
 type Application struct {

@@ -47,6 +47,9 @@ func Configuration() *model.Config {
 		if config.Media.Path == "" {
 			config.Media.Path = "${home}/Music"
 		}
+		if config.Media.Syncfrequency == "" {
+			config.Media.Syncfrequency = "30m"
+		}
 		if config.Database.Type == "" {
 			config.Database.Username = os.Getenv("GO2MUSIC_DBUSERNAME")
 			if config.Database.Username == "" {
