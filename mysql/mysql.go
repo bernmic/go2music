@@ -8,7 +8,6 @@ import (
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"go2music/configuration"
-	"go2music/fs"
 	"go2music/model"
 	"strings"
 )
@@ -40,8 +39,6 @@ func New() (*DB, error) {
 	database.initializeSong()
 	database.initializePlaylist()
 	log.Info("Database initialized....")
-
-	go fs.SyncWithFilesystem(&database, &database, &database)
 
 	return &database, nil
 }

@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go2music/configuration"
 	"go2music/controller"
+	"go2music/fs"
 	"go2music/mysql"
 )
 
@@ -24,5 +25,8 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 	db, _ := mysql.New()
+
+	go fs.SyncWithFilesystem(db, db, db)
+
 	controller.Run(db)
 }

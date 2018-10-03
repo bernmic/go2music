@@ -20,7 +20,14 @@ import (
 
 // SyncWithFilesystem syncs the database with the configured directory in filesystem.
 // New songs where added to database, removed songs where deleted from database.
+var running bool = false
+
 func SyncWithFilesystem(albumManager database.AlbumManager, artistManager database.ArtistManager, songManager database.SongManager) {
+	if running {
+		log.Info("Scanning ist already running. stopping here.")
+		return
+	}
+	running = true
 	log.Info("Start scanning filesystem....")
 	start := time.Now()
 	path := replaceVariables(configuration.Configuration().Media.Path)
@@ -32,6 +39,7 @@ func SyncWithFilesystem(albumManager database.AlbumManager, artistManager databa
 		ID3Reader(result, albumManager, artistManager, songManager)
 		log.Infof("Sync finished...in %f seconds", time.Since(start).Seconds())
 	}
+	running = false
 }
 
 func replaceVariables(in string) string {
