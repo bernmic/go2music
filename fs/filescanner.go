@@ -2,24 +2,26 @@ package fs
 
 import (
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var result []string
 
-func Filescanner(root string, extension string, level ...int) []string {
+// Filescanner gets a list of all files having the given extension recursive in den path
+func Filescanner(root string, extension string, level ...int) ([]string, error) {
 	var clevel int
 	if clevel = 0; len(level) > 0 {
 		clevel = level[0]
 	}
 	files, err := ioutil.ReadDir(root)
 	if err != nil {
-		log.Error("error reading dir", err)
-		return nil
+		log.Error("error reading dir: ", err)
+		return nil, err
 	}
 	if clevel == 0 {
 		result = nil
@@ -33,7 +35,7 @@ func Filescanner(root string, extension string, level ...int) []string {
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 type ImageFile struct {
@@ -41,6 +43,7 @@ type ImageFile struct {
 	mimetype string
 }
 
+// GetCoverFromPath gets a cover from the path if there is one
 func GetCoverFromPath(path string) ([]byte, string, error) {
 	var files []ImageFile
 	filepath.Walk(path, func(path string, f os.FileInfo, _ error) error {

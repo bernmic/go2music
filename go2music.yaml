@@ -9,7 +9,7 @@ database:
   password: go2music
   schema: go2music
   type: mysql
-  url: ${username}:${password}@tcp(localhost:3306)/${schema}
+  url: ${username}:${password}@tcp(beethoven:3306)/${schema}
 databasep:
   username: root
   password:

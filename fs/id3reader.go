@@ -3,9 +3,6 @@ package fs
 import (
 	"errors"
 	"fmt"
-	"github.com/dhowden/tag"
-	log "github.com/sirupsen/logrus"
-	"github.com/xhenner/mp3-go"
 	"go2music/configuration"
 	"go2music/database"
 	"go2music/model"
@@ -15,18 +12,26 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dhowden/tag"
+	log "github.com/sirupsen/logrus"
+	"github.com/xhenner/mp3-go"
 )
 
+// SyncWithFilesystem syncs the database with the configured directory in filesystem.
+// New songs where added to database, removed songs where deleted from database.
 func SyncWithFilesystem(albumManager database.AlbumManager, artistManager database.ArtistManager, songManager database.SongManager) {
 	log.Info("Start scanning filesystem....")
 	start := time.Now()
 	path := replaceVariables(configuration.Configuration().Media.Path)
-	result := Filescanner(path, ".mp3")
-	log.Infof("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
-	log.Info("Start sync found files with service...")
-	start = time.Now()
-	ID3Reader(result, albumManager, artistManager, songManager)
-	log.Infof("Sync finished...in %f seconds", time.Since(start).Seconds())
+	result, err := Filescanner(path, ".mp3")
+	if err == nil {
+		log.Infof("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
+		log.Info("Start sync found files with service...")
+		start = time.Now()
+		ID3Reader(result, albumManager, artistManager, songManager)
+		log.Infof("Sync finished...in %f seconds", time.Since(start).Seconds())
+	}
 }
 
 func replaceVariables(in string) string {
@@ -100,6 +105,7 @@ func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 	return nil, err
 }
 
+// ID3Reader adds all songfiles to the database if they don't exists there.
 func ID3Reader(filenames []string, albumManager database.AlbumManager, artistManager database.ArtistManager, songManager database.SongManager) {
 	counter := 0
 	for _, filename := range filenames {
@@ -124,6 +130,7 @@ func ID3Reader(filenames []string, albumManager database.AlbumManager, artistMan
 	}
 }
 
+// GetCoverFromID3 reads the covcer image from the ID3 tags.
 func GetCoverFromID3(filename string) ([]byte, string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
