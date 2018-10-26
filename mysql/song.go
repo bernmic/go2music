@@ -2,12 +2,12 @@ package mysql
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
 	"go2music/fs"
 	"go2music/model"
+	"go2music/parser"
 	"path/filepath"
 	"strings"
 )
@@ -402,46 +402,18 @@ func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*
 
 func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*model.Song, int, error) {
 	stmt := selectSongStatement
-	splittedBy := "="
-	splitted := strings.Split(query, "=")
-	if len(splitted) != 2 {
-		splitted = strings.Split(query, "~")
-		if len(splitted) != 2 {
-			return nil, 0, errors.New("incorrect query")
-		}
-		splittedBy = "~"
+	where, err := parser.EvalPlaylistExpression(query)
+	if err != nil {
+		log.Error("Error parsing playlist query", err)
+		return nil, 0, err
 	}
-
-	searchItem := splitted[1]
-
-	where := ""
-	switch strings.ToLower(splitted[0]) {
-	case "album":
-		if splittedBy == "=" {
-			where = " WHERE album.title = ?"
-		} else {
-			where = " WHERE LOWER(album.title) LIKE ?"
-			searchItem = "%" + strings.ToLower(searchItem) + "%"
-		}
-	case "artist":
-		if splittedBy == "=" {
-			where = " WHERE artist.name = ?"
-		} else {
-			where = " WHERE LOWER(artist.name) LIKE ?"
-			searchItem = "%" + strings.ToLower(searchItem) + "%"
-		}
-	case "title":
-		if splittedBy == "=" {
-			where = " WHERE song.title = ?"
-		} else {
-			where = " WHERE LOWER(song.title) LIKE ?"
-			searchItem = "%" + strings.ToLower(searchItem) + "%"
-		}
+	if where != "" {
+		where = " WHERE " + where
 	}
 
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
 
-	rows, err := db.Query(sanitizePlaceholder(stmt+where+orderAndLimit), searchItem)
+	rows, err := db.Query(stmt + where + orderAndLimit)
 	if err != nil {
 		log.Error("Error reading song table", err)
 	}
@@ -496,7 +468,16 @@ func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*mo
 
 	total := len(songs)
 	if limit {
-		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song"+where), searchItem)
+		countStmt :=
+			`
+SELECT 
+ COUNT(*) 
+FROM 
+ song 
+LEFT JOIN artist ON song.artist_id = artist.id
+LEFT JOIN album ON song.album_id = album.id`
+
+		total = db.countRows(countStmt + where)
 	}
 	return songs, total, err
 }
