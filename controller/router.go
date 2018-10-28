@@ -23,6 +23,7 @@ var (
 	playlistManager database.PlaylistManager
 	songManager     database.SongManager
 	userManager     database.UserManager
+	infoManager     database.InfoManager
 )
 
 func initRouter() {
@@ -50,6 +51,7 @@ func initRouter() {
 		initArtist(api)
 		initSong(api)
 		initPlaylist(api)
+		initInfo(api)
 	}
 
 	admin := router.Group("/api/admin/")
@@ -66,6 +68,7 @@ func Run(dbi *mysql.DB) {
 	playlistManager = db
 	songManager = db
 	userManager = db
+	infoManager = db
 	initRouter()
 	serverAddress := fmt.Sprintf(":%d", configuration.Configuration().Server.Port)
 	router.Run(serverAddress)

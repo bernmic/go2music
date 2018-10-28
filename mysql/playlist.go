@@ -115,9 +115,17 @@ func (db *DB) FindPlaylistByName(name string, user_id string) (*model.Playlist, 
 	return playlist, err
 }
 
-func (db *DB) FindAllPlaylists(user_id string, paging model.Paging) ([]*model.Playlist, int, error) {
+func (db *DB) FindAllPlaylistsOfKind(user_id string, kind string, paging model.Paging) ([]*model.Playlist, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForPlaylist(paging)
-	rows, err := db.Query(sanitizePlaceholder("SELECT id, name, query FROM playlist WHERE user_id=?"+orderAndLimit), user_id)
+	stmt := "SELECT id, name, query FROM playlist WHERE user_id=?"
+	where := ""
+	switch kind {
+	case "static":
+		where = " AND query IS NULL OR query=''"
+	case "dynamic":
+		where = " AND query IS NOT NULL AND query!=''"
+	}
+	rows, err := db.Query(sanitizePlaceholder(stmt+where+orderAndLimit), user_id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -136,7 +144,7 @@ func (db *DB) FindAllPlaylists(user_id string, paging model.Paging) ([]*model.Pl
 	}
 	total := len(playlists)
 	if limit {
-		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM playlist WHERE user_id=?"), user_id)
+		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM playlist WHERE user_id=?"+where), user_id)
 	}
 	return playlists, total, err
 }

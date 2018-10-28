@@ -9,7 +9,7 @@ type PlaylistManager interface {
 	DeletePlaylist(id string, user_id string) error
 	FindPlaylistById(id string, user_id string) (*model.Playlist, error)
 	FindPlaylistByName(name string, user_id string) (*model.Playlist, error)
-	FindAllPlaylists(user_id string, paging model.Paging) ([]*model.Playlist, int, error)
+	FindAllPlaylistsOfKind(user_id string, kind string, paging model.Paging) ([]*model.Playlist, int, error)
 	AddSongsToPlaylist(playlistId string, songIds []string) int
 	RemoveSongsFromPlaylist(playlistId string, songIds []string) int
 	SetSongsOfPlaylist(playlistId string, songIds []string) (int, int)

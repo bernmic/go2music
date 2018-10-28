@@ -38,6 +38,7 @@ func New() (*DB, error) {
 	database.initializeAlbum()
 	database.initializeSong()
 	database.initializePlaylist()
+	database.InitializeInfo()
 	log.Info("Database initialized....")
 
 	return &database, nil

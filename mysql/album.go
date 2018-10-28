@@ -102,6 +102,39 @@ func (db *DB) FindAllAlbums(paging model.Paging) ([]*model.Album, int, error) {
 	return albums, total, err
 }
 
+func (db *DB) FindAlbumsForArtist(artistId string) ([]*model.Album, error) {
+	stmt := `
+SELECT DISTINCT
+	album.id album_id,
+	album.title album_title,
+	album.path album_path
+FROM
+	song
+LEFT JOIN artist ON song.artist_id = artist.id
+LEFT JOIN album ON song.album_id = album.id
+WHERE
+	artist.id=?
+`
+	rows, err := db.Query(sanitizePlaceholder(stmt), artistId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	albums := make([]*model.Album, 0)
+	for rows.Next() {
+		album := new(model.Album)
+		err := rows.Scan(&album.Id, &album.Title, &album.Path)
+		if err != nil {
+			log.Error(err)
+		}
+		albums = append(albums, album)
+	}
+	if err = rows.Err(); err != nil {
+		log.Error(err)
+	}
+	return albums, err
+}
+
 func createOrderAndLimitForAlbum(paging model.Paging) (string, bool) {
 	s := ""
 	l := false

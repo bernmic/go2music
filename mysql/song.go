@@ -207,20 +207,7 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 	return song, err
 }
 
-func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, int, error) {
-	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	whereClause := ""
-	if filter != "" {
-		whereClause = " WHERE LOWER(song.title) LIKE '%" + strings.ToLower(filter) + "%'" +
-			" OR LOWER(album.title) LIKE '%" + strings.ToLower(filter) + "%'" +
-			" OR LOWER(artist.name) LIKE '%" + strings.ToLower(filter) + "%'"
-		orderAndLimit = whereClause + orderAndLimit
-	}
-	rows, err := db.Query(sanitizePlaceholder(selectSongStatement + orderAndLimit))
-	if err != nil {
-		log.Error("Error reading song table", err)
-	}
-	defer rows.Close()
+func fetchSongs(rows *sql.Rows) ([]*model.Song, error) {
 	songs := make([]*model.Song, 0)
 	var artistId sql.NullString
 	var artistName sql.NullString
@@ -265,9 +252,29 @@ func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, i
 		}
 		songs = append(songs, song)
 	}
-	if err = rows.Err(); err != nil {
+	err := rows.Err()
+	if err != nil {
 		log.Error(err)
 	}
+	return songs, err
+}
+
+func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForSong(paging)
+	whereClause := ""
+	if filter != "" {
+		whereClause = " WHERE LOWER(song.title) LIKE '%" + strings.ToLower(filter) + "%'" +
+			" OR LOWER(album.title) LIKE '%" + strings.ToLower(filter) + "%'" +
+			" OR LOWER(artist.name) LIKE '%" + strings.ToLower(filter) + "%'"
+		orderAndLimit = whereClause + orderAndLimit
+	}
+	rows, err := db.Query(sanitizePlaceholder(selectSongStatement + orderAndLimit))
+	if err != nil {
+		log.Error("Error reading song table", err)
+		return nil, 0, err
+	}
+	defer rows.Close()
+	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
 		total = db.countRows(sanitizePlaceholder(selectCountSongStatement + whereClause))
@@ -281,55 +288,10 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*mo
 	rows, err := db.Query(stmt, findAlbumId)
 	if err != nil {
 		log.Error("Error reading song table", err)
+		return nil, 0, err
 	}
 	defer rows.Close()
-	songs := make([]*model.Song, 0)
-	var artistId sql.NullString
-	var artistName sql.NullString
-	var albumId sql.NullString
-	var albumTitle sql.NullString
-	var albumPath sql.NullString
-	for rows.Next() {
-		song := new(model.Song)
-		err := rows.Scan(
-			&song.Id,
-			&song.Path,
-			&song.Title,
-			&song.Genre,
-			&song.Track,
-			&song.YearPublished,
-			&song.Bitrate,
-			&song.Samplerate,
-			&song.Duration,
-			&song.Mode,
-			&song.Vbr,
-			&song.Added,
-			&song.Filedate,
-			&song.Rating,
-			&artistId,
-			&artistName,
-			&albumId,
-			&albumTitle,
-			&albumPath)
-		if err != nil {
-			log.Error(err)
-		}
-		if artistId.Valid {
-			song.Artist = new(model.Artist)
-			song.Artist.Id = artistId.String
-			song.Artist.Name = artistName.String
-		}
-		if albumId.Valid {
-			song.Album = new(model.Album)
-			song.Album.Id = albumId.String
-			song.Album.Title = albumTitle.String
-			song.Album.Path = albumPath.String
-		}
-		songs = append(songs, song)
-	}
-	if err = rows.Err(); err != nil {
-		log.Error(err)
-	}
+	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
 		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song WHERE album_id = ?"), findAlbumId)
@@ -343,56 +305,10 @@ func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*
 	rows, err := db.Query(stmt, findArtistId)
 	if err != nil {
 		log.Error("Error reading song table", err)
+		return nil, 0, err
 	}
 	defer rows.Close()
-	songs := make([]*model.Song, 0)
-	var artistId sql.NullString
-	var artistName sql.NullString
-	var albumId sql.NullString
-	var albumTitle sql.NullString
-	var albumPath sql.NullString
-	for rows.Next() {
-		song := new(model.Song)
-		err := rows.Scan(
-			&song.Id,
-			&song.Path,
-			&song.Title,
-			&song.Genre,
-			&song.Track,
-			&song.YearPublished,
-			&song.Bitrate,
-			&song.Samplerate,
-			&song.Duration,
-			&song.Mode,
-			&song.Vbr,
-			&song.Added,
-			&song.Filedate,
-			&song.Rating,
-			&artistId,
-			&artistName,
-			&albumId,
-			&albumTitle,
-			&albumPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if artistId.Valid {
-			song.Artist = new(model.Artist)
-			song.Artist.Id = artistId.String
-			song.Artist.Name = artistName.String
-		}
-		if albumId.Valid {
-			song.Album = new(model.Album)
-			song.Album.Id = albumId.String
-			song.Album.Title = albumTitle.String
-			song.Album.Path = albumPath.String
-		}
-		songs = append(songs, song)
-	}
-	if err = rows.Err(); err != nil {
-		log.Error(err)
-	}
-
+	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
 		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song WHERE artist_id = ?"), findArtistId)
@@ -416,55 +332,10 @@ func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*mo
 	rows, err := db.Query(stmt + where + orderAndLimit)
 	if err != nil {
 		log.Error("Error reading song table", err)
+		return nil, 0, err
 	}
 	defer rows.Close()
-	songs := make([]*model.Song, 0)
-	var artistId sql.NullString
-	var artistName sql.NullString
-	var albumId sql.NullString
-	var albumTitle sql.NullString
-	var albumPath sql.NullString
-	for rows.Next() {
-		song := new(model.Song)
-		err := rows.Scan(
-			&song.Id,
-			&song.Path,
-			&song.Title,
-			&song.Genre,
-			&song.Track,
-			&song.YearPublished,
-			&song.Bitrate,
-			&song.Samplerate,
-			&song.Duration,
-			&song.Mode,
-			&song.Vbr,
-			&song.Added,
-			&song.Filedate,
-			&song.Rating,
-			&artistId,
-			&artistName,
-			&albumId,
-			&albumTitle,
-			&albumPath)
-		if err != nil {
-			log.Error(err)
-		}
-		if artistId.Valid {
-			song.Artist = new(model.Artist)
-			song.Artist.Id = artistId.String
-			song.Artist.Name = artistName.String
-		}
-		if albumId.Valid {
-			song.Album = new(model.Album)
-			song.Album.Id = albumId.String
-			song.Album.Title = albumTitle.String
-			song.Album.Path = albumPath.String
-		}
-		songs = append(songs, song)
-	}
-	if err = rows.Err(); err != nil {
-		log.Error(err)
-	}
+	songs, err := fetchSongs(rows)
 
 	total := len(songs)
 	if limit {
@@ -488,60 +359,26 @@ func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*mo
 	rows, err := db.Query(stmt, playlistId)
 	if err != nil {
 		log.Error("Error reading song table", err)
+		return nil, 0, err
 	}
 	defer rows.Close()
-	songs := make([]*model.Song, 0)
-	var artistId sql.NullString
-	var artistName sql.NullString
-	var albumId sql.NullString
-	var albumTitle sql.NullString
-	var albumPath sql.NullString
-	for rows.Next() {
-		song := new(model.Song)
-		err := rows.Scan(
-			&song.Id,
-			&song.Path,
-			&song.Title,
-			&song.Genre,
-			&song.Track,
-			&song.YearPublished,
-			&song.Bitrate,
-			&song.Samplerate,
-			&song.Duration,
-			&song.Mode,
-			&song.Vbr,
-			&song.Added,
-			&song.Filedate,
-			&song.Rating,
-			&artistId,
-			&artistName,
-			&albumId,
-			&albumTitle,
-			&albumPath)
-		if err != nil {
-			log.Error(err)
-		}
-		if artistId.Valid {
-			song.Artist = new(model.Artist)
-			song.Artist.Id = artistId.String
-			song.Artist.Name = artistName.String
-		}
-		if albumId.Valid {
-			song.Album = new(model.Album)
-			song.Album.Id = albumId.String
-			song.Album.Title = albumTitle.String
-			song.Album.Path = albumPath.String
-		}
-		songs = append(songs, song)
-	}
-	if err = rows.Err(); err != nil {
-		log.Error(err)
-	}
+	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
 		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song WHERE id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)"), playlistId)
 	}
 	return songs, total, err
+}
+
+func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
+	rows, err := db.Query(sanitizePlaceholder(selectSongStatement+" ORDER BY song.added DESC LIMIT ?"), num)
+	if err != nil {
+		log.Error("Error reading song table", err)
+		return nil, err
+	}
+	defer rows.Close()
+	songs, err := fetchSongs(rows)
+	return songs, err
 }
 
 func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {

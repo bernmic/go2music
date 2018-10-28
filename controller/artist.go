@@ -15,6 +15,7 @@ func initArtist(r *gin.RouterGroup) {
 	r.GET("/artist", GetArtists)
 	r.GET("/artist/:id", GetArtist)
 	r.GET("/artist/:id/songs", GetSongForArtist)
+	r.GET("/artist/:id/albums", GetAlbumsForArtist)
 }
 
 func GetArtists(c *gin.Context) {
@@ -55,4 +56,15 @@ func GetSongForArtist(c *gin.Context) {
 		return
 	}
 	respondWithError(http.StatusInternalServerError, "Cound not read songs", c)
+}
+
+func GetAlbumsForArtist(c *gin.Context) {
+	counterArtist.Add("GET /:id/albums", 1)
+	id := c.Param("id")
+	albums, err := albumManager.FindAlbumsForArtist(id)
+	if err == nil {
+		c.JSON(http.StatusOK, albums)
+		return
+	}
+	respondWithError(http.StatusInternalServerError, "Cound not read albums", c)
 }
