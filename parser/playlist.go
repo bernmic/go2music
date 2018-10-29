@@ -44,6 +44,12 @@ func evalAST(exp ast.Expr) (string, error) {
 			return "song.genre", nil
 		case "duration":
 			return "song.duration", nil
+		case "year":
+			return "song.yearpublished", nil
+		case "rating":
+			return "song.rating", nil
+		case "track":
+			return "song.track", nil
 		}
 		return exp.Name, nil
 	case *ast.BasicLit:
