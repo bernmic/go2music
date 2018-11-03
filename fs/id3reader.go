@@ -85,7 +85,9 @@ func readData(filename string) (*model.Song, error) {
 	song.Track, _ = id3tag.Track()
 	if id3tag.Year() == 0 {
 		x := id3tag.Raw()["TYER"]
-		song.YearPublished = x.(string)
+		if x != nil {
+			song.YearPublished = x.(string)
+		}
 	} else {
 		song.YearPublished = strconv.Itoa(id3tag.Year())
 	}
