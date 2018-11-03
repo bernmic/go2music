@@ -3,3 +3,7 @@
 *.exe
 .mvn/
 .idea/
+go2music
+*.tar
+static/
+
