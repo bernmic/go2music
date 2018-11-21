@@ -9,7 +9,7 @@ database:
   password: go2music
   schema: go2music
   type: mysql
-  url: ${username}:${password}@tcp(beethoven:3306)/${schema}
+  url: ${username}:${password}@tcp(localhost:3306)/${schema}
 databasep:
   username: root
   password:
@@ -17,6 +17,6 @@ databasep:
   type: postgres
   url: postgresql://${username}:${password}@localhost:26257/${schema}
 media:
-  path: m:/
-  syncfrequency: 30s
+  path: g:/Audio
+  syncfrequency: 300s
   syncatstart: true

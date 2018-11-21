@@ -2,9 +2,11 @@ package mysql
 
 import (
 	"fmt"
+	"go2music/model"
+	"strings"
+
 	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
-	"go2music/model"
 )
 
 func (db *DB) initializeAlbum() {
@@ -75,8 +77,13 @@ func (db *DB) FindAlbumByPath(path string) (*model.Album, error) {
 	return &album, err
 }
 
-func (db *DB) FindAllAlbums(paging model.Paging) ([]*model.Album, int, error) {
+func (db *DB) FindAllAlbums(filter string, paging model.Paging) ([]*model.Album, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForAlbum(paging)
+	whereClause := ""
+	if filter != "" {
+		whereClause = " WHERE LOWER(album.title) LIKE '%" + strings.ToLower(filter) + "%'"
+		orderAndLimit = whereClause + orderAndLimit
+	}
 	rows, err := db.Query(sanitizePlaceholder("SELECT id, title, path FROM album" + orderAndLimit))
 	if err != nil {
 		log.Fatal(err)
@@ -97,7 +104,7 @@ func (db *DB) FindAllAlbums(paging model.Paging) ([]*model.Album, int, error) {
 
 	total := len(albums)
 	if limit {
-		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM album"))
+		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM album" + whereClause))
 	}
 	return albums, total, err
 }

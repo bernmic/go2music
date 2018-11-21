@@ -2,9 +2,10 @@ package controller
 
 import (
 	"expvar"
-	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -21,7 +22,9 @@ func initArtist(r *gin.RouterGroup) {
 func GetArtists(c *gin.Context) {
 	counterArtist.Add("GET /", 1)
 	paging := extractPagingFromRequest(c)
-	artists, total, err := artistManager.FindAllArtists(paging)
+	filter := extractFilterFromRequest(c)
+
+	artists, total, err := artistManager.FindAllArtists(filter, paging)
 	if err == nil {
 		artistCollection := model.ArtistCollection{Artists: artists, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, artistCollection)

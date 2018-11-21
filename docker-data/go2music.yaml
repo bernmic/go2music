@@ -1,0 +1,16 @@
+application:
+  mode: debug
+  loglevel: debug
+  cors: all
+server:
+  port: 8080
+database:
+  username: root
+  password: go2music
+  schema: go2music
+  type: mysql
+  url: ${username}:${password}@tcp(mysql:3306)/${schema}
+media:
+  path: /data
+  syncfrequency: 30s
+  syncatstart: true
