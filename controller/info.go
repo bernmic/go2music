@@ -2,8 +2,9 @@ package controller
 
 import (
 	"expvar"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -11,10 +12,10 @@ var (
 )
 
 func initInfo(r *gin.RouterGroup) {
-	r.GET("/info", GetInfo)
+	r.GET("/info", getInfo)
 }
 
-func GetInfo(c *gin.Context) {
+func getInfo(c *gin.Context) {
 	counterInfo.Add("GET /", 1)
 	info, err := infoManager.Info()
 	if err == nil {

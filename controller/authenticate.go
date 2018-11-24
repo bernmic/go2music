@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"go2music/security"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func initAuthentication(r *gin.RouterGroup) {
@@ -31,6 +32,9 @@ func authenticate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
+/*
+TokenAuthMiddleware checks requests against user or admin role.
+*/
 func TokenAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -54,6 +58,9 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
+/*
+AdminAuthMiddleware checks requests against admin role.
+*/
 func AdminAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearer := c.Query("bearer")

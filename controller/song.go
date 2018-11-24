@@ -2,11 +2,12 @@ package controller
 
 import (
 	"expvar"
-	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -14,13 +15,13 @@ var (
 )
 
 func initSong(r *gin.RouterGroup) {
-	r.GET("/song", GetSongs)
-	r.GET("/song/:id", GetSong)
-	r.GET("/song/:id/cover", GetCover)
-	r.GET("/song/:id/stream", StreamSong)
+	r.GET("/song", getSongs)
+	r.GET("/song/:id", getSong)
+	r.GET("/song/:id/cover", getCover)
+	r.GET("/song/:id/stream", streamSong)
 }
 
-func GetSongs(c *gin.Context) {
+func getSongs(c *gin.Context) {
 	counterSong.Add("GET /", 1)
 	paging := extractPagingFromRequest(c)
 	filter := extractFilterFromRequest(c)
@@ -33,7 +34,7 @@ func GetSongs(c *gin.Context) {
 	respondWithError(http.StatusInternalServerError, "Cound not read songs", c)
 }
 
-func GetSong(c *gin.Context) {
+func getSong(c *gin.Context) {
 	counterSong.Add("GET /:id", 1)
 	id := c.Param("id")
 	song, err := songManager.FindOneSong(id)
@@ -44,7 +45,7 @@ func GetSong(c *gin.Context) {
 	c.JSON(http.StatusOK, song)
 }
 
-func StreamSong(c *gin.Context) {
+func streamSong(c *gin.Context) {
 	counterSong.Add("GET /:id/stream", 1)
 	id := c.Param("id")
 	song, err := songManager.FindOneSong(id)
@@ -84,7 +85,7 @@ func StreamSong(c *gin.Context) {
 	//io.Copy(c.Writer, file) //'Copy' the file to the client
 }
 
-func GetCover(c *gin.Context) {
+func getCover(c *gin.Context) {
 	counterSong.Add("GET /:id/cover", 1)
 	id := c.Param("id")
 	song, err := songManager.FindOneSong(id)

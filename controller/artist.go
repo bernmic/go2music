@@ -13,13 +13,13 @@ var (
 )
 
 func initArtist(r *gin.RouterGroup) {
-	r.GET("/artist", GetArtists)
-	r.GET("/artist/:id", GetArtist)
-	r.GET("/artist/:id/songs", GetSongForArtist)
-	r.GET("/artist/:id/albums", GetAlbumsForArtist)
+	r.GET("/artist", getArtists)
+	r.GET("/artist/:id", getArtist)
+	r.GET("/artist/:id/songs", getSongForArtist)
+	r.GET("/artist/:id/albums", getAlbumsForArtist)
 }
 
-func GetArtists(c *gin.Context) {
+func getArtists(c *gin.Context) {
 	counterArtist.Add("GET /", 1)
 	paging := extractPagingFromRequest(c)
 	filter := extractFilterFromRequest(c)
@@ -33,7 +33,7 @@ func GetArtists(c *gin.Context) {
 	respondWithError(http.StatusInternalServerError, "Cound not read artists", c)
 }
 
-func GetArtist(c *gin.Context) {
+func getArtist(c *gin.Context) {
 	counterArtist.Add("GET /:id", 1)
 	id := c.Param("id")
 	artist, err := artistManager.FindArtistById(id)
@@ -44,7 +44,7 @@ func GetArtist(c *gin.Context) {
 	c.JSON(http.StatusOK, artist)
 }
 
-func GetSongForArtist(c *gin.Context) {
+func getSongForArtist(c *gin.Context) {
 	counterArtist.Add("GET /:id/songs", 1)
 	id := c.Param("id")
 	paging := extractPagingFromRequest(c)
@@ -61,7 +61,7 @@ func GetSongForArtist(c *gin.Context) {
 	respondWithError(http.StatusInternalServerError, "Cound not read songs", c)
 }
 
-func GetAlbumsForArtist(c *gin.Context) {
+func getAlbumsForArtist(c *gin.Context) {
 	counterArtist.Add("GET /:id/albums", 1)
 	id := c.Param("id")
 	albums, err := albumManager.FindAlbumsForArtist(id)

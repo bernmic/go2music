@@ -2,10 +2,11 @@ package controller
 
 import (
 	"expvar"
-	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 type songIds []string
@@ -15,18 +16,18 @@ var (
 )
 
 func initPlaylist(r *gin.RouterGroup) {
-	r.GET("/playlist", GetPlaylists)
-	r.GET("/playlist/:id", GetPlaylist)
-	r.GET("/playlist/:id/songs", GetSongsForPlaylist)
-	r.POST("/playlist/:id/songs", AddSongsToPlaylist)
-	r.PUT("/playlist/:id/songs", SetSongsOfPlaylist)
-	r.DELETE("/playlist/:id/songs", RemoveSongsFromPlaylist)
-	r.POST("/playlist", CreatePlaylist)
-	r.PUT("/playlist", UpdatePlaylist)
-	r.DELETE("/playlist/:id", DeletePlaylist)
+	r.GET("/playlist", getPlaylists)
+	r.GET("/playlist/:id", getPlaylist)
+	r.GET("/playlist/:id/songs", getSongsForPlaylist)
+	r.POST("/playlist/:id/songs", addSongsToPlaylist)
+	r.PUT("/playlist/:id/songs", setSongsOfPlaylist)
+	r.DELETE("/playlist/:id/songs", removeSongsFromPlaylist)
+	r.POST("/playlist", createPlaylist)
+	r.PUT("/playlist", updatePlaylist)
+	r.DELETE("/playlist/:id", deletePlaylist)
 }
 
-func GetPlaylists(c *gin.Context) {
+func getPlaylists(c *gin.Context) {
 	counterPlaylist.Add("GET /", 1)
 	user, ok := c.Get("principal")
 	if !ok {
@@ -48,7 +49,7 @@ func GetPlaylists(c *gin.Context) {
 	respondWithError(http.StatusInternalServerError, "Cound not read playlists", c)
 }
 
-func GetPlaylist(c *gin.Context) {
+func getPlaylist(c *gin.Context) {
 	counterPlaylist.Add("GET /:id", 1)
 	user, ok := c.Get("principal")
 	if !ok {
@@ -64,7 +65,7 @@ func GetPlaylist(c *gin.Context) {
 	c.JSON(http.StatusOK, playlist)
 }
 
-func GetSongsForPlaylist(c *gin.Context) {
+func getSongsForPlaylist(c *gin.Context) {
 	counterPlaylist.Add("GET /:id/songs", 1)
 	user, ok := c.Get("principal")
 	if !ok {
@@ -95,7 +96,7 @@ func GetSongsForPlaylist(c *gin.Context) {
 	respondWithError(http.StatusInternalServerError, "Cound not read songs of playlist", c)
 }
 
-func CreatePlaylist(c *gin.Context) {
+func createPlaylist(c *gin.Context) {
 	counterPlaylist.Add("POST /:id", 1)
 	user, ok := c.Get("principal")
 	if !ok {
@@ -118,7 +119,7 @@ func CreatePlaylist(c *gin.Context) {
 	c.JSON(http.StatusCreated, playlist)
 }
 
-func UpdatePlaylist(c *gin.Context) {
+func updatePlaylist(c *gin.Context) {
 	counterPlaylist.Add("PUT /:id", 1)
 	user, ok := c.Get("principal")
 	if !ok {
@@ -141,7 +142,7 @@ func UpdatePlaylist(c *gin.Context) {
 	c.JSON(http.StatusOK, playlist)
 }
 
-func DeletePlaylist(c *gin.Context) {
+func deletePlaylist(c *gin.Context) {
 	counterPlaylist.Add("DELETE /:id", 1)
 	user, ok := c.Get("principal")
 	if !ok {
@@ -156,7 +157,7 @@ func DeletePlaylist(c *gin.Context) {
 	c.JSON(http.StatusOK, "")
 }
 
-func AddSongsToPlaylist(c *gin.Context) {
+func addSongsToPlaylist(c *gin.Context) {
 	counterPlaylist.Add("POST /:id/songs", 1)
 	user, ok := c.Get("principal")
 	if !ok {
@@ -180,7 +181,7 @@ func AddSongsToPlaylist(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"added": addedSongs})
 }
 
-func RemoveSongsFromPlaylist(c *gin.Context) {
+func removeSongsFromPlaylist(c *gin.Context) {
 	counterPlaylist.Add("DELETE /:id/songs", 1)
 	user, ok := c.Get("principal")
 	if !ok {
@@ -204,7 +205,7 @@ func RemoveSongsFromPlaylist(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"removed": removedSongs})
 }
 
-func SetSongsOfPlaylist(c *gin.Context) {
+func setSongsOfPlaylist(c *gin.Context) {
 	counterPlaylist.Add("PUT /:id/songs", 1)
 	user, ok := c.Get("principal")
 	if !ok {

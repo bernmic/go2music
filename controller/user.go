@@ -1,21 +1,22 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func initUser(r *gin.RouterGroup) {
-	r.GET("/user", GetUsers)
-	r.GET("/user/:id", GetUser)
-	r.POST("/user", CreateUser)
-	r.PUT("/user", UpdateUser)
-	r.DELETE("/user/:id", DeleteUser)
+	r.GET("/user", getUsers)
+	r.GET("/user/:id", getUser)
+	r.POST("/user", createUser)
+	r.PUT("/user", updateUser)
+	r.DELETE("/user/:id", deleteUser)
 }
 
-func GetUsers(c *gin.Context) {
+func getUsers(c *gin.Context) {
 	paging := extractPagingFromRequest(c)
 	users, err := userManager.FindAllUsers(paging)
 	if err == nil {
@@ -25,7 +26,7 @@ func GetUsers(c *gin.Context) {
 	respondWithError(http.StatusInternalServerError, "Cound not read users", c)
 }
 
-func GetUser(c *gin.Context) {
+func getUser(c *gin.Context) {
 	id := c.Param("id")
 	user, err := userManager.FindUserById(id)
 	if err != nil {
@@ -35,7 +36,7 @@ func GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func CreateUser(c *gin.Context) {
+func createUser(c *gin.Context) {
 	user := &model.User{}
 	err := c.BindJSON(user)
 	if err != nil {
@@ -51,7 +52,7 @@ func CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-func UpdateUser(c *gin.Context) {
+func updateUser(c *gin.Context) {
 	user := &model.User{}
 	err := c.BindJSON(user)
 	if err != nil {
@@ -67,7 +68,7 @@ func UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func DeleteUser(c *gin.Context) {
+func deleteUser(c *gin.Context) {
 	id := c.Param("id")
 	if userManager.DeleteUser(id) != nil {
 		respondWithError(http.StatusBadRequest, "cannot delete user", c)

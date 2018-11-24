@@ -2,10 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/gin-gonic/contrib/expvar"
-	"github.com/gin-gonic/contrib/ginrus"
-	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"go2music/configuration"
 	"go2music/database"
 	"go2music/mysql"
@@ -13,6 +9,11 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/contrib/expvar"
+	"github.com/gin-gonic/contrib/ginrus"
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -61,6 +62,9 @@ func initRouter() {
 	}
 }
 
+/*
+Run initializes and start the controller
+*/
 func Run(dbi *mysql.DB) {
 	db = dbi
 	albumManager = db
@@ -100,6 +104,9 @@ func staticRoutes(relativePath, root string, r *gin.RouterGroup) {
 	}
 }
 
+/*
+CorsMiddleware creates a middleware wich allows all origins, needed methods and headers for all endpoints.
+*/
 func CorsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
