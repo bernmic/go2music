@@ -127,7 +127,8 @@ func (db *DB) FindAllPlaylistsOfKind(user_id string, kind string, paging model.P
 	}
 	rows, err := db.Query(sanitizePlaceholder(stmt+where+orderAndLimit), user_id)
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error get playlists of kind %s: %v", kind, err)
+		return nil, 0, err
 	}
 	defer rows.Close()
 	playlists := make([]*model.Playlist, 0)

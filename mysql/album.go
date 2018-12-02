@@ -86,7 +86,8 @@ func (db *DB) FindAllAlbums(filter string, paging model.Paging) ([]*model.Album,
 	}
 	rows, err := db.Query(sanitizePlaceholder("SELECT id, title, path FROM album" + orderAndLimit))
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error get all albums: %v", err)
+		return nil, 0, err
 	}
 	defer rows.Close()
 	albums := make([]*model.Album, 0)
@@ -124,7 +125,8 @@ WHERE
 `
 	rows, err := db.Query(sanitizePlaceholder(stmt), artistId)
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error get all albums for artist: %v", err)
+		return nil, err
 	}
 	defer rows.Close()
 	albums := make([]*model.Album, 0)

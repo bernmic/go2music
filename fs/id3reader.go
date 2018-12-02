@@ -129,11 +129,12 @@ func ID3Reader(filenames []string, albumManager database.AlbumManager, artistMan
 				song.Album, err = albumManager.CreateIfNotExistsAlbum(*song.Album)
 				song, err = songManager.CreateSong(*song)
 				if err != nil {
-					log.Fatalf("Error creating song: %v", err)
-				}
-				counter++
-				if counter%100 == 0 {
-					log.Infof("Proceeded %d songs", counter)
+					log.Errorf("Error creating song: %v, %v", err, song)
+				} else {
+					counter++
+					if counter%100 == 0 {
+						log.Infof("Proceeded %d songs", counter)
+					}
 				}
 			}
 		}
@@ -151,7 +152,7 @@ func GetCoverFromID3(filename string) ([]byte, string, error) {
 
 	id3tag, err := tag.ReadFrom(f)
 	if err != nil {
-		log.Fatal("ERROR Error opening mp3 file: ", err)
+		log.Errorf("ERROR Error opening mp3 file: %v", err)
 	}
 	if p := id3tag.Picture(); p != nil {
 		return p.Data, p.MIMEType, nil

@@ -89,7 +89,8 @@ func (db *DB) FindAllArtists(filter string, paging model.Paging) ([]*model.Artis
 	}
 	rows, err := db.Query(sanitizePlaceholder("SELECT id, name FROM artist" + orderAndLimit))
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error get all artists: %v", err)
+		return nil, 0, err
 	}
 	defer rows.Close()
 	artists := make([]*model.Artist, 0)

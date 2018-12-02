@@ -204,7 +204,8 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 		&albumTitle,
 		&albumPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error get song: %v", err)
+		return nil, err
 	}
 	if artistId.Valid {
 		song.Artist = new(model.Artist)
