@@ -20,7 +20,7 @@ func (db *DB) initializeAlbum() {
 		} else {
 			log.Info("Album Table successfully created....")
 		}
-		_, err = db.Exec("CREATE UNIQUE INDEX album_path ON album (path)")
+		_, err = db.Exec("CREATE UNIQUE INDEX album_path ON album (path(191))")
 		if err != nil {
 			log.Error("Error creating album table index for path")
 			panic(fmt.Sprintf("%v", err))
