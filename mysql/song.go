@@ -36,6 +36,19 @@ const (
 		FOREIGN KEY (album_id) REFERENCES album(id)
 		);
 	`
+
+	createUserSongTableStatement = `
+	CREATE TABLE user_song (
+		user_id VARCHAR(32),
+		song_id VARCHAR(32),
+		rating INT NOT NULL,
+		playcount INT NOT NULL,
+		PRIMARY KEY (user_id, song_id),
+		FOREIGN KEY (user_id) REFERENCES guser(id),
+		FOREIGN KEY (song_id) REFERENCES song(id)
+	);
+`
+
 	selectSongStatement = `
 SELECT
 	song.id,
@@ -390,6 +403,38 @@ func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
 	}
 
 	return image, mimetype, err
+}
+
+func (db *DB) SongPlayed(song *model.Song, user *model.User) bool {
+	userSong := model.UserSong{}
+	err := db.QueryRow(
+		sanitizePlaceholder("SELECT user_id,song_id,rating,playcount FROM user_song WHERE user_id=? AND song_id=?"),
+		user.Id,
+		song.Id).Scan(&userSong.UserId, &userSong.SongId, &userSong.Rating, &userSong.PlayCount)
+	if err != nil {
+		userSong = model.UserSong{UserId: user.Id, SongId: song.Id, Rating: 0, PlayCount: 1}
+		_, err := db.Exec(
+			sanitizePlaceholder("INSERT INTO user_song (user_id, song_id, rating, playcount) VALUES(?, ?, ?, ?)"),
+			userSong.UserId,
+			userSong.SongId,
+			userSong.Rating,
+			userSong.PlayCount)
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+	} else {
+		_, err := db.Exec(sanitizePlaceholder("UPDATE user_song SET rating=?, playcount=? WHERE user_id=? AND song_id=?"),
+			userSong.Rating,
+			userSong.PlayCount+1,
+			userSong.UserId,
+			userSong.SongId)
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+	}
+	return true
 }
 
 func createOrderAndLimitForSong(paging model.Paging) (string, bool) {

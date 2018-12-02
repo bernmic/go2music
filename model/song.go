@@ -25,3 +25,10 @@ type SongCollection struct {
 	Paging      Paging  `json:"paging,omitempty"`
 	Total       int     `json:"total,omitempty"`
 }
+
+type UserSong struct {
+	UserId    string
+	SongId    string
+	Rating    int
+	PlayCount int
+}

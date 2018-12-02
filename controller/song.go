@@ -19,6 +19,7 @@ func initSong(r *gin.RouterGroup) {
 	r.GET("/song/:id", getSong)
 	r.GET("/song/:id/cover", getCover)
 	r.GET("/song/:id/stream", streamSong)
+	r.POST("/song/:id/rate/:rating", rateSong)
 }
 
 func getSongs(c *gin.Context) {
@@ -72,17 +73,45 @@ func streamSong(c *gin.Context) {
 	fileStat, _ := file.Stat()                         //Get info from file
 	fileSize := strconv.FormatInt(fileStat.Size(), 10) //Get file size as a string
 
-	file.Close()
+	//file.Close()
 
 	//Send the headers
 	c.Header("Content-Disposition", "attachment; filename="+song.Path)
 	c.Header("Content-Type", fileContentType)
 	c.Header("Content-Length", fileSize)
+	c.Header("Cache-Control", "no-cache")
 	c.File(song.Path)
-	//Send the file
-	//We read 512 bytes from the file already so we reset the offset back to 0
-	//file.Seek(0, 0)
-	//io.Copy(c.Writer, file) //'Copy' the file to the client
+
+	u, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "unknown user", c)
+		return
+	}
+	user := *(u.(*model.User))
+	go songManager.SongPlayed(song, &user)
+}
+
+func rateSong(c *gin.Context) {
+	counterSong.Add("GET /:id/rate/:rating", 1)
+	id := c.Param("id")
+	rating, err := strconv.Atoi(c.Param("rating"))
+	if err != nil {
+		respondWithError(400, "rating must be an integer between 0 and 255", c)
+		return
+	}
+
+	song, err := songManager.FindOneSong(id)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "song not found", c)
+		return
+	}
+	song.Rating = rating
+	song, err = songManager.UpdateSong(*song)
+	if err != nil {
+		respondWithError(http.StatusInternalServerError, "Cannot save song", c)
+		return
+	}
+	c.JSON(http.StatusOK, song)
 }
 
 func getCover(c *gin.Context) {
