@@ -30,7 +30,7 @@ func (db *DB) initializeUser() {
 		} else {
 			log.Infof("User Table successfully created....%v", result)
 		}
-		_, err = db.Exec("CREATE UNIQUE INDEX guser_username ON guser (username(191))")
+		_, err = db.Exec("CREATE UNIQUE INDEX guser_username ON guser (username)")
 		if err != nil {
 			log.Error("Error creating user table index for username")
 			panic(fmt.Sprintf("%v", err))

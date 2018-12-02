@@ -20,7 +20,7 @@ func (db *DB) initializeArtist() {
 		} else {
 			log.Info("Artist Table successfully created....")
 		}
-		_, err = db.Exec("CREATE UNIQUE INDEX artist_name ON artist (name(191))")
+		_, err = db.Exec("CREATE UNIQUE INDEX artist_name ON artist (name)")
 		if err != nil {
 			log.Error("Error creating artist table index for name")
 			panic(fmt.Sprintf("%v", err))

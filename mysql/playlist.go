@@ -41,7 +41,7 @@ func (db *DB) initializePlaylist() {
 		} else {
 			log.Info("Playlist Table successfully created....")
 		}
-		_, err = db.Exec("CREATE UNIQUE INDEX playlist_name ON playlist (name(191))")
+		_, err = db.Exec("CREATE UNIQUE INDEX playlist_name ON playlist (name)")
 		if err != nil {
 			log.Error("Error creating playlist table index for name")
 			panic(fmt.Sprintf("%v", err))
