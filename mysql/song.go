@@ -97,6 +97,13 @@ func (db *DB) initializeSong() {
 		} else {
 			log.Info("Song Table successfully created....")
 		}
+		_, err = db.Exec(createUserSongTableStatement)
+		if err != nil {
+			log.Error("Error creating user_song table")
+			panic(fmt.Sprintf("%v", err))
+		} else {
+			log.Info("UserSong Table successfully created....")
+		}
 		_, err = db.Exec("CREATE UNIQUE INDEX song_path ON song (path)")
 		if err != nil {
 			log.Error("Error creating song table index for path")
