@@ -27,8 +27,9 @@ type SongCollection struct {
 }
 
 type UserSong struct {
-	UserId    string
-	SongId    string
-	Rating    int
-	PlayCount int
+	UserId     string
+	SongId     string
+	Rating     int
+	PlayCount  int
+	LastPlayed int64
 }

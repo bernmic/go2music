@@ -12,7 +12,7 @@ func (db *DB) Info() (*model.Info, error) {
 	info := model.Info{}
 
 	var waiter sync.WaitGroup
-	waiter.Add(6)
+	waiter.Add(9)
 	go func() {
 		defer waiter.Done()
 		info.SongCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song"))
@@ -37,6 +37,21 @@ func (db *DB) Info() (*model.Info, error) {
 		defer waiter.Done()
 		songs, _ := db.FindRecentlyAddedSongs(5)
 		info.SongsRecentlyAdded = songs
+	}()
+	go func() {
+		defer waiter.Done()
+		songs, _ := db.FindRecentlyPlayedSongs(5)
+		info.SongsRecentlyPlayed = songs
+	}()
+	go func() {
+		defer waiter.Done()
+		songs, _ := db.FindMostPlayedSongs(5)
+		info.SongsMostPlayed = songs
+	}()
+	go func() {
+		defer waiter.Done()
+		albums, _ := db.FindRecentlyAddedAlbums(5)
+		info.AlbumsRecentlyAdded = albums
 	}()
 	waiter.Wait()
 	return &info, nil

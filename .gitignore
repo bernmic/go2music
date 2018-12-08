@@ -7,3 +7,4 @@ go2music
 *.tar
 static/
 
+go2music.yaml

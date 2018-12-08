@@ -144,6 +144,38 @@ WHERE
 	return albums, err
 }
 
+func (db *DB) FindRecentlyAddedAlbums(num int) ([]*model.Album, error) {
+	stmt := `
+	SELECT DISTINCT
+		album.id,
+		album.title,
+		album.path
+	FROM
+		song
+	INNER JOIN album ON song.album_id = album.id
+	ORDER BY song.added DESC LIMIT ?
+	`
+	rows, err := db.Query(sanitizePlaceholder(stmt), num)
+	if err != nil {
+		log.Error("Error reading album table", err)
+		return nil, err
+	}
+	defer rows.Close()
+	albums := make([]*model.Album, 0)
+	for rows.Next() {
+		album := new(model.Album)
+		err := rows.Scan(&album.Id, &album.Title, &album.Path)
+		if err != nil {
+			log.Error(err)
+		}
+		albums = append(albums, album)
+	}
+	if err = rows.Err(); err != nil {
+		log.Error(err)
+	}
+	return albums, err
+}
+
 func createOrderAndLimitForAlbum(paging model.Paging) (string, bool) {
 	s := ""
 	l := false
