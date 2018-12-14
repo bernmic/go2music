@@ -1,6 +1,8 @@
 package configuration
 
 import (
+	"flag"
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -14,14 +16,25 @@ var secrets = map[string]string{}
 type Secret string
 
 const (
-	ConfigFile     string = "go2music.yaml"
 	SecretsFile    string = "secrets.yaml"
 	PasswordSecret Secret = "password"
 	TokenSecret    Secret = "token"
 )
 
-func Configuration() *model.Config {
-	if !configLoaded {
+var ConfigFile = "go2music.yaml"
+
+func Configuration(force bool) *model.Config {
+	if force || !configLoaded {
+		if c := os.Getenv("GO2MUSIC_CONFIG"); c != "" {
+			ConfigFile = c
+		}
+		configPtr := flag.String("config-file", "", "Path to config file")
+		flag.Parse()
+		if *configPtr != "" {
+			ConfigFile = *configPtr
+		}
+		log.Infof("Reading config from %s", ConfigFile)
+
 		config = model.Config{}
 
 		configdata, err := ioutil.ReadFile(ConfigFile)
@@ -59,7 +72,7 @@ func Configuration() *model.Config {
 			if config.Database.Password == "" {
 				config.Database.Password = "go2music"
 			}
-			config.Database.Schema = os.Getenv("GO2MUSIC_SCHEMA")
+			config.Database.Schema = os.Getenv("GO2MUSIC_DBSCHEMA")
 			if config.Database.Schema == "" {
 				config.Database.Schema = "go2music"
 			}
@@ -69,9 +82,6 @@ func Configuration() *model.Config {
 				config.Database.Url = "tcp(localhost:3306)"
 			}
 			config.Database.Type = os.Getenv("GO2MUSIC_DBTYPE")
-			if config.Database.Type == "" {
-				config.Database.Type = "mysql"
-			}
 		}
 		configLoaded = true
 	}

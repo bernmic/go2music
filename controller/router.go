@@ -28,10 +28,10 @@ var (
 )
 
 func initRouter() {
-	gin.SetMode(configuration.Configuration().Application.Mode)
+	gin.SetMode(configuration.Configuration(false).Application.Mode)
 
 	router = gin.New()
-	if configuration.Configuration().Application.Cors == "all" {
+	if configuration.Configuration(false).Application.Cors == "all" {
 		router.Use(CorsMiddleware())
 	}
 
@@ -74,7 +74,7 @@ func Run(dbi *mysql.DB) {
 	userManager = db
 	infoManager = db
 	initRouter()
-	serverAddress := fmt.Sprintf(":%d", configuration.Configuration().Server.Port)
+	serverAddress := fmt.Sprintf(":%d", configuration.Configuration(false).Server.Port)
 	router.Run(serverAddress)
 }
 

@@ -19,7 +19,7 @@ type DB struct {
 var database DB
 
 func New() (*DB, error) {
-	c := configuration.Configuration()
+	c := configuration.Configuration(false)
 	//url := c.Database.Url + "/" + c.Database.Schema
 	//db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, url))
 	url := createUrl(c.Database)
@@ -57,7 +57,7 @@ func (db *DB) countRows(sql string, args ...interface{}) int {
 
 // postgres can't handle ? placeholder in sql. so we have to chanbge them to $n
 func sanitizePlaceholder(sql string) string {
-	if configuration.Configuration().Database.Type == "postgres" {
+	if configuration.Configuration(false).Database.Type == "postgres" {
 		counter := 1
 		for strings.Contains(sql, "?") {
 			sql = strings.Replace(sql, "?", fmt.Sprintf("$%d", counter), 1)

@@ -8,7 +8,9 @@ import (
 	"go2music/controller"
 	"go2music/database"
 	"go2music/fs"
+	"go2music/install"
 	"go2music/mysql"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -22,7 +24,15 @@ var (
 )
 
 func main() {
-	loglevel := configuration.Configuration().Application.Loglevel
+	if configuration.Configuration(true).Database.Type == "" {
+		log.Println("No valid configuration found. Entering installation mode on port 8080.")
+		if err := install.InstallHandler(); err != nil {
+			panic(err)
+		}
+		os.Exit(0)
+	}
+
+	loglevel := configuration.Configuration(false).Application.Loglevel
 	switch loglevel {
 	case "panic":
 		log.SetLevel(log.DebugLevel)
@@ -37,6 +47,7 @@ func main() {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
 	}
+
 	db, _ := mysql.New()
 	songManager = db
 	albumManager = db
@@ -44,14 +55,14 @@ func main() {
 	playlistManager = db
 	userManager = db
 	startCron()
-	if configuration.Configuration().Media.SyncAtStart {
+	if configuration.Configuration(false).Media.SyncAtStart {
 		go fs.SyncWithFilesystem(albumManager, artistManager, songManager)
 	}
 	controller.Run(db)
 }
 
 func startCron() {
-	frequency := configuration.Configuration().Media.Syncfrequency
+	frequency := configuration.Configuration(false).Media.Syncfrequency
 	value, unit, err := parseFrequency(frequency)
 	if err != nil {
 		log.Errorf("Error starting sync cron job: %v", err)

@@ -30,7 +30,7 @@ func SyncWithFilesystem(albumManager database.AlbumManager, artistManager databa
 	running = true
 	log.Info("Start scanning filesystem....")
 	start := time.Now()
-	path := replaceVariables(configuration.Configuration().Media.Path)
+	path := replaceVariables(configuration.Configuration(false).Media.Path)
 	result, err := Filescanner(path, ".mp3")
 	if err == nil {
 		log.Infof("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
