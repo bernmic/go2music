@@ -1,6 +1,7 @@
 package install
 
 import (
+	"go2music/configuration"
 	"go2music/model"
 	"gopkg.in/yaml.v2"
 	"html/template"
@@ -66,7 +67,7 @@ func install(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		ioutil.WriteFile("go2music.yaml", b, 0777)
+		ioutil.WriteFile(configuration.ConfigFile, b, 0777)
 	}
 }
 
