@@ -17,6 +17,6 @@ databasep:
   type: postgres
   url: postgresql://${username}:${password}@localhost:26257/${schema}
 media:
-  path: g:/Audio
+  path: m:/
   syncfrequency: 300s
   syncatstart: true

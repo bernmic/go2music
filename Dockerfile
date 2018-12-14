@@ -1,9 +1,9 @@
-FROM hypriot/armhf-busybox
-MAINTAINER Michael Bernards
-RUN mkdir -p /app
+FROM golang:alpine as builder
+RUN mkdir /build
+ADD . /build/
+WORKDIR /build
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
+FROM scratch
+COPY --from=builder /build/main /app/
 WORKDIR /app
-RUN mkdir -p /data
-COPY go2music /app
-COPY static /app/static
-COPY docker-data/go2music.yaml /app
-CMD /app/go2music
+CMD ["./main"]
