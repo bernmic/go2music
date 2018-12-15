@@ -59,6 +59,7 @@ func initRouter() {
 	admin.Use(AdminAuthMiddleware())
 	{
 		initUser(admin)
+		initConfig(admin)
 	}
 }
 

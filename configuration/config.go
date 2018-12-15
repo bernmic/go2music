@@ -99,3 +99,52 @@ func Secrets(secret Secret) string {
 	}
 	return ""
 }
+
+func ChangeConfiguration(config *model.Config) (*model.Config, error) {
+	newConfig := Configuration(true)
+
+	if config.Application.Cors != "" {
+		newConfig.Application.Cors = config.Application.Cors
+	}
+	if config.Application.Mode != "" {
+		newConfig.Application.Mode = config.Application.Mode
+	}
+	if config.Application.Cors != "" {
+		newConfig.Application.Cors = config.Application.Cors
+	}
+	if config.Application.Loglevel != "" {
+		newConfig.Application.Loglevel = config.Application.Loglevel
+	}
+	if config.Server.Port != 0 {
+		newConfig.Server.Port = config.Server.Port
+	}
+	if config.Media.Path != "" {
+		newConfig.Media.Path = config.Media.Path
+	}
+	if config.Database.Type != "" {
+		newConfig.Database.Type = config.Database.Type
+	}
+	if config.Database.Schema != "" {
+		newConfig.Database.Schema = config.Database.Schema
+	}
+	if config.Database.Username != "" {
+		newConfig.Database.Username = config.Database.Username
+	}
+	if config.Database.Password != "" {
+		newConfig.Database.Password = config.Database.Password
+	}
+	if config.Database.Url != "" {
+		newConfig.Database.Url = config.Database.Url
+	}
+
+	b, err := yaml.Marshal(newConfig)
+	if err != nil {
+		return nil, err
+	}
+	err = ioutil.WriteFile(ConfigFile, b, 0777)
+	if err != nil {
+		return nil, err
+	}
+	log.Infof("Config written to %s. Need to restart service.", ConfigFile)
+	return newConfig, nil
+}

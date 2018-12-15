@@ -5,9 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go2music/configuration"
 	"go2music/model"
-	"gopkg.in/yaml.v2"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -68,13 +66,9 @@ func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 		c.Application.Mode = "release"
 		c.Application.Loglevel = "info"
 		c.Application.Cors = "all"
-		log.Println(c)
-		b, err := yaml.Marshal(c)
-		if err != nil {
-			is.Terminate <- err
-		}
-		ioutil.WriteFile(configuration.ConfigFile, b, 0777)
-		log.Infof("Config writen to %s. Restart service.", configuration.ConfigFile)
+		// write config
+		configuration.ChangeConfiguration(&c)
+		log.Infof("Restart now.")
 		http.Redirect(w, r, "/", http.StatusFound)
 		// send shutdown signal
 		is.Terminate <- nil
