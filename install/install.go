@@ -29,11 +29,13 @@ type InstallServer struct {
 }
 
 func (is *InstallServer) root(w http.ResponseWriter, r *http.Request) {
+	// redirect to /install
 	http.Redirect(w, r, "/install", http.StatusFound)
 }
 
 func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
+		// GET send the installation form
 		t, err := template.ParseFiles("assets/install.html")
 		if err != nil {
 			is.Terminate <- err
@@ -45,6 +47,7 @@ func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == http.MethodPost {
+		// POST receive the data and write config file
 		r.ParseForm()
 		c := model.Config{}
 		c.Database.Type = r.Form.Get("databasetype")
@@ -73,20 +76,22 @@ func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 		ioutil.WriteFile(configuration.ConfigFile, b, 0777)
 		log.Infof("Config writen to %s. Restart service.", configuration.ConfigFile)
 		http.Redirect(w, r, "/", http.StatusFound)
+		// send shutdown signal
 		is.Terminate <- nil
 	}
 }
 
 func InstallHandler() error {
+	// Installation. Start a http server on port 8080 and wait for shutdown.
 	s := InstallServer{Server: &http.Server{Addr: ":8080"}, Terminate: make(chan error)}
 	http.HandleFunc("/", s.root)
 	http.HandleFunc("/install", s.install)
 	go func() {
 		if err := s.Server.ListenAndServe(); err != nil {
-			// cannot panic, because this probably is an intentional close
 			log.Errorf("Httpserver: ListenAndServe() error: %s", err)
 		}
 	}()
+	// wait for the shutdown signal
 	<-s.Terminate
 	return s.Server.Shutdown(context.TODO())
 }
