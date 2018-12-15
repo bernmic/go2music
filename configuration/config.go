@@ -28,10 +28,12 @@ func Configuration(force bool) *model.Config {
 		if c := os.Getenv("GO2MUSIC_CONFIG"); c != "" {
 			ConfigFile = c
 		}
-		configPtr := flag.String("config-file", "", "Path to config file")
-		flag.Parse()
-		if *configPtr != "" {
-			ConfigFile = *configPtr
+		if flag.Lookup("config-file") == nil {
+			configPtr := flag.String("config-file", "", "Path to config file")
+			flag.Parse()
+			if *configPtr != "" {
+				ConfigFile = *configPtr
+			}
 		}
 		log.Infof("Reading config from %s", ConfigFile)
 

@@ -1,12 +1,13 @@
 package install
 
 import (
+	"context"
+	log "github.com/sirupsen/logrus"
 	"go2music/configuration"
 	"go2music/model"
 	"gopkg.in/yaml.v2"
 	"html/template"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -22,26 +23,28 @@ type InstallParameters struct {
 	MediaPath        string
 }
 
-var installServer http.Server
+type InstallServer struct {
+	Server    *http.Server
+	Terminate chan error
+}
 
-func root(w http.ResponseWriter, r *http.Request) {
+func (is *InstallServer) root(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/install", http.StatusFound)
 }
 
-func install(w http.ResponseWriter, r *http.Request) {
+func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		t, err := template.ParseFiles("assets/install.html")
 		if err != nil {
-			panic(err)
+			is.Terminate <- err
 		}
 		err = t.Execute(w, createInstallParameter())
 		if err != nil {
-			panic(nil)
+			is.Terminate <- err
 		}
 		return
 	}
 	if r.Method == http.MethodPost {
-		log.Println("POST")
 		r.ParseForm()
 		c := model.Config{}
 		c.Database.Type = r.Form.Get("databasetype")
@@ -65,15 +68,27 @@ func install(w http.ResponseWriter, r *http.Request) {
 		log.Println(c)
 		b, err := yaml.Marshal(c)
 		if err != nil {
-			panic(err)
+			is.Terminate <- err
 		}
 		ioutil.WriteFile(configuration.ConfigFile, b, 0777)
+		log.Infof("Config writen to %s. Restart service.", configuration.ConfigFile)
+		http.Redirect(w, r, "/", http.StatusFound)
+		is.Terminate <- nil
 	}
 }
 
 func InstallHandler() error {
-	http.HandleFunc("/install", install)
-	return http.ListenAndServe(":8080", nil)
+	s := InstallServer{Server: &http.Server{Addr: ":8080"}, Terminate: make(chan error)}
+	http.HandleFunc("/", s.root)
+	http.HandleFunc("/install", s.install)
+	go func() {
+		if err := s.Server.ListenAndServe(); err != nil {
+			// cannot panic, because this probably is an intentional close
+			log.Errorf("Httpserver: ListenAndServe() error: %s", err)
+		}
+	}()
+	<-s.Terminate
+	return s.Server.Shutdown(context.TODO())
 }
 
 func createInstallParameter() InstallParameters {

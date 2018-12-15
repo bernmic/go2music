@@ -10,7 +10,6 @@ import (
 	"go2music/fs"
 	"go2music/install"
 	"go2music/mysql"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -29,7 +28,7 @@ func main() {
 		if err := install.InstallHandler(); err != nil {
 			panic(err)
 		}
-		os.Exit(0)
+		configuration.Configuration(true)
 	}
 
 	loglevel := configuration.Configuration(false).Application.Loglevel
