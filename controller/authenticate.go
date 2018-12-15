@@ -29,7 +29,7 @@ func authenticate(c *gin.Context) {
 		respondWithError(http.StatusInternalServerError, "unknown error", c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"token": token, "role": user.Role})
 }
 
 /*
