@@ -53,11 +53,12 @@ func (db *DB) initializeUser() {
 
 func (db *DB) CreateUser(user model.User) (*model.User, error) {
 	user.Id = xid.New().String()
+	password, _ := HashPassword(user.Password)
 	_, err := db.Exec(
 		sanitizePlaceholder("INSERT INTO guser (id,username,password,role,email) VALUES(?,?,?,?,?)"),
 		user.Id,
 		user.Username,
-		user.Password,
+		password,
 		user.Role,
 		user.Email)
 	if err != nil {
@@ -71,12 +72,13 @@ func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 	if findErr == nil {
 		return existingUser, findErr
 	}
+	password, _ := HashPassword(user.Password)
 	user.Id = xid.New().String()
 	_, err := db.Exec(
 		sanitizePlaceholder("INSERT INTO guser (id,username,password,role,email) VALUES(?,?,?,?,?)"),
 		user.Id,
 		user.Username,
-		user.Password,
+		password,
 		user.Role,
 		user.Email)
 	if err != nil {

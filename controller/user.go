@@ -45,6 +45,7 @@ func createUser(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
+	user.Password = user.Username
 	user, err = userManager.CreateUser(*user)
 	if err != nil {
 		respondWithError(http.StatusBadRequest, "bad request", c)
