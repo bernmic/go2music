@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"golang.org/x/crypto/bcrypt"
+	"strings"
 )
 
 const createUserTableStatement = `
@@ -130,8 +131,14 @@ func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 	return user, err
 }
 
-func (db *DB) FindAllUsers(paging model.Paging) ([]*model.User, error) {
-	rows, err := db.Query(sanitizePlaceholder("SELECT id, username, password, role, email FROM guser" + createOrderAndLimitForUser(paging)))
+func (db *DB) FindAllUsers(filter string, paging model.Paging) ([]*model.User, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForUser(paging)
+	whereClause := ""
+	if filter != "" {
+		whereClause = " WHERE LOWER(username) LIKE '%" + strings.ToLower(filter) + "%'"
+		orderAndLimit = whereClause + orderAndLimit
+	}
+	rows, err := db.Query(sanitizePlaceholder("SELECT id, username, password, role, email FROM guser" + orderAndLimit))
 	if err != nil {
 		log.Error(err)
 	}
@@ -154,7 +161,12 @@ func (db *DB) FindAllUsers(paging model.Paging) ([]*model.User, error) {
 		log.Error(err)
 	}
 
-	return users, err
+	total := len(users)
+	if limit {
+		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM guser" + whereClause))
+	}
+
+	return users, total, err
 }
 
 func HashPassword(password string) (string, error) {
@@ -167,8 +179,9 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func createOrderAndLimitForUser(paging model.Paging) string {
+func createOrderAndLimitForUser(paging model.Paging) (string, bool) {
 	s := ""
+	l := false
 	if paging.Sort != "" {
 		switch paging.Sort {
 		case "username":
@@ -188,6 +201,7 @@ func createOrderAndLimitForUser(paging model.Paging) string {
 	}
 	if paging.Size > 0 {
 		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+		l = true
 	}
-	return s
+	return s, l
 }

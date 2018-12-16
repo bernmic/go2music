@@ -9,6 +9,7 @@ type User struct {
 }
 
 type UserCollection struct {
-	Users []*User `json:"users,omitempty"`
-	Paging
+	Users  []*User `json:"users,omitempty"`
+	Paging Paging  `json:"paging,omitempty"`
+	Total  int     `json:"total,omitempty"`
 }
