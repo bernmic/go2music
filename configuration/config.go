@@ -121,6 +121,10 @@ func ChangeConfiguration(config *model.Config) (*model.Config, error) {
 	if config.Media.Path != "" {
 		newConfig.Media.Path = config.Media.Path
 	}
+	if config.Media.Syncfrequency != "" {
+		newConfig.Media.Syncfrequency = config.Media.Syncfrequency
+	}
+	newConfig.Media.SyncAtStart = config.Media.SyncAtStart
 	if config.Database.Type != "" {
 		newConfig.Database.Type = config.Database.Type
 	}
