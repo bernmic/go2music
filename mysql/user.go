@@ -42,12 +42,9 @@ func (db *DB) initializeUser() {
 	var count int64
 	db.QueryRow(sanitizePlaceholder("SELECT count(*) c FROM guser")).Scan(&count)
 	if count == 0 {
-		userPassword, _ := HashPassword("user")
-		adminPassword, _ := HashPassword("admin")
-		guestPassword, _ := HashPassword("guest")
-		db.CreateUser(model.User{Username: "user", Password: userPassword, Role: "user", Email: "user@example.com"})
-		db.CreateUser(model.User{Username: "admin", Password: adminPassword, Role: "admin", Email: "admin@example.com"})
-		db.CreateUser(model.User{Username: "guest", Password: guestPassword, Role: "guest", Email: "guest@example.com"})
+		db.CreateUser(model.User{Username: "user", Password: "user", Role: "user", Email: "user@example.com"})
+		db.CreateUser(model.User{Username: "admin", Password: "admin", Role: "admin", Email: "admin@example.com"})
+		db.CreateUser(model.User{Username: "guest", Password: "guest", Role: "guest", Email: "guest@example.com"})
 	}
 }
 
