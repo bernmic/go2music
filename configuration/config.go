@@ -63,7 +63,7 @@ func Configuration(force bool) *model.Config {
 		}
 		if config.Media.Path == "" {
 			config.Media.Path = os.Getenv("GO2MUSIC_MEDIAPATH")
-			if config.Media.Syncfrequency == "" {
+			if config.Media.Path == "" {
 				config.Media.Path = "${home}/Music"
 			}
 		}

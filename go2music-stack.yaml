@@ -33,6 +33,7 @@ services:
       GO2MUSIC_DBSCHEMA: go2music
       GO2MUSIC_DBUSERNAME: go2music
       GO2MUSIC_DBPASSWORD: go2music
+      GO2MUSIC_MEDIAPATH: /music
 
 volumes:
   db_data: {}
