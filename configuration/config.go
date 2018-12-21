@@ -47,7 +47,7 @@ func Configuration(force bool) *model.Config {
 		}
 
 		if config.Application.Mode == "" {
-			config.Application.Mode = "debug"
+			config.Application.Mode = "release"
 		}
 
 		if config.Application.Loglevel == "" {
@@ -91,7 +91,6 @@ func Configuration(force bool) *model.Config {
 			config.Database.Type = os.Getenv("GO2MUSIC_DBTYPE")
 		}
 		configLoaded = true
-		log.Infof("Database parameters: %v", config.Database)
 	}
 	return &config
 }
