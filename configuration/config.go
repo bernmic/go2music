@@ -69,6 +69,7 @@ func Configuration(force bool) *model.Config {
 		}
 		if config.Media.Syncfrequency == "" {
 			config.Media.Syncfrequency = "30m"
+			config.Media.SyncAtStart = true
 		}
 		if config.Database.Type == "" {
 			config.Database.Username = os.Getenv("GO2MUSIC_DBUSERNAME")
