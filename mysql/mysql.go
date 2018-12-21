@@ -23,6 +23,7 @@ func New() (*DB, error) {
 	//url := c.Database.Url + "/" + c.Database.Schema
 	//db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, url))
 	url := createUrl(c.Database)
+	log.Infof("Use mysql database at %v", url)
 	db, err := sql.Open(c.Database.Type, url)
 	if err != nil {
 		log.Errorf("Error opening service " + url)

@@ -42,6 +42,8 @@ func Configuration(force bool) *model.Config {
 		configdata, err := ioutil.ReadFile(ConfigFile)
 		if err == nil {
 			yaml.Unmarshal([]byte(configdata), &config)
+		} else {
+			log.Warnf("Config file not found. Use default parameters.")
 		}
 
 		if config.Application.Mode == "" {
@@ -86,6 +88,7 @@ func Configuration(force bool) *model.Config {
 			config.Database.Type = os.Getenv("GO2MUSIC_DBTYPE")
 		}
 		configLoaded = true
+		log.Infof("Database parameters: %v", config.Database)
 	}
 	return &config
 }
