@@ -62,7 +62,10 @@ func Configuration(force bool) *model.Config {
 			config.Server.Port = 8080
 		}
 		if config.Media.Path == "" {
-			config.Media.Path = "${home}/Music"
+			config.Media.Path = os.Getenv("GO2MUSIC_MEDIAPATH")
+			if config.Media.Syncfrequency == "" {
+				config.Media.Path = "${home}/Music"
+			}
 		}
 		if config.Media.Syncfrequency == "" {
 			config.Media.Syncfrequency = "30m"
