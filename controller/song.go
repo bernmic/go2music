@@ -76,7 +76,7 @@ func streamSong(c *gin.Context) {
 	//file.Close()
 
 	//Send the headers
-	c.Header("Content-Disposition", "attachment; filename="+song.Path)
+	c.Header("Content-Disposition", "attachment; filename=\""+song.Path+"\"")
 	c.Header("Content-Type", fileContentType)
 	c.Header("Content-Length", fileSize)
 	c.Header("Cache-Control", "no-cache")
