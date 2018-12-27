@@ -13,6 +13,8 @@ const (
 	expectedResult3 = `album.title LIKE '%Test Album_'`
 	test4           = `album == "*Test Album?" || (duration >= 300 && genre=="Jazz")`
 	expectedResult4 = `album.title LIKE '%Test Album_' OR (song.duration>=300 AND song.genre='Jazz')`
+	test5           = `album==""`
+	expectedResult5 = `album.title IS NULL`
 )
 
 func Test_Parser(t *testing.T) {
@@ -46,5 +48,13 @@ func Test_Parser(t *testing.T) {
 	}
 	if r != expectedResult4 {
 		t.Errorf("Expected >>%s<<, got >>%s<<", expectedResult4, r)
+	}
+
+	r, err = EvalPlaylistExpression(test5)
+	if err != nil {
+		t.Errorf("Error parsing test5: %v\n", err)
+	}
+	if r != expectedResult5 {
+		t.Errorf("Expected >>%s<<, got >>%s<<", expectedResult5, r)
 	}
 }

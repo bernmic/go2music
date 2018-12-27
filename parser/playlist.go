@@ -10,6 +10,10 @@ import (
 	"strings"
 )
 
+const (
+	EMPTY_SQL_STRING = "''"
+)
+
 func EvalPlaylistExpression(expression string) (string, error) {
 	scanner := bufio.NewScanner(strings.NewReader(expression))
 	scanned := scanner.Scan()
@@ -50,6 +54,12 @@ func evalAST(exp ast.Expr) (string, error) {
 			return "song.rating", nil
 		case "track":
 			return "song.track", nil
+		case "path":
+			return "song.path", nil
+		case "bitrate":
+			return "song.bitrate", nil
+		case "samplerate":
+			return "song.samplerate", nil
 		}
 		return exp.Name, nil
 	case *ast.BasicLit:
@@ -96,6 +106,12 @@ func evalBinary(exp *ast.BinaryExpr) (string, error) {
 			right = strings.Replace(right, "*", "%", -1)
 			right = strings.Replace(right, "?", "_", -1)
 			return left + " LIKE " + right, nil
+		}
+		if left == EMPTY_SQL_STRING {
+			return right + " IS NULL", nil
+		}
+		if right == EMPTY_SQL_STRING {
+			return left + " IS NULL", nil
 		}
 		return left + "=" + right, nil
 	case token.NEQ:
