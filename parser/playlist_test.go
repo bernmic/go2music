@@ -14,7 +14,7 @@ const (
 	test4           = `album == "*Test Album?" || (duration >= 300 && genre=="Jazz")`
 	expectedResult4 = `album.title LIKE '%Test Album_' OR (song.duration>=300 AND song.genre='Jazz')`
 	test5           = `album==""`
-	expectedResult5 = `album.title IS NULL`
+	expectedResult5 = `album.title IS NULL OR album.title=''`
 )
 
 func Test_Parser(t *testing.T) {

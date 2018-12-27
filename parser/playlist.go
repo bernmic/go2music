@@ -98,23 +98,43 @@ func evalBinary(exp *ast.BinaryExpr) (string, error) {
 		return left + " OR " + right, nil
 	case token.EQL:
 		if strings.Contains(left, "*") ||
-			strings.Contains(left, "?") ||
-			strings.Contains(right, "*") ||
-			strings.Contains(right, "?") {
+			strings.Contains(left, "?") {
 			left = strings.Replace(left, "*", "%", -1)
 			left = strings.Replace(left, "?", "_", -1)
+			return right + " LIKE " + left, nil
+		}
+		if strings.Contains(right, "*") ||
+			strings.Contains(right, "?") {
 			right = strings.Replace(right, "*", "%", -1)
 			right = strings.Replace(right, "?", "_", -1)
 			return left + " LIKE " + right, nil
 		}
 		if left == EMPTY_SQL_STRING {
-			return right + " IS NULL", nil
+			return right + " IS NULL OR " + right + "=''", nil
 		}
 		if right == EMPTY_SQL_STRING {
-			return left + " IS NULL", nil
+			return left + " IS NULL OR " + left + "=''", nil
 		}
 		return left + "=" + right, nil
 	case token.NEQ:
+		if strings.Contains(left, "*") ||
+			strings.Contains(left, "?") {
+			left = strings.Replace(left, "*", "%", -1)
+			left = strings.Replace(left, "?", "_", -1)
+			return right + " NOT LIKE " + left, nil
+		}
+		if strings.Contains(right, "*") ||
+			strings.Contains(right, "?") {
+			right = strings.Replace(right, "*", "%", -1)
+			right = strings.Replace(right, "?", "_", -1)
+			return left + " NOT LIKE " + right, nil
+		}
+		if left == EMPTY_SQL_STRING {
+			return right + " IS NOT NULL AND " + right + "!=''", nil
+		}
+		if right == EMPTY_SQL_STRING {
+			return left + " IS NOT NULL AND " + left + "!=''", nil
+		}
 		return left + "!=" + right, nil
 	case token.LSS:
 		return left + "<" + right, nil

@@ -349,6 +349,7 @@ func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*mo
 	}
 	if where != "" {
 		where = " WHERE " + where
+		log.Info(where)
 	}
 
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
