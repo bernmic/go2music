@@ -43,3 +43,8 @@ MariaDB and MySQL are fully tested. The other not. There is a db-create.sql whic
 
 The Dockerfile works in two steps. The first step will build the executable, the second step creates the image from scratch.
 The docker-compose.yml can build the go2music image and creates the container for MySQL and go2music and links them together.
+
+## Frontend
+
+There is a complete web frontend for go2music in my justmusic-javalin repository (https://github.com/bernmic/justmusic-javalin). It is a single page application written in typescript with Angular and Angular Material. You can build this in the frontend folder and copy the contents of the dist folder to the static folder of go2music.
+  
