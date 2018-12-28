@@ -164,7 +164,12 @@ func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
 }
 
 func (db *DB) DeleteSong(id string) error {
-	_, err := db.Exec(sanitizePlaceholder("DELETE FROM song WHERE id=?"), id)
+	_, err := db.Exec(sanitizePlaceholder("DELETE FROM user_song WHERE song_id=?"), id)
+	if err != nil {
+		log.Errorf("Could not delete user_song for songid %s: %v", id, err)
+		return err
+	}
+	_, err = db.Exec(sanitizePlaceholder("DELETE FROM song WHERE id=?"), id)
 	return err
 }
 
@@ -476,6 +481,23 @@ func (db *DB) SongPlayed(song *model.Song, user *model.User) bool {
 		}
 	}
 	return true
+}
+
+func (db *DB) GetAllSongIdsAndPaths() (map[string]string, error) {
+	rows, err := db.Query(sanitizePlaceholder("SELECT id, path FROM song"))
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]string, 0)
+	var id, path string
+	for rows.Next() {
+		err = rows.Scan(&id, &path)
+		if err == nil {
+			result[id] = path
+		}
+	}
+
+	return result, rows.Err()
 }
 
 func createOrderAndLimitForSong(paging model.Paging) (string, bool) {

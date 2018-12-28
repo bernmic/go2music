@@ -60,6 +60,7 @@ func initRouter() {
 	{
 		initUser(admin)
 		initConfig(admin)
+		initSync(admin)
 	}
 }
 
