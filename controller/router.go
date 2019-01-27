@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"go2music/assets"
 	"go2music/configuration"
 	"go2music/database"
 	"go2music/mysql"
@@ -31,17 +32,10 @@ func initRouter() {
 	gin.SetMode(configuration.Configuration(false).Application.Mode)
 
 	router = gin.New()
-	if configuration.Configuration(false).Application.Cors == "all" {
-		router.Use(CorsMiddleware())
-	}
-
 	router.Use(ginrus.Ginrus(log.New(), time.RFC3339, false))
 	router.Use(gin.Recovery())
 
 	router.GET("/debug/vars", expvar.Handler())
-
-	staticRoutes("/", "./assets/frontend", &router.RouterGroup)
-	router.Static("/assets", "./assets/frontend/assets")
 
 	initAuthentication(&router.RouterGroup)
 
@@ -54,6 +48,9 @@ func initRouter() {
 		initPlaylist(api)
 		initInfo(api)
 	}
+	if configuration.Configuration(false).Application.Cors == "all" {
+		api.Use(CorsMiddleware())
+	}
 
 	admin := router.Group("/api/admin/")
 	admin.Use(AdminAuthMiddleware())
@@ -61,6 +58,35 @@ func initRouter() {
 		initUser(admin)
 		initConfig(admin)
 		initSync(admin)
+	}
+	if configuration.Configuration(false).Application.Cors == "all" {
+		admin.Use(CorsMiddleware())
+	}
+
+	router.NoRoute(noRoute)
+}
+
+func noRoute(c *gin.Context) {
+	if c.Request.Method == http.MethodGet {
+		u := c.Request.URL.Path
+		if u == "/" {
+			u = "/index.html"
+		}
+		f, err := assets.FrontendAssets.Open(u)
+		if err == nil {
+			b, err := ioutil.ReadAll(f)
+			if err == nil {
+				// we have the static file in our assets. so we send this one.
+				c.Writer.WriteHeader(http.StatusOK)
+				c.Header("Content-Type", getMimeType(u))
+				c.Writer.Write(b)
+				c.Writer.Flush()
+				return
+			}
+		} else if !strings.HasPrefix(u, "/api/") {
+			// not found but not /api. redirect to "/"
+			c.Redirect(http.StatusMovedPermanently, "/")
+		}
 	}
 }
 
@@ -78,32 +104,6 @@ func Run(dbi *mysql.DB) {
 	initRouter()
 	serverAddress := fmt.Sprintf(":%d", configuration.Configuration(false).Server.Port)
 	router.Run(serverAddress)
-}
-
-/*
-	Add all files (not dirs) unter root to routergroup with relativepath
-    if there is an index.html, add a route from relative path to it
-*/
-func staticRoutes(relativePath, root string, r *gin.RouterGroup) {
-	files, err := ioutil.ReadDir(root)
-	if err == nil {
-		if !strings.HasSuffix(relativePath, "/") {
-			relativePath += "/"
-		}
-		if !strings.HasSuffix(root, "/") {
-			root += "/"
-		}
-		for _, file := range files {
-			if !file.IsDir() {
-				r.StaticFile(relativePath+file.Name(), root+file.Name())
-				if file.Name() == "index.html" {
-					r.StaticFile(relativePath, root+file.Name())
-				}
-			}
-		}
-	} else {
-		log.Warn("directory not found: " + root)
-	}
 }
 
 /*
