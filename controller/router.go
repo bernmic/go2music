@@ -40,8 +40,8 @@ func initRouter() {
 
 	router.GET("/debug/vars", expvar.Handler())
 
-	staticRoutes("/", "./static", &router.RouterGroup)
-	router.Static("/assets", "./static/assets")
+	staticRoutes("/", "./assets/frontend", &router.RouterGroup)
+	router.Static("/assets", "./assets/frontend/assets")
 
 	initAuthentication(&router.RouterGroup)
 

@@ -66,7 +66,8 @@ func (db *DB) FindAlbumById(id string) (*model.Album, error) {
 	album := model.Album{}
 	err := db.QueryRow(sanitizePlaceholder("SELECT id,title,path FROM album WHERE id=?"), id).Scan(&album.Id, &album.Title, &album.Path)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Error loading album with id %s: %v", id, err)
+		return nil, err
 	}
 	return &album, err
 }

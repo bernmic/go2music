@@ -15,11 +15,11 @@ func extractPagingFromRequest(c *gin.Context) model.Paging {
 	paging := model.Paging{}
 
 	values := c.Request.URL.Query()
-	if p := values.Get("page"); p != "" {
-		paging.Page, _ = strconv.Atoi(p)
+	if v := values.Get("page"); v != "" {
+		paging.Page, _ = strconv.Atoi(v)
 	}
-	if s := values.Get("size"); s != "" {
-		paging.Size, _ = strconv.Atoi(s)
+	if v := values.Get("size"); v != "" {
+		paging.Size, _ = strconv.Atoi(v)
 	}
 	paging.Sort = values.Get("sort")
 	paging.Direction = values.Get("dir")

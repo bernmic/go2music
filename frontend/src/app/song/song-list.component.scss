@@ -1,0 +1,97 @@
+.mat-row {
+  min-height: 0px;
+  padding: 2px 0px 2px 0px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mat-row:hover {
+  cursor: pointer;
+}
+
+.mat-cell {
+  font-size: 0.66rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mat-header-cell {
+  font-size: 0.66rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mat-header-row {
+  min-height: 40px;
+  padding: 0 0;
+}
+
+.mat-column-command {
+  flex: 0 0 7%;
+}
+
+.mat-column-title {
+  flex: 0 0 25%;
+}
+
+.mat-column-artist {
+  flex: 0 0 20%;
+}
+
+.mat-column-album {
+  flex: 0 0 20%;
+}
+
+.mat-column-duration {
+  flex: 0 0 8%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mat-column-yearPublished {
+  flex: 0 0 5%;
+}
+
+.mat-column-track {
+  flex: 0 0 5%;
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 5px;
+}
+
+.mat-column-genre {
+  flex: 0 0 10%;
+}
+
+.only-on-hover {
+  opacity: 0.25;
+  transition: all ease 0.8s;
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+  cursor: pointer;
+}
+
+.only-on-hover:hover {
+  opacity: 1;
+}
+
+.spinner-container {
+  height: 360px;
+  width: 390px;
+  position: fixed;
+}
+
+.songs-table {
+  min-height: 360px;
+  margin-top: 10px;
+}
+
+.spinner-container mat-spinner {
+  margin: 130px auto 0 auto;
+}
+
+.cover {
+}

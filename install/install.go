@@ -34,7 +34,7 @@ func (is *InstallServer) root(w http.ResponseWriter, r *http.Request) {
 func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// GET send the installation form
-		t, err := template.ParseFiles("assets/install.html")
+		t, err := template.ParseFiles("assets/install/install.tpl")
 		if err != nil {
 			is.Terminate <- err
 		}

@@ -1,0 +1,53 @@
+<mat-card class="player">
+  <mat-card-header>
+    <mat-card-title>{{currentSong?.title}}</mat-card-title>
+    <mat-card-subtitle>{{currentSong?.artist?.name}}</mat-card-subtitle>
+  </mat-card-header>
+  <img mat-card-image [src]="cover()" width="100%">
+  <mat-card-content>
+    <mat-progress-bar
+      mode="determinate"
+      [value]="progress"
+      (click)="seek($event)"
+      (mouseover)="setHoverPosition($event)"
+    ></mat-progress-bar>
+    <p class="text-center"><small>{{position | duration}} / {{currentSong?.duration | duration}}</small></p>
+    <div>
+      <button mat-icon-button (click)="previous()">
+        <mat-icon>fast_rewind</mat-icon>
+      </button>
+      <button mat-icon-button (click)="play()" [disabled]="!canPlay()" [color]="isPlaying() ? 'accent' : 'basic'" [ngClass]="{'active': isPlaying()}">
+        <mat-icon>play_arrow</mat-icon>
+      </button>
+      <button mat-icon-button (click)="pause()" [ngClass]="{'active': isPaused()}">
+        <mat-icon>pause</mat-icon>
+      </button>
+      <button mat-icon-button (click)="stop()">
+        <mat-icon>stop</mat-icon>
+      </button>
+      <button mat-icon-button (click)="next()">
+        <mat-icon>fast_forward</mat-icon>
+      </button>
+    </div>
+    <button mat-icon-button (click)="volumeChanged(0)">
+      <mat-icon>volume_down</mat-icon>
+    </button>
+    <mat-slider color="primary" min="0" max="100" step="1" [value]="volume" #volumeCtrl></mat-slider>
+    <button mat-icon-button (click)="volumeChanged(100)">
+      <mat-icon>volume_up</mat-icon>
+    </button>
+    <mat-divider> </mat-divider>
+    <table>
+      <thead>
+        <th class="title">Title</th>
+        <th class="artist">Artist</th>
+      </thead>
+      <tbody>
+        <tr *ngFor="let song of songs" (click)="playSong(song)">
+          <td [class.current-song-title]="isCurrentSong(song)">{{song.title}}</td>
+          <td [class.current-song-artist]="isCurrentSong(song)">{{song.artist?.name}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </mat-card-content>
+</mat-card>

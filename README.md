@@ -46,5 +46,5 @@ The docker-compose.yml can build the go2music image and creates the container fo
 
 ## Frontend
 
-There is a complete web frontend for go2music in my justmusic-javalin repository (https://github.com/bernmic/justmusic-javalin). It is a single page application written in typescript with Angular and Angular Material. You can build this in the frontend folder and copy the contents of the dist folder to the static folder of go2music.
+There is a complete web frontend for go2music in the frontend folder. It is a single page application written in typescript with Angular and Angular Material. You can build this in the frontend folder and copy the contents of the dist folder to the static folder of go2music.
   

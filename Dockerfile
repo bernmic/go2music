@@ -11,7 +11,6 @@ ENV GO2MUSIC_CONFIG /config/go2music.yaml
 ENV GO2MUSIC_MEDIA /music
 COPY --from=builder /go/bin/main /app/
 COPY --from=builder /go/bin/assets/ /app/assets/
-COPY --from=builder /go/bin/static/ /app/static/
 WORKDIR /app
 VOLUME /music /config
 CMD ["./main"]
