@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"io/ioutil"
 	"strconv"
