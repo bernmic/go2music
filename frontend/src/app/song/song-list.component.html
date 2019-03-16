@@ -1,5 +1,17 @@
 <div class="song" [ngClass]="{'cover':kind==='album'}">
   <span [style.visibility]="kind!=='' ? 'visible' : 'hidden'">{{headline}}</span>
+  <mat-icon
+    *ngIf="kind==='album'"
+    class="only-on-hover"
+    color="accent"
+    (click)="downloadAlbum()">get_app
+  </mat-icon>
+  <mat-icon
+    *ngIf="kind==='playlist'"
+    class="only-on-hover"
+    color="accent"
+    (click)="downloadPlaylist()">get_app
+  </mat-icon>
   <mat-form-field [style.visibility]="kind==='' ? 'visible' : 'hidden'">
     <mat-placeholder><mat-icon>search</mat-icon></mat-placeholder>
     <input matInput #input>

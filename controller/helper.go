@@ -1,10 +1,16 @@
 package controller
 
 import (
+	"archive/zip"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
+	"io"
 	"io/ioutil"
+	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -77,4 +83,67 @@ func staticRoutes(relativePath, root string, r *gin.RouterGroup) {
 	} else {
 		log.Warn("directory not found: " + root)
 	}
+}
+
+func sendSongsAsZip(c *gin.Context, songs []*model.Song, filename string) {
+	if filename == "" {
+		if allSameArtist(songs) {
+			filename = songs[0].Artist.Name + " - " + songs[0].Album.Title
+		} else {
+			filename = songs[0].Album.Title
+		}
+		if filename == "" {
+			filename = "unknown"
+		}
+		filename = filename + ".zip"
+	}
+	c.Header("Content-Type", "application/zip")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	zw := zip.NewWriter(c.Writer)
+	for _, song := range songs {
+		if err := addFileToZip(zw, song.Path); err != nil {
+			respondWithError(http.StatusInternalServerError, "Error creating zip file: "+err.Error(), c)
+			return
+		}
+	}
+	zw.Close()
+}
+
+func addFileToZip(zw *zip.Writer, filename string) error {
+	log.Infof("Adding file %s to zip", filename)
+	fileToZip, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer fileToZip.Close()
+
+	// Get the file information
+	info, err := fileToZip.Stat()
+	if err != nil {
+		return err
+	}
+
+	header, err := zip.FileInfoHeader(info)
+	if err != nil {
+		return err
+	}
+
+	header.Name = filepath.Base(filename)
+	header.Method = zip.Deflate
+
+	writer, err := zw.CreateHeader(header)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(writer, fileToZip)
+	return err
+}
+
+func allSameArtist(s []*model.Song) bool {
+	for i := 1; i < len(s); i++ {
+		if s[i].Artist.Name != s[0].Artist.Name {
+			return false
+		}
+	}
+	return true
 }

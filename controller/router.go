@@ -34,6 +34,9 @@ func initRouter() {
 	router = gin.New()
 	router.Use(ginrus.Ginrus(log.New(), time.RFC3339, false))
 	router.Use(gin.Recovery())
+	if configuration.Configuration(false).Application.Cors == "all" {
+		router.Use(CorsMiddleware())
+	}
 
 	router.GET("/debug/vars", expvar.Handler())
 

@@ -2,11 +2,10 @@ package controller
 
 import (
 	"expvar"
+	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"net/http"
 	"strconv"
-
-	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -18,6 +17,7 @@ func initAlbum(r *gin.RouterGroup) {
 	r.GET("/album/:id", getAlbum)
 	r.GET("/album/:id/songs", getSongForAlbum)
 	r.GET("/album/:id/cover", getCoverForAlbum)
+	r.GET("/album/:id/download", downloadAlbum)
 }
 
 func getAlbums(c *gin.Context) {
@@ -86,11 +86,18 @@ func getCoverForAlbum(c *gin.Context) {
 	respondWithError(http.StatusNotFound, "No cover found", c)
 }
 
-func allSameArtist(s []*model.Song) bool {
-	for i := 1; i < len(s); i++ {
-		if s[i].Artist.Name != s[0].Artist.Name {
-			return false
-		}
+func downloadAlbum(c *gin.Context) {
+	counterAlbum.Add("GET /:id/download", 1)
+	id := c.Param("id")
+	paging := extractPagingFromRequest(c)
+	songs, _, err := songManager.FindSongsByAlbumId(id, paging)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "album not found", c)
+		return
 	}
-	return true
+	if len(songs) > 0 {
+		sendSongsAsZip(c, songs, "")
+		return
+	}
+	respondWithError(http.StatusNotFound, "No cover found", c)
 }

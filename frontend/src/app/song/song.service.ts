@@ -52,4 +52,12 @@ export class SongService extends BaseService {
   getSong(id: string): Observable<Song> {
     return this.http.get<Song>(environment.restserver + "/api/song/" + id);
   }
+
+  downloadAlbum(albumId: string) {
+    return this.http.get(environment.restserver + "/api/album/" + albumId + "/download", {responseType: "blob"});
+  }
+
+  downloadPlaylist(playlistId: string) {
+    return this.http.get(environment.restserver + "/api/playlist/" + playlistId + "/download", {responseType: "blob"});
+  }
 }

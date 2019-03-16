@@ -1,15 +1,16 @@
 import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from "@angular/core";
-import {Song, SongCollection} from "./song.model";
+import {Song} from "./song.model";
 import {SongService} from "./song.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {PlayerService} from "../player/player.service";
-import {MatDialog, MatDialogConfig, MatPaginator, MatSort, MatTable} from "@angular/material";
+import {MatDialog, MatDialogConfig, MatPaginator, MatSort} from "@angular/material";
 import {PlaylistSelectDialogComponent} from "./playlist-select-dialog.component";
 import {PlaylistService} from "../playlist/playlist.service";
 import {SongDataSource} from "./song.datasource";
 import {Paging} from "../shared/paging.model";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
 import {fromEvent, merge} from "rxjs";
+import {saveAs} from 'file-saver';
 
 @Component({
   selector: 'app-song-list',
@@ -142,4 +143,24 @@ export class SongListComponent implements AfterViewInit, OnInit {
   getProperty = (obj, path) => (
     path.split('.').reduce((o, p) => o && o[p], obj)
   )
+
+  fileUrl;
+
+  downloadAlbum() {
+    this.songService.downloadAlbum(this.anyId).subscribe(
+      data => {
+        saveAs(data, this.kind + " - " + this.anyId);
+      },
+      error => console.error(error)
+    )
+  }
+
+  downloadPlaylist() {
+    this.songService.downloadPlaylist(this.anyId).subscribe(
+      data => {
+        saveAs(data, this.kind + " - " + this.anyId);
+      },
+      error => console.error(error)
+    )
+  }
 }

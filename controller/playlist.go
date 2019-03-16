@@ -18,6 +18,7 @@ var (
 func initPlaylist(r *gin.RouterGroup) {
 	r.GET("/playlist", getPlaylists)
 	r.GET("/playlist/:id", getPlaylist)
+	r.GET("/playlist/:id/download", downloadPlaylist)
 	r.GET("/playlist/:id/songs", getSongsForPlaylist)
 	r.POST("/playlist/:id/songs", addSongsToPlaylist)
 	r.PUT("/playlist/:id/songs", setSongsOfPlaylist)
@@ -227,4 +228,35 @@ func setSongsOfPlaylist(c *gin.Context) {
 	}
 	removedSongs, addedSongs := playlistManager.SetSongsOfPlaylist(id, songIdsToSet)
 	c.JSON(http.StatusOK, gin.H{"removed": removedSongs, "added": addedSongs})
+}
+
+func downloadPlaylist(c *gin.Context) {
+	counterPlaylist.Add("GET /:id/download", 1)
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
+	id := c.Param("id")
+	playlist, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "playlist not found", c)
+		return
+	}
+
+	var songs []*model.Song
+
+	paging := extractPagingFromRequest(c)
+	if playlist.Query != "" {
+		songs, _, err = songManager.FindSongsByPlaylistQuery(playlist.Query, paging)
+	} else {
+		songs, _, err = songManager.FindSongsByPlaylist(playlist.Id, paging)
+	}
+	if err == nil {
+		if len(songs) > 0 {
+			sendSongsAsZip(c, songs, playlist.Name+".zip")
+		}
+		return
+	}
+	respondWithError(http.StatusInternalServerError, "Cound not read songs of playlist", c)
 }
