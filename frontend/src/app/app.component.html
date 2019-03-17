@@ -82,7 +82,7 @@
     </button>
     <button mat-menu-item *ngIf="isLoggedIn() | async" (click)="logout()">
       <mat-icon>power_settings_new</mat-icon>
-      <span i18n="@@menuLogout">Logout</span>
+      <span i18n="@@menuLogout">Logout {{username()}}</span>
     </button>
     <button mat-menu-item>
       <mat-icon>help</mat-icon>

@@ -21,6 +21,7 @@ export class PlayerService {
     this.currentSong = song;
     if (this.songlist.indexOf(song) < 0) {
       this.songlist.push(song);
+      this.storePlayqueue();
     }
     this.playSource.next(song);
     this.listChange.next(this.songlist);
@@ -28,6 +29,7 @@ export class PlayerService {
 
   addSong(song: Song) {
     this.songlist.push(song);
+    this.storePlayqueue();
     this.listChange.next(this.songlist);
   }
 
@@ -61,6 +63,7 @@ export class PlayerService {
     const index = this.songlist.indexOf(song, 0);
     if (index >= 0) {
       this.songlist.splice(index, 1);
+      this.storePlayqueue();
       this.listChange.next(this.songlist);
     }
   }
@@ -71,5 +74,24 @@ export class PlayerService {
 
   songStreamUrl(song: Song): string {
     return environment.restserver + "/api/song/" + song.songId + "/stream?bearer=" + this.authService.getToken();
+  }
+
+  private LOCALSTORAGE_PREFIX = "PLAYQUEUE-";
+
+  storePlayqueue() {
+    let username = this.authService.getLoggedInUsername();
+    localStorage.setItem(this.LOCALSTORAGE_PREFIX + username, JSON.stringify(this.songlist));
+    console.log("Saved currend playqueue");
+  }
+
+  loadPlayqueue() {
+    console.log("Try to load playqueue");
+    let username = this.authService.getLoggedInUsername();
+    let s = localStorage.getItem(this.LOCALSTORAGE_PREFIX + username);
+    if (s !== null) {
+      this.songlist = JSON.parse(s);
+      console.log("loaded currend playqueue");
+      this.listChange.next(this.songlist);
+    }
   }
 }

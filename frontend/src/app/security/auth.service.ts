@@ -30,6 +30,13 @@ export class AuthService {
     return this.token;
   }
 
+  getLoggedInUsername(): string {
+    if (!isNullOrUndefined(this.auth)) {
+      return this.auth.username;
+    }
+    return "";
+  }
+
   login(username: string, password: string){
     if (username !== '' && password !== '' ) {
       let headers = new HttpHeaders();
@@ -50,6 +57,7 @@ export class AuthService {
 
   logout() {                            // {4}
     this.loggedIn.next(false);
+    this.auth = null;
     this.router.navigate(['/login']);
   }
 

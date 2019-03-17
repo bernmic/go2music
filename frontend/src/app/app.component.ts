@@ -3,6 +3,7 @@ import {MediaMatcher} from '@angular/cdk/layout';
 import {Router} from '@angular/router';
 import {AuthService} from "./security/auth.service";
 import {Observable} from "rxjs/index";
+import {PlayerService} from "./player/player.service";
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ export class AppComponent implements OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthService,
+    private playerService: PlayerService,
     changeDetectorRef: ChangeDetectorRef,
     media: MediaMatcher) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
@@ -28,6 +30,11 @@ export class AppComponent implements OnDestroy {
     if (localStorage.getItem("theme") !== null) {
       this.theme = localStorage.getItem("theme");
     }
+    this.authService.isLoggedIn.subscribe(b => {
+      if (b) {
+        this.playerService.loadPlayqueue();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -62,7 +69,12 @@ export class AppComponent implements OnDestroy {
   isLoggedIn(): Observable<boolean> {
     return this.authService.isLoggedIn;
   }
+
   isAdmin(): boolean {
     return this.authService.isAdmin()
+  }
+
+  username(): string {
+    return this.authService.getLoggedInUsername();
   }
 }

@@ -5,6 +5,7 @@ import {Howl} from "howler";
 import {isNullOrUndefined} from "util";
 import {Subscription} from "rxjs/index";
 import {MatSlider, MatSnackBar} from "@angular/material";
+import {AuthService} from "../security/auth.service";
 
 @Component({
   selector: 'app-player',
@@ -29,7 +30,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   @ViewChild("volumeCtrl")
   volumeControl: MatSlider ;
 
-  constructor(private playerService: PlayerService, public snackBar: MatSnackBar) {
+  constructor(
+    private playerService: PlayerService,
+    public snackBar: MatSnackBar) {
   }
 
   ngOnInit() {
