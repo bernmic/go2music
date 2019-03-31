@@ -1,0 +1,26 @@
+<mat-accordion [multi]="true">
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Songfiles with problems ({{sync?.new_songs_problems}})
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-list>
+      <mat-list-item *ngFor="let entry of sync?.problem_songs | keyvalue">
+        <p><small>{{entry.value}}</small></p>
+      </mat-list-item>
+    </mat-list>
+  </mat-expansion-panel>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Songs not found in filesystem ({{sync?.dangling_songs_found}})
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-list>
+      <mat-list-item *ngFor="let entry of sync?.dangling_songs | keyvalue">
+        <p><small>{{entry.value}}</small></p>
+      </mat-list-item>
+    </mat-list>
+  </mat-expansion-panel>
+</mat-accordion>

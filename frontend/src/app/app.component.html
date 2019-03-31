@@ -49,6 +49,10 @@
             <mat-icon matListIcon color="accent">library_music</mat-icon>
             <span i18n="@@navUsers">Songs</span>
           </mat-list-item>
+          <mat-list-item routerLinkActive="active" routerLink="management" *ngIf="isAdmin()">
+            <mat-icon matListIcon color="accent">bug_report</mat-icon>
+            <span i18n="@@navUsers">Management</span>
+          </mat-list-item>
         </mat-nav-list>
         <div id="version">v0.0.1</div>
       </mat-sidenav>

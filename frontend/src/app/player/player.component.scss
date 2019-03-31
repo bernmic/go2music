@@ -1,39 +1,3 @@
 img {
   width: 300px;
 }
-
-table, tr {
-  width: 100%;
-  cursor: pointer;
-}
-th,td {
-  text-align: left;
-  font-size: 0.66rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-tr:hover {
-  background-color: beige;
-}
-
-th.title {
-  width: 60%;
-}
-
-th.artist {
-  width: 40%;
-}
-
-.current-song-title {
-  font-weight: bold;
-}
-
-.current-song-title::before {
-  content: "> ";
-}
-
-.current-song-artist {
-  font-weight: bold;
-}

@@ -3,9 +3,8 @@ import {Song} from "../song/song.model";
 import {PlayerService} from "./player.service";
 import {Howl} from "howler";
 import {isNullOrUndefined} from "util";
-import {Subscription} from "rxjs/index";
+import {Subscription} from "rxjs";
 import {MatSlider, MatSnackBar} from "@angular/material";
-import {AuthService} from "../security/auth.service";
 
 @Component({
   selector: 'app-player',
@@ -13,12 +12,7 @@ import {AuthService} from "../security/auth.service";
   styleUrls: ['./player.component.scss']
 })
 export class PlayerComponent implements OnInit, AfterViewInit {
-  displayedColumns = ['title', 'duration'];
-  songs: Song[];
-  songListSubscription: Subscription;
-
   audio: Howl;
-  currentSong: Song;
   volume = 100;
   position = 0;
   progress = 0;
@@ -40,9 +34,6 @@ export class PlayerComponent implements OnInit, AfterViewInit {
       this.playSong(song);
       this.openSnackBar(`Now playing ${song.title} from ${song.artist.name}`, "Show");
     });
-    this.songListSubscription = this.playerService.listchange$.subscribe(songs => {
-      this.songs = songs;
-    });
   }
 
   ngAfterViewInit(): void {
@@ -53,18 +44,11 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   ngOnDestroy(): void {
     this.songPlaySubscription.unsubscribe();
-    this.songListSubscription.unsubscribe();
     this.volumeControl.input.unsubscribe();
   }
 
-  songClicked(event, song: Song) {
-    if (event.detail === 2) {
-      this.playerService.playSong(song);
-    }
-  }
-
   isCurrentSong(song: Song): boolean {
-    return this.currentSong === song;
+    return this.playerService.currentSong === song;
   }
 
   playerReady(): boolean {
@@ -95,10 +79,10 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     this.playerService.previousSong();
   }
   cover(): string {
-    if (isNullOrUndefined(this.currentSong)) {
+    if (isNullOrUndefined(this.playerService.currentSong)) {
       return "../assets/img/defaultAlbum.png";
     }
-    return this.playerService.songCoverUrl(this.currentSong);
+    return this.playerService.songCoverUrl(this.playerService.currentSong);
   }
 
   volumeChanged(volume) {
@@ -109,7 +93,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   }
 
   canPlay(): boolean {
-    return !isNullOrUndefined(this.currentSong);
+    return !isNullOrUndefined(this.playerService.currentSong);
   }
 
   isPlaying(): boolean {
@@ -120,7 +104,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     return !isNullOrUndefined(this.audio) && !this.audio.playing() && this.position !== 0;
   }
   playSong(song: Song) {
-    this.currentSong = song;
+    this.playerService.currentSong = song;
     if (!isNullOrUndefined(this.audio)) {
       this.audio.unload();
     }
@@ -151,9 +135,13 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     this.hoverPosition = this.calculateSongPosition(event.offsetX, event.srcElement.clientWidth.toFixed(0));
   }
 
+  currentSong(): Song {
+    return this.playerService.currentSong;
+  }
+
   private calculateSongPosition(position: number, size: number): number {
     if (this.canPlay()) {
-      return Math.round(this.currentSong.duration * position / size);
+      return Math.round(this.playerService.currentSong.duration * position / size);
     }
     return 0;
   }

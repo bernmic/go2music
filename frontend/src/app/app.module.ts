@@ -31,6 +31,8 @@ import {SongRoutingModule} from "./song/song-routing.module";
 import {OverviewRoutingModule} from "./overview/overview-routing.module";
 import {SecurityRoutingModule} from "./security/security-routing.module";
 import {PlaylistRoutingModule} from "./playlist/playlist-routing.module";
+import {ManagementModule} from "./management/management.module";
+import {ManagementRoutingModule} from "./management/management-routing.module";
 
 @NgModule({
   declarations: [
@@ -43,6 +45,7 @@ import {PlaylistRoutingModule} from "./playlist/playlist-routing.module";
     AlbumRoutingModule,
     ArtistRoutingModule,
     ConfigRoutingModule,
+    ManagementRoutingModule,
     OverviewRoutingModule,
     PlaylistRoutingModule,
     SecurityRoutingModule,
@@ -52,6 +55,7 @@ import {PlaylistRoutingModule} from "./playlist/playlist-routing.module";
     AlbumModule,
     ArtistModule,
     ConfigModule,
+    ManagementModule,
     OverviewModule,
     PlayerModule,
     PlaylistModule,

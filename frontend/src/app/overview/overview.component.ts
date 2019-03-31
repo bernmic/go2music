@@ -36,7 +36,7 @@ export class OverviewComponent implements OnInit {
   }
 
   playSong(song: Song) {
-    this.playerService.playSong(song);
+    this.playerService.addAndPlaySong(song);
   }
 
 

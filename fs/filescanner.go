@@ -46,8 +46,8 @@ type ImageFile struct {
 // GetCoverFromPath gets a cover from the path if there is one
 func GetCoverFromPath(path string) ([]byte, string, error) {
 	var files []ImageFile
-	filepath.Walk(path, func(path string, f os.FileInfo, _ error) error {
-		if !f.IsDir() {
+	filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
+		if err == nil && !f.IsDir() {
 			ext := strings.ToLower(f.Name())
 			if filepath.Ext(ext) == ".gif" {
 				files = append(files, ImageFile{path: path, mimetype: "image/gif"})

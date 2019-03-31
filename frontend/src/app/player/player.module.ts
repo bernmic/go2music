@@ -4,12 +4,13 @@ import {PlayerComponent} from "./player.component";
 import {PlayerService} from "./player.service";
 import {
   MatButtonModule,
-  MatCardModule, MatDividerModule, MatIconModule,
+  MatCardModule, MatDividerModule, MatIconModule, MatListModule, MatMenuModule,
   MatProgressBarModule,
   MatSliderModule,
   MatSnackBarModule
 } from "@angular/material";
 import {SharedModule} from "../shared/shared.module";
+import {PlayQueueComponent} from "./play-queue.component";
 
 @NgModule({
   imports: [
@@ -19,12 +20,15 @@ import {SharedModule} from "../shared/shared.module";
     MatCardModule,
     MatDividerModule,
     MatIconModule,
+    MatListModule,
+    MatMenuModule,
     MatProgressBarModule,
     MatSliderModule,
     MatSnackBarModule
   ],
   declarations: [
-    PlayerComponent
+    PlayerComponent,
+    PlayQueueComponent
   ],
   exports: [
     PlayerComponent

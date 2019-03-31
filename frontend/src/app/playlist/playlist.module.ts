@@ -10,14 +10,16 @@ import {
   MatButtonToggleModule,
   MatExpansionModule,
   MatFormFieldModule,
-  MatIconModule,
+  MatIconModule, MatInputModule,
   MatListModule
 } from "@angular/material";
 import {RouterModule} from "@angular/router";
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
   imports: [
     BrowserModule,
+    FormsModule,
     HttpClientModule,
     RouterModule,
     MatButtonModule,
@@ -25,6 +27,7 @@ import {RouterModule} from "@angular/router";
     MatExpansionModule,
     MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
     MatListModule
   ],
   declarations: [

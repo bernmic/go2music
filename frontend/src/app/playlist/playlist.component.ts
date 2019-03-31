@@ -20,6 +20,9 @@ export class PlaylistComponent implements OnInit {
   }
 
   delete(playlistId: string) {
-    this.playlistService.deletePlaylist(playlistId).subscribe(() => this.router.navigate(["/playlist"]));
+    this.playlistService.deletePlaylist(playlistId).subscribe(() => {
+      console.log("Playlist deleted")
+      this.router.navigate(["/playlist"]);
+    });
   }
 }

@@ -115,7 +115,7 @@ export class SongListComponent implements AfterViewInit, OnInit {
   }
 
   playSong(song: Song) {
-    this.playerService.playSong(song);
+    this.playerService.addAndPlaySong(song);
   }
 
   queueSong(song: Song) {

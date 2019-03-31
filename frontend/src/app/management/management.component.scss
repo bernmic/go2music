@@ -1,0 +1,8 @@
+mat-list-item {
+  cursor: pointer;
+  height: 1em!important;
+}
+
+:host /deep/ .mat-list-item-content {
+  padding: 0!important;
+}

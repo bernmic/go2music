@@ -18,6 +18,10 @@ export class PlayerService {
   constructor(private authService: AuthService) {}
 
   playSong(song: Song) {
+    this.playSource.next(song);
+  }
+
+  addAndPlaySong(song: Song) {
     this.currentSong = song;
     if (this.songlist.indexOf(song) < 0) {
       this.songlist.push(song);
@@ -36,11 +40,11 @@ export class PlayerService {
   nextSong() {
     if (this.songlist.length > 0) {
       if (isNullOrUndefined(this.currentSong)) {
-        this.playSong(this.songlist[0]);
+        this.addAndPlaySong(this.songlist[0]);
       } else {
         const index = this.songlist.indexOf(this.currentSong) + 1;
         if (index < this.songlist.length) {
-          this.playSong(this.songlist[index]);
+          this.addAndPlaySong(this.songlist[index]);
         }
       }
     }
@@ -49,22 +53,27 @@ export class PlayerService {
   previousSong() {
     if (this.songlist.length > 0) {
       if (isNullOrUndefined(this.currentSong)) {
-        this.playSong(this.songlist[0]);
+        this.addAndPlaySong(this.songlist[0]);
       } else {
         const index = this.songlist.indexOf(this.currentSong) - 1;
         if (index >= 0) {
-          this.playSong(this.songlist[index]);
+          this.addAndPlaySong(this.songlist[index]);
         }
       }
     }
   }
 
-  removeSong(song: Song) {
-    const index = this.songlist.indexOf(song, 0);
-    if (index >= 0) {
-      this.songlist.splice(index, 1);
+  removeSongByIndex(i: number) {
+    if (i < this.songlist.length) {
+      this.songlist.splice(i, 1);
       this.storePlayqueue();
       this.listChange.next(this.songlist);
+    }
+  }
+
+  playSongByIndex(i: number) {
+    if (i < this.songlist.length) {
+      this.playSong(this.songlist[i]);
     }
   }
 
