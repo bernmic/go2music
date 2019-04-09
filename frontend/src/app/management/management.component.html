@@ -2,7 +2,7 @@
   <mat-expansion-panel>
     <mat-expansion-panel-header>
       <mat-panel-title>
-        Songfiles with problems ({{sync?.new_songs_problems}})
+        Songfiles with problems while importing ({{sync?.new_songs_problems}})
       </mat-panel-title>
     </mat-expansion-panel-header>
     <mat-list>
@@ -19,8 +19,37 @@
     </mat-expansion-panel-header>
     <mat-list>
       <mat-list-item *ngFor="let entry of sync?.dangling_songs | keyvalue">
-        <p><small>{{entry.value}}</small></p>
+        <mat-icon mat-list-icon (click)="removeDanglingSong(entry.key)">delete</mat-icon>
+        <p mat-line><small>{{entry.value}}</small></p>
       </mat-list-item>
     </mat-list>
+    <mat-action-row>
+      <button mat-button (click)="removeAllDanglingSongs()">
+        <mat-icon>delete</mat-icon>
+        Remove all
+      </button>
+      <button mat-button (click)="startSync()">
+        <mat-icon>sync</mat-icon>
+        Syncronize now
+      </button>
+    </mat-action-row>
+  </mat-expansion-panel>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Albums without any song ({{sync?.empty_albums?.size}})
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-list>
+      <mat-list-item *ngFor="let entry of sync?.empty_albums | keyvalue">
+        <p mat-line><small>{{entry.value}}</small></p>
+      </mat-list-item>
+    </mat-list>
+    <mat-action-row>
+      <button mat-button (click)="removeAllEmptyAlbums()">
+        <mat-icon>delete</mat-icon>
+        Remove all
+      </button>
+    </mat-action-row>
   </mat-expansion-panel>
 </mat-accordion>

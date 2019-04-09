@@ -1,5 +1,5 @@
-<mat-list dense>
-  <mat-list-item *ngFor="let song of songs; let i = index;">
+<mat-list dense cdkDrop>
+  <mat-list-item *ngFor="let song of songs; let i = index;" cdkDrag>
     <mat-icon mat-list-icon (click)="playSong(song)">{{isCurrentSong(song) ? "play_arrow" : "queue_music"}}</mat-icon>
     <p mat-line (click)="playSong(song)">{{song.title}}</p>
     <p mat-line (click)="playSong(song)">

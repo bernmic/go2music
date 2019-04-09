@@ -37,13 +37,15 @@
             <mat-icon matListIcon color="accent">people</mat-icon>
             <span i18n="@@navData">Artists (new)</span>
           </mat-list-item>
+<!--
           <mat-list-item routerLinkActive="active" routerLink="album">
             <mat-icon matListIcon color="accent">album</mat-icon>
-            <span i18n="@@navUsers">Albums</span>
+            <span i18n="@@navUsers">Albums (old)</span>
           </mat-list-item>
+-->
           <mat-list-item routerLinkActive="active" routerLink="album-new">
             <mat-icon matListIcon color="accent">album</mat-icon>
-            <span i18n="@@navUsers">Albums (new)</span>
+            <span i18n="@@navUsers">Albums</span>
           </mat-list-item>
           <mat-list-item routerLinkActive="active" routerLink="song">
             <mat-icon matListIcon color="accent">library_music</mat-icon>
@@ -54,7 +56,7 @@
             <span i18n="@@navUsers">Management</span>
           </mat-list-item>
         </mat-nav-list>
-        <div id="version">v0.0.1</div>
+        <div id="version">v0.0.2</div>
       </mat-sidenav>
 
       <mat-sidenav #rsnav position="end" [mode]="mobileQuery.matches ? 'over' : 'side'"

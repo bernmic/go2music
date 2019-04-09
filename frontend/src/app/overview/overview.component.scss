@@ -3,19 +3,20 @@ mat-card {
   margin: 5px 5px 5px 5px;
 }
 
-.clickable {
+mat-list-item.multi {
   cursor: pointer;
+  height: 2.75em!important;
 }
 
-.pull-left {
-  float: left;
+mat-list-item.single {
+  cursor: pointer;
+  height: 1.25em!important;
 }
 
-.pull-right {
-  float: right;
+p.mat-line {
+  width: 60%;
 }
 
-.block {
-  display: inline-block; /* since, div, I don't need this right ?*/
-  width: 100%;
+:host /deep/ .mat-list-item-content {
+  padding: 0!important;
 }

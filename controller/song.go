@@ -18,6 +18,7 @@ func initSong(r *gin.RouterGroup) {
 	r.GET("/song", getSongs)
 	r.GET("/song/:id", getSong)
 	r.GET("/song/:id/cover", getCover)
+	r.GET("/song/:id/cover/:size", getCover)
 	r.GET("/song/:id/stream", streamSong)
 	r.POST("/song/:id/rate/:rating", rateSong)
 }
@@ -117,16 +118,31 @@ func rateSong(c *gin.Context) {
 func getCover(c *gin.Context) {
 	counterSong.Add("GET /:id/cover", 1)
 	id := c.Param("id")
+	s := c.Param("size")
+	size := COVER_SIZE
+	var err error
+	if s != "" {
+		size, err = strconv.Atoi(s)
+		if err != nil {
+			respondWithError(http.StatusBadRequest, "Invalid size parameter", c)
+			return
+		}
+	}
 	song, err := songManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
 		return
 	}
-	image, mimetype, err := songManager.GetCoverForSong(song)
+	imageBytes, mimetype, err := songManager.GetCoverForSong(song)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "no cover for song not found", c)
+		return
+	}
 
-	if image != nil {
+	imageBytes, mimetype, err = resizeCover(imageBytes, mimetype, size)
+	if imageBytes != nil {
 		c.Header("Content-Type", mimetype)
-		c.Header("Content-Length", strconv.Itoa(len(image)))
-		c.Data(http.StatusOK, mimetype, image)
+		c.Header("Content-Length", strconv.Itoa(len(imageBytes)))
+		c.Data(http.StatusOK, mimetype, imageBytes)
 	}
 }

@@ -69,6 +69,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   stop() {
     this.audio.stop();
+    this.playerService.currentSong = null;
   }
 
   next() {

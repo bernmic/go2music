@@ -18,17 +18,17 @@ export class PlayerService {
   constructor(private authService: AuthService) {}
 
   playSong(song: Song) {
+    this.currentSong = song;
     this.playSource.next(song);
   }
 
   addAndPlaySong(song: Song) {
-    this.currentSong = song;
-    if (this.songlist.indexOf(song) < 0) {
-      this.songlist.push(song);
-      this.storePlayqueue();
+    let found = this.songlist.find(s => s.songId == song.songId);
+    if (isNullOrUndefined(found)) {
+      this.addSong(song);
+      found = song;
     }
-    this.playSource.next(song);
-    this.listChange.next(this.songlist);
+    this.playSong(found);
   }
 
   addSong(song: Song) {
@@ -40,11 +40,11 @@ export class PlayerService {
   nextSong() {
     if (this.songlist.length > 0) {
       if (isNullOrUndefined(this.currentSong)) {
-        this.addAndPlaySong(this.songlist[0]);
+        this.playSong(this.songlist[0]);
       } else {
         const index = this.songlist.indexOf(this.currentSong) + 1;
         if (index < this.songlist.length) {
-          this.addAndPlaySong(this.songlist[index]);
+          this.playSong(this.songlist[index]);
         }
       }
     }
@@ -53,11 +53,11 @@ export class PlayerService {
   previousSong() {
     if (this.songlist.length > 0) {
       if (isNullOrUndefined(this.currentSong)) {
-        this.addAndPlaySong(this.songlist[0]);
+        this.playSong(this.songlist[0]);
       } else {
         const index = this.songlist.indexOf(this.currentSong) - 1;
         if (index >= 0) {
-          this.addAndPlaySong(this.songlist[index]);
+          this.playSong(this.songlist[index]);
         }
       }
     }

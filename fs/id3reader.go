@@ -3,7 +3,6 @@ package fs
 import (
 	"errors"
 	"fmt"
-	"go2music/configuration"
 	"go2music/database"
 	"go2music/model"
 	"os"
@@ -17,67 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/xhenner/mp3-go"
 )
-
-const (
-	SYNC_STATE_IDLE    = "idle"
-	SYNC_STATE_RUNNING = "running"
-)
-
-type SyncState struct {
-	State              string            `json:"state"`
-	LastSyncStarted    int64             `json:"last_sync_started"`
-	LastSyncDuration   int64             `json:"last_sync_duration"`
-	SongsFound         int               `json:"songs_found"`
-	NewSongsAdded      int               `json:"new_songs_added"`
-	NewSongsProblems   int               `json:"new_songs_problems"`
-	DanglingSongsFound int               `json:"dangling_songs_found"`
-	ProblemSongs       map[string]string `json:"problem_songs"`
-	DanglingSongs      map[string]string `json:"dangling_songs"`
-}
-
-var running bool = false
-
-var syncState = SyncState{
-	State:         SYNC_STATE_IDLE,
-	ProblemSongs:  make(map[string]string, 0),
-	DanglingSongs: make(map[string]string, 0),
-}
-
-func GetSyncState() *SyncState {
-	return &syncState
-}
-
-// SyncWithFilesystem syncs the database with the configured directory in filesystem.
-// New songs where added to database, removed songs where deleted from database.
-func SyncWithFilesystem(albumManager database.AlbumManager, artistManager database.ArtistManager, songManager database.SongManager) {
-	if running {
-		log.Info("Scanning ist already running. stopping here.")
-		return
-	}
-	running = true
-	syncState = SyncState{
-		State:           SYNC_STATE_RUNNING,
-		LastSyncStarted: time.Now().Unix(),
-		ProblemSongs:    make(map[string]string, 0),
-		DanglingSongs:   make(map[string]string, 0),
-	}
-	start := time.Now()
-	path := replaceVariables(configuration.Configuration(false).Media.Path)
-	log.Info("Start scanning filesystem at " + path)
-	result, err := Filescanner(path, ".mp3")
-	if err == nil {
-		syncState.SongsFound = len(result)
-		log.Infof("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
-		log.Info("Start sync found files with service...")
-		start = time.Now()
-		ID3Reader(result, albumManager, artistManager, songManager)
-		log.Infof("Sync finished...in %f seconds", time.Since(start).Seconds())
-	}
-	findDanglingSongs(songManager)
-	syncState.State = SYNC_STATE_IDLE
-	syncState.LastSyncDuration = time.Now().Unix() - syncState.LastSyncStarted
-	running = false
-}
 
 func replaceVariables(in string) string {
 	homeDir := ""
@@ -134,11 +72,6 @@ func readData(filename string) (*model.Song, error) {
 	return song, err
 }
 
-func problemSong(s string, err error) {
-	syncState.ProblemSongs[s] = err.Error()
-	syncState.NewSongsProblems = syncState.NewSongsProblems + 1
-}
-
 func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 	mp3File, err := mp3.Examine(filename, false)
 	if err == nil {
@@ -188,7 +121,7 @@ func ID3Reader(filenames []string, albumManager database.AlbumManager, artistMan
 	}
 }
 
-// GetCoverFromID3 reads the covcer image from the ID3 tags.
+// GetCoverFromID3 reads the cover image from the ID3 tags.
 func GetCoverFromID3(filename string) ([]byte, string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -218,36 +151,4 @@ func getRating(id3tag tag.Metadata) int {
 		}
 	}
 	return 0
-}
-
-func findDanglingSongs(songManager database.SongManager) {
-	log.Info("Start searching dangling songs.")
-	m, err := songManager.GetAllSongIdsAndPaths()
-	if err != nil {
-		log.Errorf("Could not get song ids and paths: %v", err)
-		return
-	}
-	for id, path := range m {
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			syncState.DanglingSongs[id] = path
-			syncState.DanglingSongsFound = syncState.DanglingSongsFound + 1
-		}
-	}
-}
-
-func RemoveDanglingSongs(songManager database.SongManager) (int, error) {
-	if running {
-		log.Info("Scanning ist running. stopping here.")
-		return 0, errors.New("Can't remove dangling songs while scanning is running!")
-	}
-	var counter int
-	for id, path := range syncState.DanglingSongs {
-		err := songManager.DeleteSong(id)
-		if err != nil {
-			log.Warnf("Song %s, %s not deleted: %v", id, path, err)
-		} else {
-			counter++
-		}
-	}
-	return counter, nil
 }

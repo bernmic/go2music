@@ -17,6 +17,7 @@ func initAlbum(r *gin.RouterGroup) {
 	r.GET("/album/:id", getAlbum)
 	r.GET("/album/:id/songs", getSongForAlbum)
 	r.GET("/album/:id/cover", getCoverForAlbum)
+	r.GET("/album/:id/cover/:size", getCoverForAlbum)
 	r.GET("/album/:id/download", downloadAlbum)
 }
 
@@ -24,7 +25,8 @@ func getAlbums(c *gin.Context) {
 	counterAlbum.Add("GET /", 1)
 	paging := extractPagingFromRequest(c)
 	filter := extractFilterFromRequest(c)
-	albums, total, err := albumManager.FindAllAlbums(filter, paging)
+	titleMode := extractTitleFromRequest(c)
+	albums, total, err := albumManager.FindAllAlbums(filter, paging, titleMode)
 	if err == nil {
 		albumCollection := model.AlbumCollection{Albums: albums, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, albumCollection)
@@ -68,6 +70,16 @@ func getSongForAlbum(c *gin.Context) {
 func getCoverForAlbum(c *gin.Context) {
 	counterAlbum.Add("GET /:id/cover", 1)
 	id := c.Param("id")
+	s := c.Param("size")
+	size := COVER_SIZE
+	var err error
+	if s != "" {
+		size, err = strconv.Atoi(s)
+		if err != nil {
+			respondWithError(http.StatusBadRequest, "Invalid size parameter", c)
+			return
+		}
+	}
 	songs, _, err := songManager.FindSongsByAlbumId(id, model.Paging{Size: 1})
 	if err != nil {
 		respondWithError(http.StatusNotFound, "album not found", c)
@@ -75,7 +87,7 @@ func getCoverForAlbum(c *gin.Context) {
 	}
 	if len(songs) > 0 {
 		image, mimetype, _ := songManager.GetCoverForSong(songs[0])
-
+		image, mimetype, err = resizeCover(image, mimetype, size)
 		if image != nil {
 			c.Header("Content-Type", mimetype)
 			c.Header("Content-Length", strconv.Itoa(len(image)))
@@ -100,4 +112,12 @@ func downloadAlbum(c *gin.Context) {
 		return
 	}
 	respondWithError(http.StatusNotFound, "No cover found", c)
+}
+
+func extractTitleFromRequest(c *gin.Context) string {
+	values := c.Request.URL.Query()
+	if p := values.Get("title"); p != "" {
+		return p
+	}
+	return "all"
 }

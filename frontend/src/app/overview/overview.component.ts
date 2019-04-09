@@ -5,6 +5,8 @@ import {Router} from "@angular/router";
 import {Song} from "../song/song.model";
 import {PlayerService} from "../player/player.service";
 import {AuthService} from "../security/auth.service";
+import {AlbumService} from "../album/album.service";
+import {Album} from "../album/album.model";
 
 @Component({
   selector: 'app-info',
@@ -18,6 +20,7 @@ export class OverviewComponent implements OnInit {
   constructor(
     private overviewService: OverviewService,
     private playerService: PlayerService,
+    private albumService: AlbumService,
     private router: Router,
     private authService: AuthService
   ) {}
@@ -42,5 +45,13 @@ export class OverviewComponent implements OnInit {
 
   isAdmin(): boolean {
     return this.authService.isAdmin()
+  }
+
+  coverUrlForSong(song: Song): string {
+    return this.playerService.songCoverUrl(song);
+  }
+
+  coverUrlForAlbum(album: Album): string {
+    return this.albumService.albumCoverUrl(album);
   }
 }

@@ -7,6 +7,8 @@ export class Sync {
     public new_songs_added: number,
     public new_songs_problems: number,
     public dangling_songs_found: number,
-    public problem_songs: Map<string,string>,
-    public dangling_songs: Map<string,string>
-  ) {}
+    public problem_songs: Map<string, string>,
+    public dangling_songs: Map<string, string>,
+    public empty_albums: Map<string, string>
+  ) { }
+}

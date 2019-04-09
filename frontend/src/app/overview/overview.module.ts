@@ -4,7 +4,7 @@ import {OverviewService} from "./overview.service";
 import {BrowserModule} from "@angular/platform-browser";
 import {HttpClientModule} from "@angular/common/http";
 import {RouterModule} from "@angular/router";
-import {MatCardModule, MatGridListModule} from "@angular/material";
+import {MatCardModule, MatGridListModule, MatListModule} from "@angular/material";
 import {SharedModule} from "../shared/shared.module";
 
 @NgModule({
@@ -14,7 +14,8 @@ import {SharedModule} from "../shared/shared.module";
     RouterModule,
     SharedModule,
     MatCardModule,
-    MatGridListModule
+    MatGridListModule,
+    MatListModule
   ],
   declarations: [
     OverviewComponent

@@ -11,10 +11,12 @@ import {
 } from "@angular/material";
 import {SharedModule} from "../shared/shared.module";
 import {PlayQueueComponent} from "./play-queue.component";
+import {DragDropModule} from "@angular/cdk/drag-drop";
 
 @NgModule({
   imports: [
     BrowserModule,
+    DragDropModule,
     SharedModule,
     MatButtonModule,
     MatCardModule,

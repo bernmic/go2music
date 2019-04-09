@@ -2,68 +2,16 @@
   <mat-grid-tile>
     <mat-card>
       <mat-card-header>
-        <mat-card-title>Statistics</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="block clickable" (click)="goto('/song')">
-          <span class="pull-left">Songs in library</span>
-          <span class="pull-right">{{info?.songCount}}</span>
-        </div>
-        <div class="block clickable" (click)="goto('/album')">
-          <span class="pull-left">Albums in library</span>
-          <span class="pull-right">{{info?.albumCount}}</span>
-        </div>
-        <div class="block clickable" (click)="goto('/artist')">
-          <span class="pull-left">Artists in library</span>
-          <span class="pull-right">{{info?.artistCount}}</span>
-        </div>
-        <div class="block clickable" (click)="goto('/playlist')">
-          <span class="pull-left">Playlists in library</span>
-          <span class="pull-right">{{info?.playlistCount}}</span>
-        </div>
-        <div class="block">
-          <span class="pull-left">Users in library</span>
-          <span class="pull-right">{{info?.userCount}}</span>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </mat-grid-tile>
-  <mat-grid-tile>
-    <mat-card>
-      <mat-card-header>
         <mat-card-title>Recently added songs</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div class="block clickable" *ngFor="let song of info?.songsRecentlyAdded" (click)="playSong(song)">
-          <span class="pull-left">{{song.title}}</span>
-          <span class="pull-right">{{song.artist.name}}</span>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </mat-grid-tile>
-  <mat-grid-tile>
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Recently played songs</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="block clickable" *ngFor="let song of info?.songsRecentlyPlayed" (click)="playSong(song)">
-          <span class="pull-left">{{song.title}}</span>
-          <span class="pull-right">{{song.artist.name}}</span>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </mat-grid-tile>
-  <mat-grid-tile>
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Most played songs</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="block clickable" *ngFor="let song of info?.songsMostPlayed" (click)="playSong(song)">
-          <span class="pull-left">{{song.title}}</span>
-          <span class="pull-right">{{song.artist.name}}</span>
-        </div>
+        <mat-list dense>
+          <mat-list-item class="multi" *ngFor="let song of info?.songsRecentlyAdded" (click)="playSong(song)">
+            <img matListAvatar [src]="coverUrlForSong(song)">
+            <p mat-line>{{song.title}}</p>
+            <p mat-line><small>{{song.artist?.name}}</small></p>
+          </mat-list-item>
+        </mat-list>
       </mat-card-content>
     </mat-card>
   </mat-grid-tile>
@@ -73,9 +21,84 @@
         <mat-card-title>Recently added albums</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div class="block clickable" *ngFor="let album of info?.albumsRecentlyAdded" (click)="goto('/song/album/' + album.albumId)">
-          <span class="pull-left">{{album.title}}</span>
-        </div>
+        <mat-list dense>
+          <mat-list-item class="multi" *ngFor="let album of info?.albumsRecentlyAdded" (click)="goto('/song/album/' + album.albumId)">
+            <img matListAvatar [src]="coverUrlForAlbum(album)">
+            <p mat-line>{{album.title}}</p>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </mat-grid-tile>
+  <mat-grid-tile>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Recently played songs</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list dense>
+          <mat-list-item class="multi" *ngFor="let song of info?.songsRecentlyPlayed" (click)="playSong(song)">
+            <img matListAvatar [src]="coverUrlForSong(song)">
+            <p mat-line>{{song.title}}</p>
+            <p mat-line><small>{{song.artist?.name}}</small></p>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </mat-grid-tile>
+  <mat-grid-tile>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Most played songs</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list dense>
+          <mat-list-item class="multi" *ngFor="let song of info?.songsMostPlayed" (click)="playSong(song)">
+            <img matListAvatar [src]="coverUrlForSong(song)">
+            <p mat-line>{{song.title}}</p>
+            <p mat-line><small>{{song.artist?.name}}</small></p>
+            <p>0</p>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </mat-grid-tile>
+  <mat-grid-tile>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Statistics</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list dense>
+          <mat-list-item class="single">
+            <p mat-line>Songs in library</p>
+            <p>{{info?.songCount}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line>Albums in library</p>
+            <p>{{info?.albumCount}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line>Artists in library</p>
+            <p>{{info?.artistCount}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line>Playlists in library</p>
+            <p>{{info?.playlistCount}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line>Users</p>
+            <p>{{info?.userCount}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line></p>
+            <p></p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line></p>
+            <p></p>
+          </mat-list-item>
+        </mat-list>
       </mat-card-content>
     </mat-card>
   </mat-grid-tile>
@@ -85,34 +108,36 @@
         <mat-card-title>Sync state</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div class="block">
-          <span class="pull-left">Sync state</span>
-          <span class="pull-right">{{sync?.state}}</span>
-        </div>
-        <div class="block">
-          <span class="pull-left">Last sync</span>
-          <span class="pull-right">{{sync?.last_sync_started * 1000 | unixdate}}</span>
-        </div>
-        <div class="block">
-          <span class="pull-left">Last sync duration</span>
-          <span class="pull-right">{{sync?.last_sync_duration | duration}}</span>
-        </div>
-        <div class="block">
-          <span class="pull-left">Songs found</span>
-          <span class="pull-right">{{sync?.songs_found}}</span>
-        </div>
-        <div class="block">
-          <span class="pull-left">Songs added</span>
-          <span class="pull-right">{{sync?.new_songs_added}}</span>
-        </div>
-        <div class="block">
-          <span class="pull-left">Not added</span>
-          <span class="pull-right">{{sync?.new_songs_problems}}</span>
-        </div>
-        <div class="block">
-          <span class="pull-left">Dangling songs</span>
-          <span class="pull-right">{{sync?.dangling_songs_found}}</span>
-        </div>
+        <mat-list dense>
+          <mat-list-item class="single">
+            <p mat-line>Sync state</p>
+            <p>{{sync?.state}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line>Last sync</p>
+            <p>{{sync?.last_sync_started * 1000 | unixdate | date: 'short'}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line>Last sync duration</p>
+            <p>{{sync?.last_sync_duration | duration}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line>Songs found</p>
+            <p>{{sync?.songs_found}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line>Songs added</p>
+            <p>{{sync?.new_songs_added}}</p>
+          </mat-list-item>
+          <mat-list-item class="single">
+            <p mat-line>Not added</p>
+            <p>{{sync?.new_songs_problems}}</p>
+          </mat-list-item>
+          <mat-list-item class="single" >
+            <p mat-line>Dangling songs</p>
+            <p>{{sync?.dangling_songs_found}}</p>
+          </mat-list-item>
+        </mat-list>
       </mat-card-content>
     </mat-card>
   </mat-grid-tile>

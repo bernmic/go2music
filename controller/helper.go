@@ -2,10 +2,17 @@ package controller
 
 import (
 	"archive/zip"
+	"bytes"
 	"fmt"
+	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
+	"image"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +20,10 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+)
+
+const (
+	COVER_SIZE = 300
 )
 
 func respondWithError(code int, message string, c *gin.Context) {
@@ -146,4 +157,26 @@ func allSameArtist(s []*model.Song) bool {
 		}
 	}
 	return true
+}
+
+func resizeCover(data []byte, mimetype string, targetSize int) ([]byte, string, error) {
+	var img image.Image
+	var err error
+	switch mimetype {
+	case "image/jpeg":
+		img, err = jpeg.Decode(bytes.NewReader(data))
+	case "image/png":
+		img, err = png.Decode(bytes.NewReader(data))
+	case "image/gif":
+		img, err = gif.Decode(bytes.NewReader(data))
+	default:
+		return nil, "", errors.New("Unknown image format " + mimetype)
+	}
+	img = imaging.Resize(img, targetSize, targetSize, imaging.Lanczos)
+	buf := new(bytes.Buffer)
+	err = jpeg.Encode(buf, img, nil)
+	if err != nil {
+		return nil, "", err
+	}
+	return buf.Bytes(), "image/jpeg", nil
 }

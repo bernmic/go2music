@@ -6,7 +6,7 @@ import {
   HttpInterceptor, HttpErrorResponse, HttpHeaders
 } from '@angular/common/http';
 import { AuthService } from './auth.service';
-import { Observable } from 'rxjs';
+import {Observable, throwError} from 'rxjs';
 import { catchError } from "rxjs/operators";
 import {Router} from "@angular/router";
 
@@ -33,7 +33,7 @@ export class TokenInterceptor implements HttpInterceptor {
             this.router.navigate(["/login"/*, {message: "Token not found or invalid."}*/]);
           }
         }
-        return Observable.throw(response);
+        return throwError(response);
       }));
   }
 }

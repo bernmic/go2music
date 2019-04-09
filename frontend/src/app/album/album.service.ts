@@ -31,6 +31,11 @@ export class AlbumService extends BaseService {
         parameter += "&filter=" + filter;
       }
     }
+    if (parameter === "") {
+      parameter = "?title=notempty";
+    } else {
+      parameter += "&title=notempty";
+    }
     return this.http.get<AlbumCollection>(environment.restserver + "/api/album" + parameter);
   }
 
