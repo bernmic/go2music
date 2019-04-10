@@ -112,6 +112,29 @@ func (db *DB) FindAllArtists(filter string, paging model.Paging) ([]*model.Artis
 	return artists, total, err
 }
 
+func (db *DB) FindArtistsWithoutName() ([]*model.Artist, error) {
+	rows, err := db.Query(sanitizePlaceholder("SELECT artist.id, artist.name FROM artist WHERE artist.name IS NULL OR artist.name=''"))
+	if err != nil {
+		log.Errorf("Error get artists without name: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+	artists := make([]*model.Artist, 0)
+	for rows.Next() {
+		artist := new(model.Artist)
+		err := rows.Scan(&artist.Id, &artist.Name)
+		if err != nil {
+			log.Error(err)
+		}
+		artists = append(artists, artist)
+	}
+	if err = rows.Err(); err != nil {
+		log.Error(err)
+	}
+
+	return artists, err
+}
+
 func createOrderAndLimitForArtist(paging model.Paging) (string, bool) {
 	s := ""
 	l := false

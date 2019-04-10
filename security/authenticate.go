@@ -4,15 +4,16 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/patrickmn/go-cache"
-	log "github.com/sirupsen/logrus"
 	"go2music/database"
 	"go2music/model"
 	"go2music/mysql"
 	"net/http"
 	"strings"
 	"time"
+
+	jwt "github.com/dgrijalva/jwt-go"
+	cache "github.com/patrickmn/go-cache"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -57,7 +58,7 @@ func AuthenticateRequest(authHeader string, userManager database.UserManager) (*
 
 	user, err := userManager.FindUserByUsername(userpwd[0])
 	if err != nil {
-		return nil, errors.New("usernameand/or password wrong")
+		return nil, errors.New("username and/or password wrong")
 	}
 	if mysql.CheckPasswordHash(userpwd[1], user.Password) {
 		return user, nil

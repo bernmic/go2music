@@ -10,4 +10,5 @@ type ArtistManager interface {
 	FindArtistById(id string) (*model.Artist, error)
 	FindArtistByName(name string) (*model.Artist, error)
 	FindAllArtists(filter string, paging model.Paging) ([]*model.Artist, int, error)
+	FindArtistsWithoutName() ([]*model.Artist, error)
 }

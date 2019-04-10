@@ -7,7 +7,7 @@
     </mat-expansion-panel-header>
     <mat-list>
       <mat-list-item *ngFor="let entry of sync?.problem_songs | keyvalue">
-        <p><small>{{entry.value}}</small></p>
+        <p><small>{{entry.key}} - {{entry.value}}</small></p>
       </mat-list-item>
     </mat-list>
   </mat-expansion-panel>
@@ -37,7 +37,7 @@
   <mat-expansion-panel>
     <mat-expansion-panel-header>
       <mat-panel-title>
-        Albums without any song ({{sync?.empty_albums?.size}})
+        Albums without any song ({{emptyAlbumsCount()}})
       </mat-panel-title>
     </mat-expansion-panel-header>
     <mat-list>
@@ -51,5 +51,29 @@
         Remove all
       </button>
     </mat-action-row>
+  </mat-expansion-panel>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Albums without title ({{albumsWithoutTitleCount()}})
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-list>
+      <mat-list-item *ngFor="let entry of sync?.albums_without_title | keyvalue">
+        <p><small>{{entry.value}}</small></p>
+      </mat-list-item>
+    </mat-list>
+  </mat-expansion-panel>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Artists without name ({{artistsWithoutNameCount()}})
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-list>
+      <mat-list-item *ngFor="let entry of sync?.artists_without_name | keyvalue">
+        <p><small>{{entry.key}}</small></p>
+      </mat-list-item>
+    </mat-list>
   </mat-expansion-panel>
 </mat-accordion>

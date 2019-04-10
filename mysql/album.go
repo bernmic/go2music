@@ -122,7 +122,30 @@ func (db *DB) FindAllAlbums(filter string, paging model.Paging, titleMode string
 func (db *DB) FindAlbumsWithoutSongs() ([]*model.Album, error) {
 	rows, err := db.Query(sanitizePlaceholder("SELECT album.id, album.title, album.path FROM album LEFT OUTER JOIN song ON album.id=song.album_id WHERE song.id IS NULL"))
 	if err != nil {
-		log.Errorf("Error get all albums: %v", err)
+		log.Errorf("Error get albums without songs: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+	albums := make([]*model.Album, 0)
+	for rows.Next() {
+		album := new(model.Album)
+		err := rows.Scan(&album.Id, &album.Title, &album.Path)
+		if err != nil {
+			log.Error(err)
+		}
+		albums = append(albums, album)
+	}
+	if err = rows.Err(); err != nil {
+		log.Error(err)
+	}
+
+	return albums, err
+}
+
+func (db *DB) FindAlbumsWithoutTitle() ([]*model.Album, error) {
+	rows, err := db.Query(sanitizePlaceholder("SELECT album.id, album.title, album.path FROM album WHERE album.title IS NULL OR album.title=''"))
+	if err != nil {
+		log.Errorf("Error get albums without title: %v", err)
 		return nil, err
 	}
 	defer rows.Close()

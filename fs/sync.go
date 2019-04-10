@@ -2,12 +2,13 @@ package fs
 
 import (
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"go2music/configuration"
 	"go2music/database"
 	"go2music/model"
 	"os"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -18,10 +19,12 @@ const (
 var running bool = false
 
 var syncState = model.SyncState{
-	State:         SYNC_STATE_IDLE,
-	ProblemSongs:  make(map[string]string, 0),
-	DanglingSongs: make(map[string]string, 0),
-	EmptyAlbums:   make(map[string]string, 0),
+	State:              SYNC_STATE_IDLE,
+	ProblemSongs:       make(map[string]string, 0),
+	DanglingSongs:      make(map[string]string, 0),
+	EmptyAlbums:        make(map[string]string, 0),
+	AlbumsWithoutTitle: make(map[string]string, 0),
+	ArtistsWithoutName: make(map[string]string, 0),
 }
 
 func GetSyncState() *model.SyncState {
@@ -57,6 +60,8 @@ func SyncWithFilesystem(albumManager database.AlbumManager, artistManager databa
 	}
 	findDanglingSongs(songManager)
 	findEmptyAlbums(albumManager)
+	findAlbumsWithoutTitle(albumManager)
+	findArtistsWithoutName(artistManager)
 	syncState.State = SYNC_STATE_IDLE
 	syncState.LastSyncDuration = time.Now().Unix() - syncState.LastSyncStarted
 	running = false
@@ -68,6 +73,26 @@ func findEmptyAlbums(albumManager database.AlbumManager) {
 		syncState.EmptyAlbums = make(map[string]string, 0)
 		for _, album := range albums {
 			syncState.EmptyAlbums[album.Id] = album.Path
+		}
+	}
+}
+
+func findAlbumsWithoutTitle(albumManager database.AlbumManager) {
+	albums, err := albumManager.FindAlbumsWithoutTitle()
+	if err == nil {
+		syncState.AlbumsWithoutTitle = make(map[string]string, 0)
+		for _, album := range albums {
+			syncState.AlbumsWithoutTitle[album.Id] = album.Path
+		}
+	}
+}
+
+func findArtistsWithoutName(artistManager database.ArtistManager) {
+	artists, err := artistManager.FindArtistsWithoutName()
+	if err == nil {
+		syncState.ArtistsWithoutName = make(map[string]string, 0)
+		for _, artist := range artists {
+			syncState.ArtistsWithoutName[artist.Id] = artist.Name
 		}
 	}
 }

@@ -11,4 +11,6 @@ type SyncState struct {
 	ProblemSongs       map[string]string `json:"problem_songs"`
 	DanglingSongs      map[string]string `json:"dangling_songs"`
 	EmptyAlbums        map[string]string `json:"empty_albums"`
+	AlbumsWithoutTitle map[string]string `json:"albums_without_title"`
+	ArtistsWithoutName map[string]string `json:"artists_without_name"`
 }

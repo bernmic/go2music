@@ -9,6 +9,8 @@ export class Sync {
     public dangling_songs_found: number,
     public problem_songs: Map<string, string>,
     public dangling_songs: Map<string, string>,
-    public empty_albums: Map<string, string>
+    public empty_albums: Map<string, string>,
+    public albums_without_title: Map<string, string>,
+    public artists_without_name: Map<string, string>
   ) { }
 }

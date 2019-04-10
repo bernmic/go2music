@@ -12,4 +12,5 @@ type AlbumManager interface {
 	FindAllAlbums(filter string, paging model.Paging, titleMode string) ([]*model.Album, int, error)
 	FindAlbumsForArtist(artistId string) ([]*model.Album, error)
 	FindAlbumsWithoutSongs() ([]*model.Album, error)
+	FindAlbumsWithoutTitle() ([]*model.Album, error)
 }

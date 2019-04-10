@@ -349,7 +349,10 @@ MIT
 @angular/common
 MIT
 
-@angular/animations
+@angular/platform-browser
+MIT
+
+@angular/router
 MIT
 
 @angular/cdk
@@ -377,7 +380,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-@angular/platform-browser
+@angular/animations
 MIT
 
 @angular/material
@@ -405,39 +408,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-@angular/router
-MIT
+@angular/material/grid-list
 
-@angular/material/dialog
+@angular/material/form-field
+
+@angular/material/icon
 
 @angular/forms
 MIT
 
-@angular/material/button
-
-@angular/material/datepicker
-
 @angular/material/tooltip
-
-@angular/material/snack-bar
 
 @angular/material/core
 
-@angular/material/list
+@angular/material/select
 
-@angular/material/icon
+@angular/material/button
 
-@angular/material/button-toggle
+@angular/material/paginator
 
-@angular/material/form-field
-
-@angular/material/expansion
-
-@angular/material/progress-spinner
-
-@angular/material/sort
-
-@angular/material/table
+@angular/material/card
 
 @angular/flex-layout
 MIT
@@ -464,19 +454,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-@angular/material/select
+@angular/material/progress-spinner
 
-@angular/material/paginator
+@angular/material/sort
 
-@angular/material/grid-list
-
-@angular/material/card
+@angular/material/table
 
 @angular/cdk/scrolling
 
 @angular/material/divider
 
 @angular/material/checkbox
+
+@angular/material/list
+
+@angular/material/expansion
+
+@angular/material/button-toggle
+
+@angular/material/snack-bar
+
+@angular/material/dialog
 
 @angular/material/menu
 
