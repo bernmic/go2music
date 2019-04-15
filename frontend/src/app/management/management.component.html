@@ -60,7 +60,8 @@
     </mat-expansion-panel-header>
     <mat-list>
       <mat-list-item *ngFor="let entry of sync?.albums_without_title | keyvalue">
-        <p><small>{{entry.value}}</small></p>
+        <mat-icon mat-list-icon (click)="renameAlbum(entry.key)">build</mat-icon>
+        <p mat-line><small>{{entry.value}}</small></p>
       </mat-list-item>
     </mat-list>
   </mat-expansion-panel>

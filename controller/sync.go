@@ -2,9 +2,10 @@ package controller
 
 import (
 	"expvar"
-	log "github.com/sirupsen/logrus"
 	"go2music/fs"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,6 +21,7 @@ func initSync(r *gin.RouterGroup) {
 	r.DELETE("/sync/dangling", removeDanglingSongs)
 	r.DELETE("/sync/dangling/:id", removeDanglingSong)
 	r.DELETE("/sync/emptyalbums", removeEmptyAlbums)
+	r.PUT("/sync/album/:id", setAlbumTitleToFoldername)
 }
 
 func getSyncInfo(c *gin.Context) {
@@ -63,6 +65,17 @@ func removeEmptyAlbums(c *gin.Context) {
 		if err == nil {
 			delete(fs.GetSyncState().EmptyAlbums, id)
 		}
+	}
+	c.JSON(http.StatusOK, fs.GetSyncState())
+}
+
+func setAlbumTitleToFoldername(c *gin.Context) {
+	id := c.Param("id")
+	err := fs.SetAlbumTitleToFoldername(id, albumManager)
+	if err != nil {
+		log.Warnf("Error setting title for album: %v", err)
+		respondWithError(http.StatusInternalServerError, "Error setting title for album", c)
+		return
 	}
 	c.JSON(http.StatusOK, fs.GetSyncState())
 }

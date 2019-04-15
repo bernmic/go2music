@@ -12,12 +12,14 @@ import {
 import {SharedModule} from "../shared/shared.module";
 import {PlayQueueComponent} from "./play-queue.component";
 import {DragDropModule} from "@angular/cdk/drag-drop";
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
   imports: [
     BrowserModule,
     DragDropModule,
     SharedModule,
+    FlexLayoutModule,
     MatButtonModule,
     MatCardModule,
     MatDividerModule,

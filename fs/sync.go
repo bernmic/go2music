@@ -6,6 +6,7 @@ import (
 	"go2music/database"
 	"go2music/model"
 	"os"
+	"path/filepath"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -144,6 +145,23 @@ func RemoveDanglingSong(id string, songManager database.SongManager) error {
 	if err == nil {
 		delete(syncState.DanglingSongs, id)
 		syncState.DanglingSongsFound = len(syncState.DanglingSongs)
+	}
+	return err
+}
+
+func SetAlbumTitleToFoldername(id string, albumManager database.AlbumManager) error {
+	if syncState.AlbumsWithoutTitle[id] == "" {
+		return errors.New("Album not in list of albums without title")
+	}
+	album, err := albumManager.FindAlbumById(id)
+	if err != nil {
+		return err
+	}
+	t := filepath.Base(album.Path)
+	album.Title = t
+	album, err = albumManager.UpdateAlbum(*album)
+	if err == nil {
+		delete(syncState.AlbumsWithoutTitle, id)
 	}
 	return err
 }

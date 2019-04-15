@@ -79,4 +79,13 @@ export class ManagementComponent implements OnInit {
     }
     return Object.keys(this.sync.artists_without_name).length;
   }
+
+  renameAlbum(id: string) {
+    console.log("Rename album " + id);
+    this.managementService.renameAlbum(id).subscribe(s => {
+      this.sync = s;
+      this.openSnackBar(`Album renamed`, "Show");
+    });
+  }
+
 }

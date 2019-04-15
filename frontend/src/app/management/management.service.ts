@@ -29,4 +29,8 @@ export class ManagementService {
   removeEmptyAlbums(): Observable<Sync> {
     return this.http.delete<Sync>(environment.restserver + "/api/admin/sync/emptyalbums")
   }
+
+  renameAlbum(id: string): Observable<Sync> {
+    return this.http.put<Sync>(environment.restserver + "/api/admin/sync/album/" + id, null)
+  }
 }
