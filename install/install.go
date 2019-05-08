@@ -11,6 +11,7 @@ import (
 	"strconv"
 )
 
+// InstallParameters contains the attributes for a setup
 type InstallParameters struct {
 	DatabaseType     string
 	DatabaseServer   string
@@ -21,6 +22,7 @@ type InstallParameters struct {
 	MediaPath        string
 }
 
+// InstallServer contains the informations of the webserver started for a setup
 type InstallServer struct {
 	Server    *http.Server
 	Terminate chan error
@@ -75,6 +77,7 @@ func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// InstallHandler starts a webserver for setup purposes
 func InstallHandler() error {
 	// Installation. Start a http server on port 8080 and wait for shutdown.
 	s := InstallServer{Server: &http.Server{Addr: ":8080"}, Terminate: make(chan error)}

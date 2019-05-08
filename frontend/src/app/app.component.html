@@ -56,7 +56,7 @@
             <span i18n="@@navUsers">Management</span>
           </mat-list-item>
         </mat-nav-list>
-        <div id="version">v0.0.2</div>
+        <div id="version" (click)="openBottomPlayer()">0.0.3</div>
       </mat-sidenav>
 
       <mat-sidenav #rsnav position="end" [mode]="mobileQuery.matches ? 'over' : 'side'"

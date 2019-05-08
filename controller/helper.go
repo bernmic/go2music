@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	COVER_SIZE = 300
+	COVER_SIZE = 300 // size of an album cover in pixels
 )
 
 func respondWithError(code int, message string, c *gin.Context) {

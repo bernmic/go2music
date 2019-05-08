@@ -5,9 +5,10 @@ import (
 	"sync"
 )
 
-func (db *DB) InitializeInfo() {
+func (db *DB) initializeInfo() {
 }
 
+// Info returns the dashboard informations
 func (db *DB) Info() (*model.Info, error) {
 	info := model.Info{}
 

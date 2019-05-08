@@ -30,6 +30,7 @@ func (db *DB) initializeArtist() {
 	}
 }
 
+// CreateArtist create a new artist in the database
 func (db *DB) CreateArtist(artist model.Artist) (*model.Artist, error) {
 	artist.Id = xid.New().String()
 	_, err := db.Exec(sanitizePlaceholder("INSERT INTO artist (id, name) VALUES(?, ?)"), artist.Id, artist.Name)
@@ -39,6 +40,7 @@ func (db *DB) CreateArtist(artist model.Artist) (*model.Artist, error) {
 	return &artist, err
 }
 
+// CreateIfNotExistsArtist create a new artist in the database if the name is not found in the database
 func (db *DB) CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error) {
 	existingArtist, findErr := db.FindArtistByName(artist.Name)
 	if findErr == nil {
@@ -52,16 +54,19 @@ func (db *DB) CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error
 	return &artist, err
 }
 
+// UpdateArtist update the given artist in the database
 func (db *DB) UpdateArtist(artist model.Artist) (*model.Artist, error) {
 	_, err := db.Exec(sanitizePlaceholder("UPDATE artist SET name=? WHERE id=?"), artist.Name, artist.Id)
 	return &artist, err
 }
 
+// DeleteArtist delete the artist with the id in the database
 func (db *DB) DeleteArtist(id string) error {
 	_, err := db.Exec(sanitizePlaceholder("DELETE FROM artist WHERE id=?"), id)
 	return err
 }
 
+// FindArtistById get the artist with the given id
 func (db *DB) FindArtistById(id string) (*model.Artist, error) {
 	artist := new(model.Artist)
 	err := db.QueryRow(sanitizePlaceholder("SELECT id,name FROM artist WHERE id=?"), id).Scan(&artist.Id, &artist.Name)
@@ -71,6 +76,7 @@ func (db *DB) FindArtistById(id string) (*model.Artist, error) {
 	return artist, err
 }
 
+// FindArtistByName get the artist with the given name
 func (db *DB) FindArtistByName(name string) (*model.Artist, error) {
 	artist := new(model.Artist)
 	err := db.QueryRow(sanitizePlaceholder("SELECT id,name FROM artist WHERE name=?"), name).Scan(&artist.Id, &artist.Name)
@@ -80,6 +86,7 @@ func (db *DB) FindArtistByName(name string) (*model.Artist, error) {
 	return artist, err
 }
 
+// FindAllArtists get all artists which matches the optional filter and is in the given page
 func (db *DB) FindAllArtists(filter string, paging model.Paging) ([]*model.Artist, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForArtist(paging)
 	whereClause := ""
@@ -112,6 +119,7 @@ func (db *DB) FindAllArtists(filter string, paging model.Paging) ([]*model.Artis
 	return artists, total, err
 }
 
+// FindArtistsWithoutName find all artists without a name
 func (db *DB) FindArtistsWithoutName() ([]*model.Artist, error) {
 	rows, err := db.Query(sanitizePlaceholder("SELECT artist.id, artist.name FROM artist WHERE artist.name IS NULL OR artist.name=''"))
 	if err != nil {

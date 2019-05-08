@@ -2,7 +2,7 @@ import {Component, OnInit} from "@angular/core";
 import {ManagementService} from "./management.service";
 import {Sync} from "./management.model";
 import {MatSnackBar} from "@angular/material";
-import { isNullOrUndefined } from 'util';
+import {isNullOrUndefined} from 'util';
 
 @Component({
   selector: 'app-management',
@@ -60,21 +60,21 @@ export class ManagementComponent implements OnInit {
   }
 
   emptyAlbumsCount(): number {
-    if (isNullOrUndefined(this.sync.empty_albums)) {
+    if (isNullOrUndefined(this.sync) || isNullOrUndefined(this.sync.empty_albums)) {
       return 0;
     }
     return Object.keys(this.sync.empty_albums).length;
   }
 
   albumsWithoutTitleCount(): number {
-    if (isNullOrUndefined(this.sync.albums_without_title)) {
+    if (isNullOrUndefined(this.sync) || isNullOrUndefined(this.sync.albums_without_title)) {
       return 0;
     }
     return Object.keys(this.sync.albums_without_title).length;
   }
 
   artistsWithoutNameCount(): number {
-    if (isNullOrUndefined(this.sync.artists_without_name)) {
+    if (isNullOrUndefined(this.sync) || isNullOrUndefined(this.sync.artists_without_name)) {
       return 0;
     }
     return Object.keys(this.sync.artists_without_name).length;

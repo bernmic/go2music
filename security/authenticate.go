@@ -33,6 +33,7 @@ func init() {
 	usersCache = cache.New(5*time.Minute, 10*time.Minute)
 }
 
+// GenerateJWT generates a JSON Web Token for the given user
 func GenerateJWT(user *model.User) (tokenString string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"usr": user.Username,
@@ -44,6 +45,7 @@ func GenerateJWT(user *model.User) (tokenString string, err error) {
 	return tokenString, err
 }
 
+// AuthenticateRequest checks the BasisAuth header against the user database
 func AuthenticateRequest(authHeader string, userManager database.UserManager) (*model.User, error) {
 	splittedHeader := strings.Split(authHeader, " ")
 	if len(splittedHeader) != 2 || splittedHeader[0] != "Basic" {
@@ -66,11 +68,13 @@ func AuthenticateRequest(authHeader string, userManager database.UserManager) (*
 	return nil, errors.New("username and/or password wrong")
 }
 
+// AuthenticateJWT checks the validity of the authorization header in the given request and returns the username
 func AuthenticateJWT(header http.Header) (username string, valid bool) {
 	jwtString := header.Get("Authorization")
 	return AuthenticateJWTString(jwtString)
 }
 
+// AuthenticateJWTString checks the validity of the authorization header and returns the username
 func AuthenticateJWTString(authHeader string) (username string, valid bool) {
 	splittedHeader := strings.Split(authHeader, " ")
 	if len(splittedHeader) != 2 || splittedHeader[0] != "Bearer" {
@@ -93,6 +97,7 @@ func AuthenticateJWTString(authHeader string) (username string, valid bool) {
 	return "", false
 }
 
+// GetPrincipal returns the User struct for the given username
 func GetPrincipal(username string, userManager database.UserManager) (*model.User, error) {
 	user, found := usersCache.Get(username)
 	if !found {

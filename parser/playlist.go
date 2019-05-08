@@ -14,6 +14,8 @@ const (
 	EMPTY_SQL_STRING = "''"
 )
 
+// EvalPlaylistExpression evaluate the given expression and returns an SQL where clause.
+// Expression is a Go expression
 func EvalPlaylistExpression(expression string) (string, error) {
 	scanner := bufio.NewScanner(strings.NewReader(expression))
 	scanned := scanner.Scan()

@@ -1,5 +1,6 @@
 package model
 
+// Info contains data for a dashboard
 type Info struct {
 	SongCount           int      `json:"songCount,omitempty"`
 	AlbumCount          int      `json:"albumCount,omitempty"`

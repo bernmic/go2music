@@ -32,9 +32,7 @@ func authenticate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token, "role": user.Role})
 }
 
-/*
-TokenAuthMiddleware checks requests against user or admin role.
-*/
+// TokenAuthMiddleware checks requests against user or admin role.
 func TokenAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -58,9 +56,7 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-/*
-AdminAuthMiddleware checks requests against admin role.
-*/
+// AdminAuthMiddleware checks requests against admin role.
 func AdminAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearer := c.Query("bearer")

@@ -2,6 +2,7 @@ package database
 
 import "go2music/model"
 
+// SongManager defines all database functions for songs
 type SongManager interface {
 	CreateSong(song model.Song) (*model.Song, error)
 	UpdateSong(song model.Song) (*model.Song, error)

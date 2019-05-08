@@ -117,6 +117,7 @@ func (db *DB) initializeSong() {
 	}
 }
 
+// CreateSong create a new song in the database
 func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 	song.Id = xid.New().String()
 	_, err := db.Exec(sanitizePlaceholder("INSERT INTO song (id, path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, vbr, added, filedate, rating) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"),
@@ -142,6 +143,7 @@ func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 	return &song, err
 }
 
+// UpdateSong update the given song in the database
 func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
 	_, err := db.Exec(sanitizePlaceholder("UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=?, bitrate=?, samplerate=?, duration=?, mode=?, vbr=?, added=?, filedate=?, rating=? WHERE id=?"),
 		song.Path,
@@ -163,6 +165,7 @@ func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
 	return &song, err
 }
 
+// DeleteSong delete the song with the id in the database
 func (db *DB) DeleteSong(id string) error {
 	_, err := db.Exec(sanitizePlaceholder("DELETE FROM user_song WHERE song_id=?"), id)
 	if err != nil {
@@ -173,6 +176,7 @@ func (db *DB) DeleteSong(id string) error {
 	return err
 }
 
+// SongsExists checks if the given path is a song in the database
 func (db *DB) SongExists(path string) bool {
 	sqlStmt := sanitizePlaceholder(`SELECT path FROM song WHERE path = ?`)
 	err := db.QueryRow(sqlStmt, path).Scan(&path)
@@ -187,6 +191,8 @@ func (db *DB) SongExists(path string) bool {
 	}
 	return true
 }
+
+// FindOneSong get the song with the given id
 func (db *DB) FindOneSong(id string) (*model.Song, error) {
 	stmt := selectSongStatement + ` 
 		WHERE
@@ -288,6 +294,7 @@ func fetchSongs(rows *sql.Rows) ([]*model.Song, error) {
 	return songs, err
 }
 
+// FindAllSongs get all songs which matches the optional filter and is in the given page
 func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
 	whereClause := ""
@@ -311,6 +318,7 @@ func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, i
 	return songs, total, err
 }
 
+// FindSongsByAlbumId get all songs for the album with the given id and is in the given page
 func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
 	stmt := sanitizePlaceholder(selectSongStatement + ` WHERE album.id = ?` + orderAndLimit)
@@ -328,6 +336,7 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*mo
 	return songs, total, err
 }
 
+// FindSongsByArtistId get all songs for the artist with the given id and is in the given page
 func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
 	stmt := sanitizePlaceholder(selectSongStatement + `WHERE artist.id = ?	` + orderAndLimit)
@@ -345,6 +354,7 @@ func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*
 	return songs, total, err
 }
 
+// FindSongsByPlaylistQuery get all songs for the dynamic playlist with the given id and is in the given page
 func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*model.Song, int, error) {
 	stmt := selectSongStatement
 	where, err := parser.EvalPlaylistExpression(query)
@@ -383,6 +393,7 @@ LEFT JOIN album ON song.album_id = album.id`
 	return songs, total, err
 }
 
+// FindSongsByPlaylist get all songs for the static playlist with the given id and is in the given page
 func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
 	stmt := sanitizePlaceholder(selectSongStatement + " WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)" + orderAndLimit)
@@ -400,6 +411,7 @@ func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*mo
 	return songs, total, err
 }
 
+// FindRecentlyAddedSongs find num recently added songs
 func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
 	rows, err := db.Query(sanitizePlaceholder(selectSongStatement+" ORDER BY song.added DESC LIMIT ?"), num)
 	if err != nil {
@@ -411,6 +423,7 @@ func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
 	return songs, err
 }
 
+// FindRecentlyPlayedSongs find num recently played songs
 func (db *DB) FindRecentlyPlayedSongs(num int) ([]*model.Song, error) {
 	rows, err := db.Query(sanitizePlaceholder(selectSongStatement+" INNER JOIN user_song ON song.id = user_song.song_id ORDER BY lastplayed DESC LIMIT ?"), num)
 	if err != nil {
@@ -422,6 +435,7 @@ func (db *DB) FindRecentlyPlayedSongs(num int) ([]*model.Song, error) {
 	return songs, err
 }
 
+// FindMostPlayedSongs find num most played songs
 func (db *DB) FindMostPlayedSongs(num int) ([]*model.Song, error) {
 	rows, err := db.Query(sanitizePlaceholder(selectSongStatement+`
 	INNER JOIN user_song ON song.id = user_song.song_id
@@ -437,6 +451,7 @@ func (db *DB) FindMostPlayedSongs(num int) ([]*model.Song, error) {
 	return songs, err
 }
 
+// GetCoverForSong returns the cover of a song
 func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
 	image, mimetype, err := fs.GetCoverFromID3(song.Path)
 
@@ -448,6 +463,7 @@ func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
 	return image, mimetype, err
 }
 
+// SongPlayed checks if an user has played the song
 func (db *DB) SongPlayed(song *model.Song, user *model.User) bool {
 	userSong := model.UserSong{}
 	err := db.QueryRow(
@@ -483,6 +499,7 @@ func (db *DB) SongPlayed(song *model.Song, user *model.User) bool {
 	return true
 }
 
+// GetAllSongIdsAndPaths returns all song ids and path as a map
 func (db *DB) GetAllSongIdsAndPaths() (map[string]string, error) {
 	rows, err := db.Query(sanitizePlaceholder("SELECT id, path FROM song"))
 	if err != nil {

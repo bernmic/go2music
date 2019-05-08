@@ -1,3 +1,17 @@
+// Copyright 2019 Michael Bernards
+//
+//     Schemes: http, https
+//     Host: localhost
+//     Version 0.0.1
+//     License: MIT http://opensource.org/licenses/MIT
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+// swagger:meta
 package main
 
 import (

@@ -6,5 +6,4 @@
 export const environment = {
   production: false,
   restserver: "http://localhost:8080"
-
 };

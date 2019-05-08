@@ -118,6 +118,7 @@ func findDanglingSongs(songManager database.SongManager) {
 	}
 }
 
+// RemoveDanglingSongs remove all songs found by the last dangling songs search
 func RemoveDanglingSongs(songManager database.SongManager) (int, error) {
 	if running {
 		log.Info("Scanning ist running. stopping here.")
@@ -137,6 +138,7 @@ func RemoveDanglingSongs(songManager database.SongManager) (int, error) {
 	return counter, nil
 }
 
+// RemoveDanglingSong remove the given dangling song
 func RemoveDanglingSong(id string, songManager database.SongManager) error {
 	if syncState.DanglingSongs[id] == "" {
 		return errors.New("Song not in dangling list")
@@ -149,6 +151,7 @@ func RemoveDanglingSong(id string, songManager database.SongManager) error {
 	return err
 }
 
+// SetAlbumTitleToFoldername Set the album title to the last part of the filesystem path
 func SetAlbumTitleToFoldername(id string, albumManager database.AlbumManager) error {
 	if syncState.AlbumsWithoutTitle[id] == "" {
 		return errors.New("Album not in list of albums without title")

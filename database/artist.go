@@ -2,6 +2,7 @@ package database
 
 import "go2music/model"
 
+// ArtistManager defines all database functions for artists
 type ArtistManager interface {
 	CreateArtist(artist model.Artist) (*model.Artist, error)
 	CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error)

@@ -2,6 +2,7 @@ package database
 
 import "go2music/model"
 
+// UserManager defines all database functions for users
 type UserManager interface {
 	CreateUser(user model.User) (*model.User, error)
 	CreateIfNotExistsUser(user model.User) (*model.User, error)

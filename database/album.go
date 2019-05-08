@@ -2,6 +2,7 @@ package database
 
 import "go2music/model"
 
+// AlbumManager defines all database functions for albums
 type AlbumManager interface {
 	CreateAlbum(album model.Album) (*model.Album, error)
 	CreateIfNotExistsAlbum(album model.Album) (*model.Album, error)

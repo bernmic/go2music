@@ -1,5 +1,6 @@
 package model
 
+// SyncState contains the current state of syncronizing the database with the filesystem
 type SyncState struct {
 	State              string            `json:"state"`
 	LastSyncStarted    int64             `json:"last_sync_started"`

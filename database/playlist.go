@@ -2,6 +2,7 @@ package database
 
 import "go2music/model"
 
+// PlaylistManager defines all database functions for playlists
 type PlaylistManager interface {
 	CreatePlaylist(playlist model.Playlist) (*model.Playlist, error)
 	CreateIfNotExistsPlaylist(playlist model.Playlist) (*model.Playlist, error)

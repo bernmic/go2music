@@ -13,6 +13,7 @@ var config model.Config
 var configLoaded = false
 var secrets = map[string]string{}
 
+// Secret not used at this moment
 type Secret string
 
 const (
@@ -21,8 +22,11 @@ const (
 	TokenSecret    Secret = "token"
 )
 
+// ConfigFile is the name of the configutration file
 var ConfigFile = "go2music.yaml"
 
+// Configuration returns the actual configuration.
+// If not loaded previously or force is requested, it will load / create a configuration.
 func Configuration(force bool) *model.Config {
 	if force || !configLoaded {
 		if c := os.Getenv("GO2MUSIC_CONFIG"); c != "" {
@@ -96,6 +100,7 @@ func Configuration(force bool) *model.Config {
 	return &config
 }
 
+// Secrets returns the requested secret
 func Secrets(secret Secret) string {
 	if len(secrets) == 0 {
 		secretdata, err := ioutil.ReadFile(SecretsFile)
@@ -106,6 +111,7 @@ func Secrets(secret Secret) string {
 	return ""
 }
 
+// ChangeConfiguration writes the given configuration to the config file
 func ChangeConfiguration(config *model.Config) (*model.Config, error) {
 	newConfig := Configuration(true)
 

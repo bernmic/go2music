@@ -1,6 +1,7 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
 import {
+  MatBottomSheetModule,
   MatButtonModule,
   MatIconModule,
   MatListModule,
@@ -33,6 +34,8 @@ import {SecurityRoutingModule} from "./security/security-routing.module";
 import {PlaylistRoutingModule} from "./playlist/playlist-routing.module";
 import {ManagementModule} from "./management/management.module";
 import {ManagementRoutingModule} from "./management/management-routing.module";
+import {BottomPlayerModule} from "./bottom-player/bottom-player.module";
+import {BottomPlayerComponent} from "./bottom-player/bottom-player.component";
 
 @NgModule({
   declarations: [
@@ -54,6 +57,7 @@ import {ManagementRoutingModule} from "./management/management-routing.module";
     AppRoutingModule,
     AlbumModule,
     ArtistModule,
+    BottomPlayerModule,
     ConfigModule,
     ManagementModule,
     OverviewModule,
@@ -63,6 +67,7 @@ import {ManagementRoutingModule} from "./management/management-routing.module";
     SharedModule,
     SongModule,
     UserModule,
+    MatBottomSheetModule,
     MatButtonModule,
     MatIconModule,
     MatListModule,
@@ -71,6 +76,9 @@ import {ManagementRoutingModule} from "./management/management-routing.module";
     MatToolbarModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    BottomPlayerComponent
+  ]
 })
 export class AppModule { }

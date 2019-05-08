@@ -93,9 +93,7 @@ func noRoute(c *gin.Context) {
 	}
 }
 
-/*
-Run initializes and start the controller
-*/
+// Run initializes and starts all controller
 func Run(dbi *mysql.DB) {
 	db = dbi
 	albumManager = db
@@ -109,9 +107,7 @@ func Run(dbi *mysql.DB) {
 	router.Run(serverAddress)
 }
 
-/*
-CorsMiddleware creates a middleware wich allows all origins, needed methods and headers for all endpoints.
-*/
+// CorsMiddleware creates a middleware which allows all origins, needed methods and headers for all endpoints.
 func CorsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")

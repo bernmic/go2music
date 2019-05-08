@@ -48,6 +48,7 @@ func (db *DB) initializeUser() {
 	}
 }
 
+// CreateUser create a new user in the database
 func (db *DB) CreateUser(user model.User) (*model.User, error) {
 	user.Id = xid.New().String()
 	password, _ := HashPassword(user.Password)
@@ -64,6 +65,7 @@ func (db *DB) CreateUser(user model.User) (*model.User, error) {
 	return &user, err
 }
 
+// CreateIfNotExistsUser create a new user in the database if the username is not found in the database
 func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 	existingUser, findErr := db.FindUserByUsername(user.Username)
 	if findErr == nil {
@@ -84,6 +86,7 @@ func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 	return &user, err
 }
 
+// UpdateUser update the given user in the database
 func (db *DB) UpdateUser(user model.User) (*model.User, error) {
 	_, err := db.Exec(
 		sanitizePlaceholder("UPDATE guser SET username=?, password=?, role=?, email=? WHERE id=?"),
@@ -95,11 +98,13 @@ func (db *DB) UpdateUser(user model.User) (*model.User, error) {
 	return &user, err
 }
 
+// DeleteUser delete the user with the id in the database
 func (db *DB) DeleteUser(id string) error {
 	_, err := db.Exec(sanitizePlaceholder("DELETE FROM guser WHERE id=?"), id)
 	return err
 }
 
+// FindUserById get the user with the given id
 func (db *DB) FindUserById(id string) (*model.User, error) {
 	user := new(model.User)
 	err := db.QueryRow(
@@ -115,6 +120,7 @@ func (db *DB) FindUserById(id string) (*model.User, error) {
 	return user, err
 }
 
+// FindUserByUsername get the user with the given username
 func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 	user := new(model.User)
 	err := db.QueryRow(
@@ -130,6 +136,7 @@ func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 	return user, err
 }
 
+// FindAllUsers get all users which matches the optional filter and is in the given page
 func (db *DB) FindAllUsers(filter string, paging model.Paging) ([]*model.User, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForUser(paging)
 	whereClause := ""
@@ -168,11 +175,13 @@ func (db *DB) FindAllUsers(filter string, paging model.Paging) ([]*model.User, i
 	return users, total, err
 }
 
+// HashPassword returns the hash of the given password
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
 
+// CheckPasswordHash checks if the given password leads to the given hash
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil

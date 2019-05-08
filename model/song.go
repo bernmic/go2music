@@ -1,5 +1,6 @@
 package model
 
+// Song is the representation of a song
 type Song struct {
 	Id            string  `json:"songId,omitempty"`
 	Path          string  `json:"-"`
@@ -19,6 +20,7 @@ type Song struct {
 	Rating        int     `json:"rating"`
 }
 
+// SongCollection is a list of songs with paging informations
 type SongCollection struct {
 	Songs       []*Song `json:"songs,omitempty"`
 	Description string  `json:"description,omitempty"`
@@ -26,6 +28,7 @@ type SongCollection struct {
 	Total       int     `json:"total,omitempty"`
 }
 
+// UserSong contains the user specific informations of songs
 type UserSong struct {
 	UserId     string
 	SongId     string

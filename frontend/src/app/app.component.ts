@@ -4,6 +4,8 @@ import {Router} from '@angular/router';
 import {AuthService} from "./security/auth.service";
 import {Observable} from "rxjs/index";
 import {PlayerService} from "./player/player.service";
+import {MatBottomSheet} from "@angular/material";
+import {BottomPlayerComponent} from "./bottom-player/bottom-player.component";
 
 @Component({
   selector: 'app-root',
@@ -11,7 +13,6 @@ import {PlayerService} from "./player/player.service";
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnDestroy {
-
   mobileQuery: MediaQueryList;
 
   private _mobileQueryListener: () => void;
@@ -22,6 +23,7 @@ export class AppComponent implements OnDestroy {
     private router: Router,
     private authService: AuthService,
     private playerService: PlayerService,
+    private bottomPlayerSheet: MatBottomSheet,
     changeDetectorRef: ChangeDetectorRef,
     media: MediaMatcher) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
@@ -76,5 +78,9 @@ export class AppComponent implements OnDestroy {
 
   username(): string {
     return this.authService.getLoggedInUsername();
+  }
+
+  openBottomPlayer() {
+    this.bottomPlayerSheet.open(BottomPlayerComponent, {panelClass: "bottom-player"})
   }
 }

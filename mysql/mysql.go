@@ -12,12 +12,14 @@ import (
 	"strings"
 )
 
+// DB contains the session data for a database session
 type DB struct {
 	sql.DB
 }
 
 var database DB
 
+// New create a new mysql database session and returens it
 func New() (*DB, error) {
 	c := configuration.Configuration(false)
 	//url := c.Database.Url + "/" + c.Database.Schema
@@ -39,12 +41,13 @@ func New() (*DB, error) {
 	database.initializeAlbum()
 	database.initializeSong()
 	database.initializePlaylist()
-	database.InitializeInfo()
+	database.initializeInfo()
 	log.Info("Database initialized....")
 
 	return &database, nil
 }
 
+// Database returns the current mysql database session
 func Database() *DB {
 	return &database
 }

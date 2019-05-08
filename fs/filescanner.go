@@ -38,6 +38,7 @@ func Filescanner(root string, extension string, level ...int) ([]string, error) 
 	return result, nil
 }
 
+// ImageType contains data about an image
 type ImageFile struct {
 	path     string
 	mimetype string

@@ -21,6 +21,13 @@ func initAlbum(r *gin.RouterGroup) {
 	r.GET("/album/:id/download", downloadAlbum)
 }
 
+// getAlbums swagger:route GET /album albums listAlbums
+//
+// Lists the albums by filter and paging
+//
+// Responses:
+//    200: AlbumCollection
+//    500: Internal problems
 func getAlbums(c *gin.Context) {
 	counterAlbum.Add("GET /", 1)
 	paging := extractPagingFromRequest(c)
@@ -35,6 +42,14 @@ func getAlbums(c *gin.Context) {
 	respondWithError(http.StatusInternalServerError, "Cound not read albums", c)
 }
 
+// getAlbum swagger:route GET /album/{id} album getAlbumsById
+//
+// Gets the details for an album
+//
+// Responses:
+//    200: Album
+//    404: unknown album id
+//    500: Internal problems
 func getAlbum(c *gin.Context) {
 	counterAlbum.Add("GET /:id", 1)
 	id := c.Param("id")
@@ -46,6 +61,14 @@ func getAlbum(c *gin.Context) {
 	c.JSON(http.StatusOK, album)
 }
 
+// getSongForAlbum swagger:route GET /album/{id}/songs songs getSongsForAlbum
+//
+// Gets the songs for an album
+//
+// Responses:
+//    200: SongCollection
+//    404: unknown album id
+//    500: Internal problems
 func getSongForAlbum(c *gin.Context) {
 	counterAlbum.Add("GET /:id/songs", 1)
 	id := c.Param("id")

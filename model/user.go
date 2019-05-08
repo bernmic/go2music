@@ -1,5 +1,6 @@
 package model
 
+// User is the representation of an user
 type User struct {
 	Id       string `json:"id,omitempty"`
 	Username string `json:"username,omitempty"`
@@ -8,6 +9,7 @@ type User struct {
 	Email    string `json:"email,omitempty"`
 }
 
+// UserCollection is a list of users with paging informations
 type UserCollection struct {
 	Users  []*User `json:"users,omitempty"`
 	Paging Paging  `json:"paging,omitempty"`
