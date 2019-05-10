@@ -7,15 +7,14 @@ import {AlbumService} from "./album.service";
 import {HttpClientModule} from "@angular/common/http";
 import {BrowserModule} from "@angular/platform-browser";
 import {RouterModule} from "@angular/router";
-import {
-  MatCardModule,
-  MatFormFieldModule,
-  MatGridListModule,
-  MatIconModule, MatInputModule,
-  MatPaginatorModule,
-  MatTooltipModule
-} from "@angular/material";
 import {FlexLayoutModule} from "@angular/flex-layout";
+import {MatCardModule} from "@angular/material/card";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatGridListModule} from "@angular/material/grid-list";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatPaginatorModule} from "@angular/material/paginator";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 @NgModule({
   imports: [

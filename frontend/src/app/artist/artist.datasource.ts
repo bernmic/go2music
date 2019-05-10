@@ -1,8 +1,8 @@
 import {DataSource} from "@angular/cdk/table";
 import {CollectionViewer} from "@angular/cdk/collections";
 import {BehaviorSubject, Observable, of} from "rxjs";
-import {Paging} from "../shared/paging.model";
 import {catchError, finalize} from "rxjs/operators";
+import {Paging} from "../shared/paging.model";
 import {Artist, ArtistCollection} from "./artist.model";
 import {ArtistService} from "./artist.service";
 

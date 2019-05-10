@@ -1,11 +1,13 @@
 import {NgModule} from "@angular/core";
-import {OverviewComponent} from "./overview.component";
-import {OverviewService} from "./overview.service";
 import {BrowserModule} from "@angular/platform-browser";
 import {HttpClientModule} from "@angular/common/http";
 import {RouterModule} from "@angular/router";
-import {MatCardModule, MatGridListModule, MatListModule} from "@angular/material";
 import {SharedModule} from "../shared/shared.module";
+import {OverviewComponent} from "./overview.component";
+import {OverviewService} from "./overview.service";
+import {MatCardModule} from "@angular/material/card";
+import {MatGridListModule} from "@angular/material/grid-list";
+import {MatListModule} from "@angular/material/list";
 
 @NgModule({
   imports: [
@@ -26,4 +28,5 @@ import {SharedModule} from "../shared/shared.module";
   ]
 })
 
-export class OverviewModule {}
+export class OverviewModule {
+}

@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {ManagementService} from "./management.service";
 import {Sync} from "./management.model";
-import {MatSnackBar} from "@angular/material";
+import {MatSnackBar} from "@angular/material/snack-bar";
 import {isNullOrUndefined} from 'util';
 
 @Component({

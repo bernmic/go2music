@@ -1,5 +1,5 @@
 import {Component, OnInit} from "@angular/core";
-import {MatDialogRef} from "@angular/material";
+import {MatDialogRef} from "@angular/material/dialog";
 import {PlaylistService} from "../playlist/playlist.service";
 import {Playlist} from "../playlist/playlist.model";
 
@@ -8,14 +8,15 @@ import {Playlist} from "../playlist/playlist.model";
   templateUrl: './playlist-select-dialog.component.html',
   styleUrls: ['./playlist-select-dialog.component.css']
 })
-export class PlaylistSelectDialogComponent  implements OnInit {
+export class PlaylistSelectDialogComponent implements OnInit {
   playlists: Playlist[];
 
   selectedPlaylistId: string;
 
   constructor(
     private playlistService: PlaylistService,
-    private dialogRef: MatDialogRef<PlaylistSelectDialogComponent>) {}
+    private dialogRef: MatDialogRef<PlaylistSelectDialogComponent>) {
+  }
 
   ngOnInit() {
     this.playlistService.getStaticPlaylists().subscribe(playlistCollection => this.playlists = playlistCollection.playlists);

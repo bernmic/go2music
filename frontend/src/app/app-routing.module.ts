@@ -1,9 +1,8 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
-import {LoginComponent} from "./security/login.component";
 
 const appRoutes: Routes = [
-  { path: '', redirectTo: 'overview', pathMatch: 'full' }
+  {path: '', redirectTo: 'overview', pathMatch: 'full'}
 ];
 
 @NgModule({
@@ -15,4 +14,5 @@ const appRoutes: Routes = [
   ]
 })
 
-export class AppRoutingModule {}
+export class AppRoutingModule {
+}

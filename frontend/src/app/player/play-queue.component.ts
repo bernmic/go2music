@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
-import {PlayerService} from "./player.service";
 import {Subscription} from "rxjs";
+import {PlayerService} from "./player.service";
 import {Song} from "../song/song.model";
 
 @Component({

@@ -1,16 +1,19 @@
 import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from "@angular/core";
+import {ActivatedRoute, Router} from "@angular/router";
+import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
+import {fromEvent, merge} from "rxjs";
+import {saveAs} from 'file-saver';
+import {MatSort} from "@angular/material/sort";
+import {MatPaginator} from "@angular/material/paginator";
+import {MatDialog, MatDialogConfig} from "@angular/material/dialog";
+
 import {Song} from "./song.model";
 import {SongService} from "./song.service";
-import {ActivatedRoute, Router} from "@angular/router";
 import {PlayerService} from "../player/player.service";
-import {MatDialog, MatDialogConfig, MatPaginator, MatSort} from "@angular/material";
 import {PlaylistSelectDialogComponent} from "./playlist-select-dialog.component";
 import {PlaylistService} from "../playlist/playlist.service";
 import {SongDataSource} from "./song.datasource";
 import {Paging} from "../shared/paging.model";
-import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
-import {fromEvent, merge} from "rxjs";
-import {saveAs} from 'file-saver';
 
 @Component({
   selector: 'app-song-list',

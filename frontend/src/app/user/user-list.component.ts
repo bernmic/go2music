@@ -1,10 +1,12 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from "@angular/core";
-import {UserService} from "./user.service";
-import {MatPaginator, MatSort} from "@angular/material";
-import {UserDataSource} from "./user.datasource";
-import {Paging} from "../shared/paging.model";
+import {MatPaginator} from "@angular/material/paginator";
+import {MatSort} from "@angular/material/sort";
 import {fromEvent, merge} from "rxjs";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
+
+import {UserService} from "./user.service";
+import {UserDataSource} from "./user.datasource";
+import {Paging} from "../shared/paging.model";
 
 @Component({
   selector: 'app-user-list',

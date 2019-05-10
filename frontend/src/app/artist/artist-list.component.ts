@@ -1,11 +1,13 @@
-import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
-import {ArtistService} from "./artist.service";
-import {MatPaginator, MatSort} from "@angular/material";
-import {ArtistDataSource} from "./artist.datasource";
-import {Paging} from "../shared/paging.model";
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
+import {MatPaginator} from "@angular/material/paginator";
+import {MatSort} from "@angular/material/sort";
 import {fromEvent, merge} from "rxjs";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
+
+import {ArtistService} from "./artist.service";
+import {ArtistDataSource} from "./artist.datasource";
+import {Paging} from "../shared/paging.model";
 import {Artist} from "./artist.model";
 
 @Component({
@@ -35,7 +37,8 @@ export class ArtistListComponent implements AfterViewInit, OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private artistService: ArtistService
-  ) {}
+  ) {
+  }
 
   ngAfterViewInit(): void {
     // server-side search
@@ -65,11 +68,11 @@ export class ArtistListComponent implements AfterViewInit, OnInit {
       this.pageSize = +localStorage.getItem("pageSize");
     }
     this.dataSource = new ArtistDataSource(this.artistService);
-      this.route.paramMap.subscribe((params) => {
-        this.dataSource.loadArtists("", new Paging(0, this.pageSize, "", "asc"));
-        this.dataSource.artistTotalSubject.subscribe(total => {
-          this.total = total;
-        });
+    this.route.paramMap.subscribe((params) => {
+      this.dataSource.loadArtists("", new Paging(0, this.pageSize, "", "asc"));
+      this.dataSource.artistTotalSubject.subscribe(total => {
+        this.total = total;
+      });
     });
   }
 
@@ -84,7 +87,7 @@ export class ArtistListComponent implements AfterViewInit, OnInit {
 
   getProperty = (obj, path) => (
     path.split('.').reduce((o, p) => o && o[p], obj)
-  )
+  );
 
   gotoSongs(artist: Artist) {
     this.router.navigate(["/song/artist/" + artist.artistId]);

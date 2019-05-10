@@ -1,10 +1,12 @@
 import {AfterViewInit, Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
-import {Song} from "../song/song.model";
-import {PlayerService} from "./player.service";
 import {Howl} from "howler";
 import {isNullOrUndefined} from "util";
 import {Subscription} from "rxjs";
-import {MatSlider, MatSnackBar} from "@angular/material";
+import {MatSlider} from "@angular/material/slider";
+import {MatSnackBar} from "@angular/material/snack-bar";
+
+import {Song} from "../song/song.model";
+import {PlayerService} from "./player.service";
 
 @Component({
   selector: 'app-player',
@@ -22,7 +24,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   @Output() newSongLoaded: EventEmitter<Song> = new EventEmitter();
 
   @ViewChild("volumeCtrl")
-  volumeControl: MatSlider ;
+  volumeControl: MatSlider;
 
   constructor(
     private playerService: PlayerService,
@@ -79,6 +81,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   previous() {
     this.playerService.previousSong();
   }
+
   cover(): string {
     if (isNullOrUndefined(this.playerService.currentSong)) {
       return "../assets/img/defaultAlbum.png";
@@ -104,6 +107,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   isPaused(): boolean {
     return !isNullOrUndefined(this.audio) && !this.audio.playing() && this.position !== 0;
   }
+
   playSong(song: Song) {
     this.playerService.currentSong = song;
     if (!isNullOrUndefined(this.audio)) {

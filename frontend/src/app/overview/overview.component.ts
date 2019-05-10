@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
+import {Router} from "@angular/router";
 import {Info, Sync} from "./overview.model";
 import {OverviewService} from "./overview.service";
-import {Router} from "@angular/router";
 import {Song} from "../song/song.model";
 import {PlayerService} from "../player/player.service";
 import {AuthService} from "../security/auth.service";

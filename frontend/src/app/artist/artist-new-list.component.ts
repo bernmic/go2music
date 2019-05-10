@@ -1,9 +1,10 @@
 import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
-import {ArtistService} from "./artist.service";
 import {Router} from "@angular/router";
+import {CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
+
+import {ArtistService} from "./artist.service";
 import {Artist} from "./artist.model";
 import {ArtistNewDataSource} from "./artist-new.datasource";
-import {CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
 
 @Component({
   selector: 'app-artist-list',

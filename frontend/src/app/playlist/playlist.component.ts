@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
+import {Router} from "@angular/router";
+
 import {PlaylistService} from "./playlist.service";
 import {Playlist, PlaylistCollection} from "./playlist.model";
-import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-playlist',
@@ -11,7 +12,8 @@ import {Router} from "@angular/router";
 export class PlaylistComponent implements OnInit {
   playlists: Playlist[];
 
-  constructor(private playlistService: PlaylistService, private router: Router) { }
+  constructor(private playlistService: PlaylistService, private router: Router) {
+  }
 
   ngOnInit() {
     this.playlistService.getPlaylists().subscribe((playlists: PlaylistCollection) => {

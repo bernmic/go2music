@@ -1,9 +1,9 @@
-import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {Album} from "./album.model";
 import {AlbumService} from "./album.service";
 import {MediaMatcher} from "@angular/cdk/layout";
 import {isNullOrUndefined} from "util";
-import {MatPaginator, PageEvent} from "@angular/material";
+import {MatPaginator} from "@angular/material/paginator";
 import {Paging} from "../shared/paging.model";
 import {fromEvent} from "rxjs";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";

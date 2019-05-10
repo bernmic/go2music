@@ -2,10 +2,9 @@ import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/
 import {AlbumService} from "./album.service";
 import {Paging} from "../shared/paging.model";
 import {Album} from "./album.model";
-import {isNullOrUndefined} from "util";
 import {fromEvent} from "rxjs";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
-import {MatPaginator} from "@angular/material";
+import {MatPaginator} from "@angular/material/paginator";
 import {MediaObserver} from "@angular/flex-layout";
 
 @Component({
@@ -52,13 +51,12 @@ export class AlbumListNewComponent implements OnInit, AfterViewInit {
     if (this.linesPerPage == 0) {
       if (localStorage.getItem("albumLinesPerPage")) {
         this.linesPerPage = +localStorage.getItem("albumLinesPerPage");
-      }
-      else {
+      } else {
         this.linesPerPage = 1;
       }
     }
     this.columnsPerpage = numcols;
-    this.pageSizeOptions = [1 * numcols, 2 * numcols, 3 * numcols, 4 * numcols, 5 * numcols, 6*numcols];
+    this.pageSizeOptions = [1 * numcols, 2 * numcols, 3 * numcols, 4 * numcols, 5 * numcols, 6 * numcols];
     this.pageSize = this.linesPerPage * numcols;
   }
 

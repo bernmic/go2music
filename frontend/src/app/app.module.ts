@@ -1,15 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
-import {
-  MatBottomSheetModule,
-  MatButtonModule,
-  MatIconModule,
-  MatListModule,
-  MatMenuModule,
-  MatSidenavModule,
-  MatToolbarModule
-} from "@angular/material";
-
 import {AppComponent} from './app.component';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {AlbumModule} from "./album/album.module";
@@ -36,6 +26,13 @@ import {ManagementModule} from "./management/management.module";
 import {ManagementRoutingModule} from "./management/management-routing.module";
 import {BottomPlayerModule} from "./bottom-player/bottom-player.module";
 import {BottomPlayerComponent} from "./bottom-player/bottom-player.component";
+import {MatBottomSheetModule} from "@angular/material/bottom-sheet";
+import {MatButtonModule} from "@angular/material/button";
+import {MatIconModule} from "@angular/material/icon";
+import {MatListModule} from "@angular/material/list";
+import {MatMenuModule} from "@angular/material/menu";
+import {MatSidenavModule} from "@angular/material/sidenav";
+import {MatToolbarModule} from "@angular/material/toolbar";
 
 @NgModule({
   declarations: [

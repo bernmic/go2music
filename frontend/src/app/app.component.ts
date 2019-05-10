@@ -4,7 +4,7 @@ import {Router} from '@angular/router';
 import {AuthService} from "./security/auth.service";
 import {Observable} from "rxjs/index";
 import {PlayerService} from "./player/player.service";
-import {MatBottomSheet} from "@angular/material";
+import {MatBottomSheet} from "@angular/material/bottom-sheet";
 import {BottomPlayerComponent} from "./bottom-player/bottom-player.component";
 
 @Component({
