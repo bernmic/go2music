@@ -2,6 +2,8 @@ package controller
 
 import (
 	"expvar"
+	"fmt"
+	"go2music/exchange"
 	"go2music/model"
 	"net/http"
 
@@ -19,6 +21,7 @@ func initPlaylist(r *gin.RouterGroup) {
 	r.GET("/playlist", getPlaylists)
 	r.GET("/playlist/:id", getPlaylist)
 	r.GET("/playlist/:id/download", downloadPlaylist)
+	r.GET("/playlist/:id/xspf", exportXSPF)
 	r.GET("/playlist/:id/songs", getSongsForPlaylist)
 	r.POST("/playlist/:id/songs", addSongsToPlaylist)
 	r.PUT("/playlist/:id/songs", setSongsOfPlaylist)
@@ -256,6 +259,37 @@ func downloadPlaylist(c *gin.Context) {
 		if len(songs) > 0 {
 			sendSongsAsZip(c, songs, playlist.Name+".zip")
 		}
+		return
+	}
+	respondWithError(http.StatusInternalServerError, "Cound not read songs of playlist", c)
+}
+
+func exportXSPF(c *gin.Context) {
+	counterPlaylist.Add("GET /:id/xspf", 1)
+	user, ok := c.Get("principal")
+	if !ok {
+		respondWithError(http.StatusUnauthorized, "not allowed", c)
+		return
+	}
+	id := c.Param("id")
+	playlist, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "playlist not found", c)
+		return
+	}
+
+	var songs []*model.Song
+
+	paging := extractPagingFromRequest(c)
+	if playlist.Query != "" {
+		songs, _, err = songManager.FindSongsByPlaylistQuery(playlist.Query, paging)
+	} else {
+		songs, _, err = songManager.FindSongsByPlaylist(playlist.Id, paging)
+	}
+	if err == nil {
+		c.Header("Content-Type", "application/xspf+xml")
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.xspf\"", playlist.Name))
+		exchange.ExportXSPF(playlist, songs, c.Writer)
 		return
 	}
 	respondWithError(http.StatusInternalServerError, "Cound not read songs of playlist", c)

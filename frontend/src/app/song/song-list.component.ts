@@ -145,9 +145,7 @@ export class SongListComponent implements AfterViewInit, OnInit {
 
   getProperty = (obj, path) => (
     path.split('.').reduce((o, p) => o && o[p], obj)
-  )
-
-  fileUrl;
+  );
 
   downloadAlbum() {
     this.songService.downloadAlbum(this.anyId).subscribe(
@@ -155,7 +153,7 @@ export class SongListComponent implements AfterViewInit, OnInit {
         saveAs(data, this.kind + " - " + this.anyId);
       },
       error => console.error(error)
-    )
+    );
   }
 
   downloadPlaylist() {

@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {Router} from "@angular/router";
+import {saveAs} from 'file-saver';
 
 import {PlaylistService} from "./playlist.service";
 import {Playlist, PlaylistCollection} from "./playlist.model";
@@ -26,5 +27,14 @@ export class PlaylistComponent implements OnInit {
       console.log("Playlist deleted")
       this.router.navigate(["/playlist"]);
     });
+  }
+
+  xspf(playlistId: string) {
+    this.playlistService.exportPlaylistToXSPF(playlistId).subscribe(
+      data => {
+        saveAs(data, playlistId + ".xspf");
+      },
+      error => console.error(error)
+    );
   }
 }

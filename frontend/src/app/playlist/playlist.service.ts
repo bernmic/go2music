@@ -39,4 +39,8 @@ export class PlaylistService {
   deletePlaylist(playlistId: string): Observable<number> {
     return this.http.delete<number>(environment.restserver + "/api/playlist/" + playlistId);
   }
+
+  exportPlaylistToXSPF(playlistId: string): Observable<any> {
+    return this.http.get(environment.restserver + "/api/playlist/" + playlistId + "/xspf", {responseType: "blob"});
+  }
 }
