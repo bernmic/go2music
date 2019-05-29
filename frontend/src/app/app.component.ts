@@ -5,7 +5,6 @@ import {AuthService} from "./security/auth.service";
 import {Observable} from "rxjs/index";
 import {PlayerService} from "./player/player.service";
 import {MatBottomSheet} from "@angular/material/bottom-sheet";
-import {BottomPlayerComponent} from "./bottom-player/bottom-player.component";
 
 @Component({
   selector: 'app-root',
@@ -78,9 +77,5 @@ export class AppComponent implements OnDestroy {
 
   username(): string {
     return this.authService.getLoggedInUsername();
-  }
-
-  openBottomPlayer() {
-    this.bottomPlayerSheet.open(BottomPlayerComponent, {panelClass: "bottom-player"})
   }
 }

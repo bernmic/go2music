@@ -15,8 +15,8 @@ import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
 })
 export class AlbumListComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('input') input: ElementRef;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild('input', { static: true }) input: ElementRef;
 
   pageSize = 12;
   pageSizeOptions = [6, 12, 24, 48];

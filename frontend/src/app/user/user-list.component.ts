@@ -14,9 +14,9 @@ import {Paging} from "../shared/paging.model";
   styleUrls: ['./user-list.component.scss']
 })
 export class UserListComponent implements AfterViewInit, OnInit {
-  @ViewChild(MatSort) sort: MatSort;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('input') input: ElementRef;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild('input', { static: true }) input: ElementRef;
 
   dataSource: UserDataSource;
 

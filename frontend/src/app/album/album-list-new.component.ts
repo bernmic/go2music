@@ -21,8 +21,8 @@ export class AlbumListNewComponent implements OnInit, AfterViewInit {
   pageSizeOptions = [1, 2, 3, 4, 5, 6];
   pageIndex = 0;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('input') input: ElementRef;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild('input', { static: true }) input: ElementRef;
 
   constructor(private albumService: AlbumService, public mediaObserver: MediaObserver) {
     mediaObserver.media$.subscribe(ms => {

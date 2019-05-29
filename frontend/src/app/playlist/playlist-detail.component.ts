@@ -12,8 +12,8 @@ import {isNullOrUndefined} from "util";
 export class PlaylistDetailComponent implements OnInit {
   playlist: Playlist;
 
-  @ViewChild('name') nameInput: ElementRef;
-  @ViewChild('query') queryInput: ElementRef;
+  @ViewChild('name', { static: true }) nameInput: ElementRef;
+  @ViewChild('query', { static: false }) queryInput: ElementRef;
 
   KIND_QUERY = "query";
   KIND_EMPTY = "empty";

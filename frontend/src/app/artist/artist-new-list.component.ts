@@ -14,7 +14,7 @@ import {ArtistNewDataSource} from "./artist-new.datasource";
 export class ArtistNewListComponent implements OnInit, AfterViewInit {
   dataSource: ArtistNewDataSource;
 
-  @ViewChild(CdkVirtualScrollViewport)
+  @ViewChild(CdkVirtualScrollViewport, { static: true })
   viewport: CdkVirtualScrollViewport;
 
   constructor(

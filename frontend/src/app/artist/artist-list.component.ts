@@ -16,9 +16,9 @@ import {Artist} from "./artist.model";
   styleUrls: ['./artist-list.component.scss']
 })
 export class ArtistListComponent implements AfterViewInit, OnInit {
-  @ViewChild(MatSort) sort: MatSort;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('input') input: ElementRef;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild('input', { static: true }) input: ElementRef;
 
   pageSize = 10;
   pageSizeOptions = [5, 10, 20, 50];

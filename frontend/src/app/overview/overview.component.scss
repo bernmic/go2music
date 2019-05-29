@@ -17,6 +17,6 @@ p.mat-line {
   width: 60%;
 }
 
-:host /deep/ .mat-list-item-content {
+:host ::ng-eep .mat-list-item-content {
   padding: 0!important;
 }

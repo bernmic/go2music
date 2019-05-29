@@ -24,8 +24,6 @@ import {SecurityRoutingModule} from "./security/security-routing.module";
 import {PlaylistRoutingModule} from "./playlist/playlist-routing.module";
 import {ManagementModule} from "./management/management.module";
 import {ManagementRoutingModule} from "./management/management-routing.module";
-import {BottomPlayerModule} from "./bottom-player/bottom-player.module";
-import {BottomPlayerComponent} from "./bottom-player/bottom-player.component";
 import {MatBottomSheetModule} from "@angular/material/bottom-sheet";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
@@ -54,7 +52,6 @@ import {MatToolbarModule} from "@angular/material/toolbar";
     AppRoutingModule,
     AlbumModule,
     ArtistModule,
-    BottomPlayerModule,
     ConfigModule,
     ManagementModule,
     OverviewModule,
@@ -74,8 +71,6 @@ import {MatToolbarModule} from "@angular/material/toolbar";
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [
-    BottomPlayerComponent
-  ]
+  entryComponents: []
 })
 export class AppModule { }

@@ -23,7 +23,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   @Output() newSongLoaded: EventEmitter<Song> = new EventEmitter();
 
-  @ViewChild("volumeCtrl")
+  @ViewChild("volumeCtrl", { static: true })
   volumeControl: MatSlider;
 
   constructor(
