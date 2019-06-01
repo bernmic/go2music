@@ -5,6 +5,7 @@ pipeline {
         stage('Setup') {
             steps {
                 echo 'Setup...'
+                sh 'go get ./...'
             }
         }
         stage('Generate') {
