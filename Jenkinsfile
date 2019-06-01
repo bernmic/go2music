@@ -5,7 +5,8 @@ pipeline {
         stage('Setup') {
             steps {
                 echo 'Setup...'
-                sh 'go get ./...'
+                sh 'go version'
+                sh 'echo $GOPATH'
             }
         }
         stage('Generate') {
