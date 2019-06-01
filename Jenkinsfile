@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Setup...'
                 sh 'go version'
-                sh 'echo $GOPATH'
+                sh 'echo $PWD'
             }
         }
         stage('Generate') {
