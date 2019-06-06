@@ -1,0 +1,605 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json",
+    "image/jpeg",
+    "image/gif",
+    "image/png",
+    "application/zip"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Copyright 2019 Michael Bernards",
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  },
+  "host": "localhost",
+  "basePath": "/api",
+  "paths": {
+    "/album": {
+      "get": {
+        "description": "Lists the albums by filter and paging",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "album"
+        ],
+        "operationId": "getAlbums",
+        "parameters": [
+          {
+            "$ref": "#/definitions/Paging",
+            "x-go-name": "Paging",
+            "name": "paging",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Total",
+            "name": "total",
+            "in": "query"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Album"
+            },
+            "x-go-name": "Albums",
+            "description": "Albums List of albums in this trunc",
+            "name": "albums",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AlbumCollection response",
+            "schema": {
+              "$ref": "#/definitions/AlbumCollection"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/album/{id}": {
+      "get": {
+        "description": "Gets the details for an album",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "album"
+        ],
+        "operationId": "getAlbum",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Id",
+            "description": "the id of the album to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Album response",
+            "schema": {
+              "$ref": "#/definitions/Album"
+            }
+          },
+          "404": {
+            "description": "Album not found",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/album/{id}/cover": {
+      "get": {
+        "description": "Gets the cover for an album",
+        "produces": [
+          "image/jpeg",
+          "image/gif",
+          "image/png"
+        ],
+        "tags": [
+          "image"
+        ],
+        "operationId": "getCoverForAlbum",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the id of the album to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Album not found",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/album/{id}/cover/{size}": {
+      "get": {
+        "description": "Gets the cover for an album",
+        "produces": [
+          "image/jpeg",
+          "image/gif",
+          "image/png"
+        ],
+        "tags": [
+          "image"
+        ],
+        "operationId": "getCoverForAlbumWithSize",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the id of the album to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "width and height of the cover in pixel",
+            "name": "size",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Album not found",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/album/{id}/download": {
+      "get": {
+        "description": "Gets the songs for an album as zip file",
+        "produces": [
+          "application/zip"
+        ],
+        "tags": [
+          "songs"
+        ],
+        "operationId": "downloadAlbum",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the id of the album to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Album not found",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/album/{id}/songs": {
+      "get": {
+        "description": "Gets the songs for an album",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "songs"
+        ],
+        "operationId": "getSongForAlbum",
+        "parameters": [
+          {
+            "type": "string",
+            "items": {
+              "$ref": "#/definitions/Song"
+            },
+            "x-go-name": "Songs",
+            "description": "the id of the album to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SongCollection response",
+            "schema": {
+              "$ref": "#/definitions/SongCollection"
+            }
+          },
+          "404": {
+            "description": "Album not found",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/artist": {
+      "get": {
+        "description": "Lists the artists by filter and paging",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "ArtistCollection"
+        ],
+        "operationId": "getrtists",
+        "responses": {
+          "200": {
+            "description": "ArtistCollection response",
+            "schema": {
+              "$ref": "#/definitions/ArtistCollection"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/artist/{id}": {
+      "get": {
+        "description": "Gets the details for an artist",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Artist"
+        ],
+        "operationId": "getArtist",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Id",
+            "description": "the id of the artist to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artist response",
+            "schema": {
+              "$ref": "#/definitions/Artist"
+            }
+          },
+          "404": {
+            "description": "Artist not found",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/artist/{id}/albums": {
+      "get": {
+        "description": "Gets the albums for an artist",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "albums"
+        ],
+        "operationId": "getAlbumsForArtist",
+        "parameters": [
+          {
+            "$ref": "#/definitions/Paging",
+            "type": "string",
+            "x-go-name": "Paging",
+            "description": "the id of the artist to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AlbumCollection response",
+            "schema": {
+              "$ref": "#/definitions/AlbumCollection"
+            }
+          },
+          "404": {
+            "description": "Artist not found",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/artist/{id}/songs": {
+      "get": {
+        "description": "Gets the songs for an artist",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "songs"
+        ],
+        "operationId": "getSongForArtist",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the id of the artist to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SongCollection response",
+            "schema": {
+              "$ref": "#/definitions/SongCollection"
+            }
+          },
+          "404": {
+            "description": "Artist not found",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/responses/HTTPError"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Album": {
+      "description": "Album is the representation of a music album with a title and the\nfilesystem path to the songs",
+      "type": "object",
+      "required": [
+        "albumId"
+      ],
+      "properties": {
+        "albumId": {
+          "description": "Id of the album",
+          "type": "string",
+          "x-go-name": "Id"
+        },
+        "title": {
+          "description": "Title of the album",
+          "type": "string",
+          "x-go-name": "Title"
+        }
+      },
+      "x-go-package": "go2music/model"
+    },
+    "Artist": {
+      "description": "Artist is the representation of an artist with its name",
+      "type": "object",
+      "required": [
+        "artistId"
+      ],
+      "properties": {
+        "artistId": {
+          "description": "Id of the artist",
+          "type": "string",
+          "x-go-name": "Id"
+        },
+        "name": {
+          "description": "Name of the artist",
+          "type": "string",
+          "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "go2music/model"
+    },
+    "Paging": {
+      "description": "Paging contains all attributes for a paging state",
+      "type": "object",
+      "properties": {
+        "direction": {
+          "type": "string",
+          "x-go-name": "Direction"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Page"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Size"
+        },
+        "sort": {
+          "type": "string",
+          "x-go-name": "Sort"
+        }
+      },
+      "x-go-package": "go2music/model"
+    },
+    "Song": {
+      "description": "Song is the representation of a song",
+      "type": "object",
+      "properties": {
+        "added": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Added"
+        },
+        "album": {
+          "$ref": "#/definitions/Album"
+        },
+        "artist": {
+          "$ref": "#/definitions/Artist"
+        },
+        "bitrate": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Bitrate"
+        },
+        "duration": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Duration"
+        },
+        "filedate": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Filedate"
+        },
+        "genre": {
+          "type": "string",
+          "x-go-name": "Genre"
+        },
+        "mode": {
+          "type": "string",
+          "x-go-name": "Mode"
+        },
+        "rating": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Rating"
+        },
+        "sampleRate": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Samplerate"
+        },
+        "songId": {
+          "type": "string",
+          "x-go-name": "Id"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        },
+        "track": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Track"
+        },
+        "vbr": {
+          "type": "boolean",
+          "x-go-name": "Vbr"
+        },
+        "yearPublished": {
+          "type": "string",
+          "x-go-name": "YearPublished"
+        }
+      },
+      "x-go-package": "go2music/model"
+    }
+  },
+  "responses": {
+    "HTTPError": {
+      "description": "HTTPError is the data type for a HTTP error",
+      "headers": {
+        "code": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The HTTP code"
+        },
+        "message": {
+          "type": "string",
+          "description": "The error message"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}
