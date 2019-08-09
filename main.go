@@ -1,8 +1,16 @@
-// Copyright 2019 Michael Bernards
+// Package main go2music
 //
+// the purpose of this application is to manage large MP3 libraries.
+//
+// Terms Of Service:
+//
+// there are no TOS at this moment, use at your own risk we take no responsibility
+//
+//     Title: Go2Music
 //     Schemes: http, https
 //     Host: localhost
-//     Version 0.0.1
+// 	   BasePath: /api
+//     Version: 0.0.1
 //     License: MIT http://opensource.org/licenses/MIT
 //
 //     Consumes:

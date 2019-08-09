@@ -15,6 +15,7 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSliderModule} from "@angular/material/slider";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
+import {PlayerDialog} from "./player.dialog";
 
 @NgModule({
   imports: [
@@ -34,13 +35,17 @@ import {MatSnackBarModule} from "@angular/material/snack-bar";
   ],
   declarations: [
     PlayerComponent,
-    PlayQueueComponent
+    PlayQueueComponent,
+    PlayerDialog
   ],
   exports: [
     PlayerComponent
   ],
   providers: [
     PlayerService
+  ],
+  entryComponents: [
+    PlayerDialog
   ]
 })
 

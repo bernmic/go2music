@@ -7,6 +7,8 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 
 import {Song} from "../song/song.model";
 import {PlayerService} from "./player.service";
+import {PlayerDialog} from "./player.dialog";
+import {MatDialog} from "@angular/material";
 
 @Component({
   selector: 'app-player',
@@ -28,7 +30,8 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   constructor(
     private playerService: PlayerService,
-    public snackBar: MatSnackBar) {
+    public snackBar: MatSnackBar,
+    public dialog: MatDialog) {
   }
 
   ngOnInit() {
@@ -80,6 +83,16 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   previous() {
     this.playerService.previousSong();
+  }
+
+  openFullscreen(): void {
+    let dialogRef = this.dialog.open(PlayerDialog, {
+      width: '100vh',
+      height:  '100vh',
+      maxWidth: '100vh',
+      maxHeight: '100vh',
+      hasBackdrop: false
+    });
   }
 
   cover(): string {

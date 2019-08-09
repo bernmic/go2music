@@ -1,8 +1,10 @@
 package model
 
-// Album is the representation of a music album with a title and the
-// filesystem path to the songs
-// swagger:parameters getAlbum
+// Album is the representation of a music album
+//
+// It contains a title and the filesystem path to the songs
+//
+// swagger:model
 type Album struct {
 	// Id of the album
 	Id string `json:"albumId,omitempty"`
@@ -13,6 +15,8 @@ type Album struct {
 }
 
 // AlbumCollection is a trunc of albums with paging informations
+//
+// swagger:response AlbumCollection
 type AlbumCollection struct {
 	// Albums List of albums in this trunc
 	Albums []*Album `json:"albums,omitempty"`
