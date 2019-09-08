@@ -4,6 +4,8 @@ import {Song} from "../song/song.model";
 import {isNullOrUndefined} from "util";
 import {environment} from "../../environments/environment";
 import {AuthService} from "../security/auth.service";
+import {PlaylistService} from "../playlist/playlist.service";
+import {Playlist} from "../playlist/playlist.model";
 
 @Injectable()
 export class PlayerService {
@@ -15,7 +17,7 @@ export class PlayerService {
   currentSong: Song;
   songlist: Song[] = [];
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private playlistService: PlaylistService) {}
 
   playSong(song: Song) {
     this.currentSong = song;
@@ -35,6 +37,25 @@ export class PlayerService {
     this.songlist.push(song);
     this.storePlayqueue();
     this.listChange.next(this.songlist);
+  }
+
+  clearQueue() {
+    this.songlist = [];
+    this.storePlayqueue();
+    this.listChange.next(this.songlist);
+  }
+
+  createPlaylist(name: string) {
+    let pl: Playlist = new Playlist(null, name, null);
+    this.playlistService.savePlaylist(pl).subscribe(p => {
+      let songIds: string[] = [];
+      for (let song of this.songlist) {
+        songIds.push(song.songId);
+      }
+      this.playlistService.addSongsToPlaylist(p.playlistId, songIds).subscribe(() => {
+        console.log("Success writing playlist")
+      }, error => {console.log("Error writing playlist: " + error)});
+    }, error => {console.log("Error creating playlist: " + error)});
   }
 
   nextSong() {

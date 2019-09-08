@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -117,7 +118,32 @@ func sendSongsAsZip(c *gin.Context, songs []*model.Song, filename string) {
 			return
 		}
 	}
+	m3u := createM3U(songs)
+	header := zip.FileHeader{}
+	header.Name = "playlist.m3u"
+	header.Method = zip.Deflate
+	header.UncompressedSize64 = uint64(len(m3u.Bytes()))
+	header.Modified = time.Now()
+	writer, err := zw.CreateHeader(&header)
+	if err == nil {
+		_, err = io.Copy(writer, bytes.NewReader(m3u.Bytes()))
+		if err != nil {
+			log.Warn("Error writing M3U to zip: " + err.Error())
+		}
+	} else {
+		log.Warn("Error creating M3U: " + err.Error())
+	}
 	zw.Close()
+}
+
+func createM3U(songs []*model.Song) bytes.Buffer {
+	var buffer bytes.Buffer
+	buffer.WriteString("#EXTM3U\r\n\r\n")
+	for _, song := range songs {
+		buffer.WriteString(fmt.Sprintf("#EXTINF:%d,%s - %s\r\n", song.Duration, song.Artist.Name, song.Title))
+		buffer.WriteString(fmt.Sprintf("%s\r\n\r\n", filepath.Base(song.Path)))
+	}
+	return buffer
 }
 
 func addFileToZip(zw *zip.Writer, filename string) error {

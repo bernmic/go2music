@@ -9,6 +9,8 @@ import {Song} from "../song/song.model";
 import {PlayerService} from "./player.service";
 import {PlayerDialog} from "./player.dialog";
 import {MatDialog} from "@angular/material";
+import {TextinputDialogComponent} from "../shared/textinput-dialog.component";
+import {YesnoAlertComponent} from "../shared/yesno-alert.component";
 
 @Component({
   selector: 'app-player',
@@ -155,6 +157,32 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   currentSong(): Song {
     return this.playerService.currentSong;
+  }
+
+  createPlaylist() {
+    const dialogRef = this.dialog.open(TextinputDialogComponent, {
+      width: '400px',
+      data: {title: "Create playlist from queue", prompt: "Enter playlist name", input: ""}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!isNullOrUndefined(result) && result != "") {
+        this.playerService.createPlaylist(result);
+      }
+    });
+  }
+
+  clearQueue() {
+    const dialogRef = this.dialog.open(YesnoAlertComponent, {
+      width: '400px',
+      data: {title: "Empty play queue", prompt: "Are you sure?"}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.playerService.clearQueue();
+      }
+    });
   }
 
   private calculateSongPosition(position: number, size: number): number {

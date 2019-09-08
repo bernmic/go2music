@@ -16,6 +16,7 @@ import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSliderModule} from "@angular/material/slider";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {PlayerDialog} from "./player.dialog";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 @NgModule({
   imports: [
@@ -31,7 +32,8 @@ import {PlayerDialog} from "./player.dialog";
     MatMenuModule,
     MatProgressBarModule,
     MatSliderModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatTooltipModule
   ],
   declarations: [
     PlayerComponent,

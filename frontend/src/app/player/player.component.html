@@ -33,9 +33,6 @@
         <button mat-icon-button (click)="next()">
           <mat-icon>fast_forward</mat-icon>
         </button>
-        <button mat-icon-button (click)="openFullscreen()">
-          <mat-icon>fullscreen</mat-icon>
-        </button>
       </div>
       <button mat-icon-button (click)="volumeChanged(0)">
         <mat-icon>volume_down</mat-icon>
@@ -43,6 +40,12 @@
       <mat-slider color="primary" min="0" max="100" step="1" [value]="volume" #volumeCtrl></mat-slider>
       <button mat-icon-button (click)="volumeChanged(100)">
         <mat-icon>volume_up</mat-icon>
+      </button>
+      <button mat-icon-button (click)="createPlaylist()" matTooltip="Create playlist from play queue">
+        <mat-icon>create</mat-icon>
+      </button>
+      <button mat-icon-button (click)="clearQueue()" matTooltip="Empty play queue">
+        <mat-icon>clear</mat-icon>
       </button>
     </mat-card-content>
   </mat-card>
