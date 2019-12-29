@@ -7,6 +7,7 @@ type Info struct {
 	ArtistCount         int      `json:"artistCount,omitempty"`
 	PlaylistCount       int      `json:"playlistCount,omitempty"`
 	UserCount           int      `json:"userCount,omitempty"`
+	TotalLength         int      `json:"totalLength,omitempty"`
 	SongsRecentlyAdded  []*Song  `json:"songsRecentlyAdded,omitempty"`
 	SongsRecentlyPlayed []*Song  `json:"songsRecentlyPlayed,omitempty"`
 	SongsMostPlayed     []*Song  `json:"songsMostPlayed,omitempty"`

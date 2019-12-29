@@ -41,7 +41,7 @@ func Test_CRUD_Artist(t *testing.T) {
 		t.Errorf("Updated artist ist not identical to artist")
 	}
 
-	artists, total, err := testDatabase.FindAllArtists(model.Paging{})
+	artists, total, err := testDatabase.FindAllArtists("", model.Paging{})
 	if err != nil || len(artists) != 1 || total != 1 {
 		t.Error("Expected one item in artist table")
 	}
@@ -51,7 +51,7 @@ func Test_CRUD_Artist(t *testing.T) {
 		t.Error("Could not delete artist")
 	}
 
-	artists, total, err = testDatabase.FindAllArtists(model.Paging{})
+	artists, total, err = testDatabase.FindAllArtists("", model.Paging{})
 	if err != nil || len(artists) != 0 || total != 0 {
 		t.Error("Expected zero items in artist table")
 	}

@@ -46,7 +46,7 @@ func Test_CRUD_Album(t *testing.T) {
 		t.Errorf("Updated album ist not identical to album")
 	}
 
-	albums, total, err := testDatabase.FindAllAlbums(model.Paging{})
+	albums, total, err := testDatabase.FindAllAlbums("", model.Paging{}, "")
 	if err != nil || len(albums) != 1 || total != 1 {
 		t.Error("Exprected one item in album table")
 	}
@@ -56,7 +56,7 @@ func Test_CRUD_Album(t *testing.T) {
 		t.Error("Could not delete album")
 	}
 
-	albums, total, err = testDatabase.FindAllAlbums(model.Paging{})
+	albums, total, err = testDatabase.FindAllAlbums("", model.Paging{}, "")
 	if err != nil || len(albums) != 0 || total != 0 {
 		t.Error("Exprected zero items in album table")
 	}

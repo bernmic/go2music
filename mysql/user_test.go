@@ -27,27 +27,27 @@ func Test_Hash(t *testing.T) {
 
 func Test_PagingUser(t *testing.T) {
 	paging := model.Paging{}
-	s := createOrderAndLimitForUser(paging)
+	s, _ := createOrderAndLimitForUser(paging)
 	if s != "" {
 		t.Error("Expected empty string. got " + s)
 	}
 	paging.Sort = "username"
-	s = createOrderAndLimitForUser(paging)
+	s, _ = createOrderAndLimitForUser(paging)
 	if s != " ORDER BY username" {
 		t.Error("Expected 'ORDER BY username'. got " + s)
 	}
 	paging.Direction = "desc"
-	s = createOrderAndLimitForUser(paging)
+	s, _ = createOrderAndLimitForUser(paging)
 	if s != " ORDER BY username DESC" {
 		t.Error("Expected 'ORDER BY username DESC'. got " + s)
 	}
 	paging.Size = 2
-	s = createOrderAndLimitForUser(paging)
+	s, _ = createOrderAndLimitForUser(paging)
 	if s != " ORDER BY username DESC LIMIT 0,2" {
 		t.Error("Expected 'ORDER BY username DESC LIMIT 0,2'. got " + s)
 	}
 	paging.Page = 1
-	s = createOrderAndLimitForUser(paging)
+	s, _ = createOrderAndLimitForUser(paging)
 	if s != " ORDER BY username DESC LIMIT 2,2" {
 		t.Error("Expected 'ORDER BY username DESC LIMIT 2,2'. got " + s)
 	}

@@ -17,5 +17,6 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/xhenner/mp3-go v0.0.0-20150104015949-cefd7fb0189c
 	golang.org/x/crypto v0.0.0-20190829043050-9756ffdc2472
+	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/yaml.v2 v2.2.2
 )

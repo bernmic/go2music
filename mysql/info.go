@@ -13,10 +13,14 @@ func (db *DB) Info() (*model.Info, error) {
 	info := model.Info{}
 
 	var waiter sync.WaitGroup
-	waiter.Add(9)
+	waiter.Add(10)
 	go func() {
 		defer waiter.Done()
 		info.SongCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song"))
+	}()
+	go func() {
+		defer waiter.Done()
+		info.TotalLength = db.countRows(sanitizePlaceholder("SELECT SUM(duration) FROM song"))
 	}()
 	go func() {
 		defer waiter.Done()
