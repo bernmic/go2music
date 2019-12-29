@@ -8,6 +8,7 @@ export class Info {
     public artistCount: number,
     public playlistCount: number,
     public userCount: number,
+    public totalLength: number,
     public songsRecentlyAdded: Song[],
     public songsRecentlyPlayed: Song[],
     public songsMostPlayed: Song[],
