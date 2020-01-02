@@ -1,8 +1,44 @@
 package mysql
 
 import (
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"sync"
+)
+
+const (
+	getDecadesStatement = `
+select 
+	count(id) count,
+	concat(left(yearpublished, 3), '0s') as decade
+from 
+	song
+where
+	length(yearpublished)>=4
+group by
+	concat(left(yearpublished, 3), '0s')
+`
+	getYearsStatement = `
+select 
+	count(id) count,
+	LEFT(yearpublished, 4)
+from 
+	song
+where LEFT(yearpublished, 3) = LEFT(?, 3)
+group by
+	LEFT(yearpublished, 4)`
+
+	getGenresStatement = `
+select 
+	count(id) count,
+	genre
+from 
+	song
+group by
+	genre
+order by
+	genre
+`
 )
 
 func (db *DB) initializeInfo() {
@@ -60,4 +96,64 @@ func (db *DB) Info() (*model.Info, error) {
 	}()
 	waiter.Wait()
 	return &info, nil
+}
+
+func (db *DB) GetDecades() ([]*model.NameCount, error) {
+	decades := make([]*model.NameCount, 0)
+	rows, err := db.Query(getDecadesStatement)
+	if err != nil {
+		log.Errorf("Error get all decades: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		entry := new(model.NameCount)
+		err := rows.Scan(&entry.Count, &entry.Name)
+		if err != nil {
+			log.Error(err)
+		}
+		decades = append(decades, entry)
+	}
+
+	return decades, nil
+}
+
+func (db *DB) GetYears(decade string) ([]*model.NameCount, error) {
+	years := make([]*model.NameCount, 0)
+	rows, err := db.Query(getYearsStatement, decade)
+	if err != nil {
+		log.Errorf("Error get all years: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		entry := new(model.NameCount)
+		err := rows.Scan(&entry.Count, &entry.Name)
+		if err != nil {
+			log.Error(err)
+		}
+		years = append(years, entry)
+	}
+
+	return years, nil
+}
+
+func (db *DB) GetGenres() ([]*model.NameCount, error) {
+	genres := make([]*model.NameCount, 0)
+	rows, err := db.Query(getGenresStatement)
+	if err != nil {
+		log.Errorf("Error get all genres: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		entry := new(model.NameCount)
+		err := rows.Scan(&entry.Count, &entry.Name)
+		if err != nil {
+			log.Error(err)
+		}
+		genres = append(genres, entry)
+	}
+
+	return genres, nil
 }
