@@ -411,6 +411,42 @@ func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*mo
 	return songs, total, err
 }
 
+// FindSongsByYear get all songs published in the given year and is in the given page
+func (db *DB) FindSongsByYear(year string, paging model.Paging) ([]*model.Song, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForSong(paging)
+	stmt := sanitizePlaceholder(selectSongStatement + " WHERE song.yearpublished = ?" + orderAndLimit)
+	rows, err := db.Query(stmt, year)
+	if err != nil {
+		log.Error("Error reading song table", err)
+		return nil, 0, err
+	}
+	defer rows.Close()
+	songs, err := fetchSongs(rows)
+	total := len(songs)
+	if limit {
+		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song WHERE yearpublished = ?"), year)
+	}
+	return songs, total, err
+}
+
+// FindSongsByGenre get all songs with the given genre and is in the given page
+func (db *DB) FindSongsByGenre(genre string, paging model.Paging) ([]*model.Song, int, error) {
+	orderAndLimit, limit := createOrderAndLimitForSong(paging)
+	stmt := sanitizePlaceholder(selectSongStatement + " WHERE song.genre = ?" + orderAndLimit)
+	rows, err := db.Query(stmt, genre)
+	if err != nil {
+		log.Error("Error reading song table", err)
+		return nil, 0, err
+	}
+	defer rows.Close()
+	songs, err := fetchSongs(rows)
+	total := len(songs)
+	if limit {
+		total = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song WHERE genre = ?"), genre)
+	}
+	return songs, total, err
+}
+
 // FindRecentlyAddedSongs find num recently added songs
 func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
 	rows, err := db.Query(sanitizePlaceholder(selectSongStatement+" ORDER BY song.added DESC LIMIT ?"), num)

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"expvar"
+	"go2music/model"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,9 @@ func initInfo(r *gin.RouterGroup) {
 	r.GET("/info", getInfo)
 	r.GET("/info/decades", getDecades)
 	r.GET("/info/decades/:decade", getYears)
+	r.GET("/info/year/:year/songs", getSongsForYear)
 	r.GET("/info/genres", getGenres)
+	r.GET("/info/genres/:genre/songs", getSongsForGenre)
 }
 
 func getInfo(c *gin.Context) {
@@ -57,4 +60,38 @@ func getGenres(c *gin.Context) {
 		return
 	}
 	respondWithError(http.StatusInternalServerError, "Cound not read genres", c)
+}
+
+func getSongsForYear(c *gin.Context) {
+	counterInfo.Add("GET /year/:year/songs", 1)
+	paging := extractPagingFromRequest(c)
+	year := c.Param("year")
+	songs, total, err := songManager.FindSongsByYear(year, paging)
+	if err == nil {
+		var description string
+		if len(songs) > 0 {
+			description = "Year: " + songs[0].YearPublished
+		}
+		songCollection := model.SongCollection{Songs: songs, Description: description, Paging: paging, Total: total}
+		c.JSON(http.StatusOK, songCollection)
+		return
+	}
+	respondWithError(http.StatusInternalServerError, "Cound not read songs", c)
+}
+
+func getSongsForGenre(c *gin.Context) {
+	counterInfo.Add("GET /genres/:genre/songs", 1)
+	paging := extractPagingFromRequest(c)
+	genre := c.Param("genre")
+	songs, total, err := songManager.FindSongsByGenre(genre, paging)
+	if err == nil {
+		var description string
+		if len(songs) > 0 {
+			description = "Genre: " + songs[0].Genre
+		}
+		songCollection := model.SongCollection{Songs: songs, Description: description, Paging: paging, Total: total}
+		c.JSON(http.StatusOK, songCollection)
+		return
+	}
+	respondWithError(http.StatusInternalServerError, "Cound not read songs", c)
 }

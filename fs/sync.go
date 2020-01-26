@@ -105,6 +105,7 @@ func problemSong(s string, err error) {
 
 func findDanglingSongs(songManager database.SongManager) {
 	log.Info("Start searching dangling songs.")
+	start := time.Now()
 	m, err := songManager.GetAllSongIdsAndPaths()
 	if err != nil {
 		log.Errorf("Could not get song ids and paths: %v", err)
@@ -116,6 +117,7 @@ func findDanglingSongs(songManager database.SongManager) {
 			syncState.DanglingSongsFound = syncState.DanglingSongsFound + 1
 		}
 	}
+	log.Infof("Finished searching dangling songs...in %f seconds", time.Since(start).Seconds())
 }
 
 // RemoveDanglingSongs remove all songs found by the last dangling songs search

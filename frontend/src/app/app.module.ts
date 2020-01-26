@@ -31,6 +31,8 @@ import {MatListModule} from "@angular/material/list";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatSidenavModule} from "@angular/material/sidenav";
 import {MatToolbarModule} from "@angular/material/toolbar";
+import {AgeModule} from "./age/age.module";
+import {AgeRoutingModule} from "./age/gae-routing.module";
 
 @NgModule({
   declarations: [
@@ -40,6 +42,7 @@ import {MatToolbarModule} from "@angular/material/toolbar";
     BrowserModule,
     BrowserAnimationsModule,
     FlexLayoutModule,
+    AgeRoutingModule,
     AlbumRoutingModule,
     ArtistRoutingModule,
     ConfigRoutingModule,
@@ -50,6 +53,7 @@ import {MatToolbarModule} from "@angular/material/toolbar";
     SongRoutingModule,
     UserRoutingModule,
     AppRoutingModule,
+    AgeModule,
     AlbumModule,
     ArtistModule,
     ConfigModule,

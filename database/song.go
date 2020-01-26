@@ -14,6 +14,8 @@ type SongManager interface {
 	FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*model.Song, int, error)
 	FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*model.Song, int, error)
 	FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*model.Song, int, error)
+	FindSongsByYear(year string, paging model.Paging) ([]*model.Song, int, error)
+	FindSongsByGenre(genre string, paging model.Paging) ([]*model.Song, int, error)
 	GetCoverForSong(song *model.Song) ([]byte, string, error)
 	SongPlayed(song *model.Song, user *model.User) bool
 	GetAllSongIdsAndPaths() (map[string]string, error)

@@ -3,6 +3,7 @@ package mysql
 import (
 	log "github.com/sirupsen/logrus"
 	"go2music/model"
+	"regexp"
 	"sync"
 )
 
@@ -112,7 +113,10 @@ func (db *DB) GetDecades() ([]*model.NameCount, error) {
 		if err != nil {
 			log.Error(err)
 		}
-		decades = append(decades, entry)
+		matched, err := regexp.MatchString("[12][0-9]{3}s", entry.Name)
+		if err == nil && matched {
+			decades = append(decades, entry)
+		}
 	}
 
 	return decades, nil

@@ -42,6 +42,10 @@ export class SongDataSource implements DataSource<Song> {
       songsObservable = this.songService.getAllSongsOfArtist(id, paging);
     } else if (kind === "playlist") {
       songsObservable = this.songService.getAllSongsOfPlaylist(id, paging);
+    } else if (kind === "age") {
+      songsObservable = this.songService.getAllSongsOfYear(id, paging);
+    } else if (kind === "genre") {
+      songsObservable = this.songService.getAllSongsOfGenre(id, paging);
     }
     songsObservable
       .pipe(
