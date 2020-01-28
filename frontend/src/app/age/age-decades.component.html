@@ -3,9 +3,9 @@
     <mat-expansion-panel *ngFor="let decade of decades" (opened)="getYears(decade.name)">
       <mat-expansion-panel-header>{{decade.name}} ({{decade.count}} songs)</mat-expansion-panel-header>
       <ng-template matExpansionPanelContent>
-        <ul>
-          <li *ngFor="let year of decadeMap[decade.name]"><a (click)="gotoSongs(year.name)">{{year.name}} ({{year.count}} songs)</a></li>
-        </ul>
+        <mat-list>
+          <a mat-list-item *ngFor="let year of decadeMap[decade.name]" (click)="gotoSongs(year.name)">{{year.name}} ({{year.count}} songs)</a>
+        </mat-list>
       </ng-template>
     </mat-expansion-panel>
   </mat-accordion>

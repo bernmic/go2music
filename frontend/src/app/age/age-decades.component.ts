@@ -1,8 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {AgeService} from "./age.service";
-import {NameCount} from "./age.model";
-import {Artist} from "../artist/artist.model";
 import {Router} from "@angular/router";
+import {NameCount} from "../shared/namecount.model";
 
 @Component({
   selector: 'app-age-decades',
@@ -30,5 +29,4 @@ export class AgeDecadesComponent implements OnInit {
   gotoSongs(year: string) {
     this.router.navigate(["/song/age/" + year]);
   }
-
 }

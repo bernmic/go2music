@@ -5,6 +5,8 @@ import {HttpClientModule} from "@angular/common/http";
 import {AgeDecadesComponent} from './age-decades.component';
 import {AgeService} from "./age.service";
 import {MatExpansionModule} from "@angular/material/expansion";
+import {MatListModule} from "@angular/material/list";
+import {SharedModule} from "../shared/shared.module";
 
 
 @NgModule({
@@ -15,7 +17,9 @@ import {MatExpansionModule} from "@angular/material/expansion";
     CommonModule,
     BrowserModule,
     HttpClientModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatListModule,
+    SharedModule
   ],
   exports: [
     AgeDecadesComponent

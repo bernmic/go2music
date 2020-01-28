@@ -51,6 +51,10 @@
             <mat-icon matListIcon color="accent">date_range</mat-icon>
             <span i18n="@@navUsers">Age</span>
           </mat-list-item>
+          <mat-list-item routerLinkActive="active" routerLink="genre">
+            <mat-icon matListIcon color="accent">toys</mat-icon>
+            <span i18n="@@navUsers">Genre</span>
+          </mat-list-item>
           <mat-list-item routerLinkActive="active" routerLink="song">
             <mat-icon matListIcon color="accent">library_music</mat-icon>
             <span i18n="@@navUsers">Songs</span>
@@ -60,7 +64,7 @@
             <span i18n="@@navUsers">Management</span>
           </mat-list-item>
         </mat-nav-list>
-        <div id="version">0.0.6</div>
+        <div id="version">0.0.7</div>
       </mat-sidenav>
 
       <mat-sidenav #rsnav position="end" [mode]="mobileQuery.matches ? 'over' : 'side'"

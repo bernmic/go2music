@@ -1,0 +1,5 @@
+<div class="decades">
+  <mat-list>
+    <a mat-list-item *ngFor="let genre of genres" (click)="gotoSongs(genre.name)">{{genre.name}} ({{genre.count}} songs)</a>
+  </mat-list>
+</div>

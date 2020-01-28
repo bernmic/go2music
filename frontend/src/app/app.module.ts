@@ -32,7 +32,9 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSidenavModule} from "@angular/material/sidenav";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {AgeModule} from "./age/age.module";
-import {AgeRoutingModule} from "./age/gae-routing.module";
+import {AgeRoutingModule} from "./age/age-routing.module";
+import {GenreRoutingModule} from "./genre/genre-routing.module";
+import {GenreModule} from "./genre/genre.module";
 
 @NgModule({
   declarations: [
@@ -46,6 +48,7 @@ import {AgeRoutingModule} from "./age/gae-routing.module";
     AlbumRoutingModule,
     ArtistRoutingModule,
     ConfigRoutingModule,
+    GenreRoutingModule,
     ManagementRoutingModule,
     OverviewRoutingModule,
     PlaylistRoutingModule,
@@ -57,6 +60,7 @@ import {AgeRoutingModule} from "./age/gae-routing.module";
     AlbumModule,
     ArtistModule,
     ConfigModule,
+    GenreModule,
     ManagementModule,
     OverviewModule,
     PlayerModule,

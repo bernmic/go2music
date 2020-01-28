@@ -42,7 +42,7 @@ export class SongListComponent implements AfterViewInit, OnInit {
   anyId = "";
 
   pageSize = 10;
-  pageSizeOptions = [5, 10, 20, 50];
+  pageSizeOptions = [5, 10, 20, 30];
   total = 0;
 
   @Input()
