@@ -13,7 +13,7 @@ export class PlaylistDetailComponent implements OnInit {
   playlist: Playlist;
 
   @ViewChild('name', { static: true }) nameInput: ElementRef;
-  @ViewChild('query', { static: false }) queryInput: ElementRef;
+  @ViewChild('query') queryInput: ElementRef;
 
   KIND_QUERY = "query";
   KIND_EMPTY = "empty";

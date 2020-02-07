@@ -8,7 +8,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {Song} from "../song/song.model";
 import {PlayerService} from "./player.service";
 import {PlayerDialog} from "./player.dialog";
-import {MatDialog} from "@angular/material";
+import { MatDialog } from "@angular/material/dialog";
 import {TextinputDialogComponent} from "../shared/textinput-dialog.component";
 import {YesnoAlertComponent} from "../shared/yesno-alert.component";
 
