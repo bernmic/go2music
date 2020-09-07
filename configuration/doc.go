@@ -11,5 +11,5 @@
 //   - GO2MUSIC_DBURL
 //   - GO2MUSIC_DBTYPE
 //
-// - witch commandline switches (not ready yet)
+// - with commandline switches (not ready yet)
 package configuration

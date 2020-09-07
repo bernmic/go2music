@@ -3,9 +3,9 @@ import {AlbumService} from "./album.service";
 import {Paging} from "../shared/paging.model";
 import {Album} from "./album.model";
 import {fromEvent} from "rxjs";
-import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
+import {debounceTime, distinctUntilChanged, filter, map, tap} from "rxjs/operators";
 import {MatPaginator} from "@angular/material/paginator";
-import {MediaObserver} from "@angular/flex-layout";
+import {MediaChange, MediaObserver} from "@angular/flex-layout";
 
 @Component({
   selector: 'app-album-list-new',
@@ -25,8 +25,12 @@ export class AlbumListNewComponent implements OnInit, AfterViewInit {
   @ViewChild('input', { static: true }) input: ElementRef;
 
   constructor(private albumService: AlbumService, public mediaObserver: MediaObserver) {
-    mediaObserver.media$.subscribe(ms => {
-      switch (ms.mqAlias) {
+    mediaObserver.asObservable()
+      .pipe(
+        filter((changes: MediaChange[]) => changes.length > 0),
+        map((changes: MediaChange[]) => changes[0])
+      ).subscribe((change: MediaChange) => {
+      switch (change.mqAlias) {
         case 'xs':
           this.initPaginator(1);
           break;
@@ -48,7 +52,8 @@ export class AlbumListNewComponent implements OnInit, AfterViewInit {
   }
 
   initPaginator(numcols: number) {
-    if (this.linesPerPage == 0) {
+    console.log(numcols);
+    if (this.linesPerPage === 0) {
       if (localStorage.getItem("albumLinesPerPage")) {
         this.linesPerPage = +localStorage.getItem("albumLinesPerPage");
       } else {

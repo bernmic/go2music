@@ -130,7 +130,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     }
     this.audio = new Howl({
       src: this.playerService.songStreamUrl(song),
-      format: "mp3",
+      format: ["mp3"],
       volume: this.volume / 100,
       onend: soundId => this.next()
     });

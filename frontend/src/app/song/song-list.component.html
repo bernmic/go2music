@@ -46,7 +46,7 @@
     </ng-container>
     <ng-container *ngFor="let column of columnDefs" [matColumnDef]="column.name">
       <mat-header-cell *matHeaderCellDef mat-sort-header>{{column.title}}</mat-header-cell>
-      <mat-cell *matCellDef="let song"> {{ getProperty(song, column.name) }}</mat-cell>
+      <mat-cell *matCellDef="let song" (click)="cellClicked(song, column.name)"> {{ getProperty(song, column.name) }} </mat-cell>
     </ng-container>
     <ng-container matColumnDef="duration">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Duration</mat-header-cell>

@@ -145,7 +145,17 @@ export class SongListComponent implements AfterViewInit, OnInit {
 
   getProperty = (obj, path) => (
     path.split('.').reduce((o, p) => o && o[p], obj)
-  );
+  )
+
+  cellClicked(song: Song, column: string) {
+    if (column === "album.title") {
+      this.router.navigate(["/song/album/" + song.album.albumId]);
+    } else if (column === "artist.name") {
+      this.router.navigate(["/song/artist/" + song.artist.artistId]);
+    } else if (column === "genre") {
+      this.router.navigate(["/song/genre/" + song.genre]);
+    }
+  }
 
   downloadAlbum() {
     this.songService.downloadAlbum(this.anyId).subscribe(
