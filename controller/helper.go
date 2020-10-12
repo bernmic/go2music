@@ -4,10 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
-	"github.com/disintegration/imaging"
-	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"image"
 	"image/gif"
@@ -21,6 +17,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/disintegration/imaging"
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -191,12 +192,18 @@ func resizeCover(data []byte, mimetype string, targetSize int) ([]byte, string, 
 	switch mimetype {
 	case "image/jpeg":
 		img, err = jpeg.Decode(bytes.NewReader(data))
+	case "image/jpg":
+		img, err = jpeg.Decode(bytes.NewReader(data))
 	case "image/png":
 		img, err = png.Decode(bytes.NewReader(data))
 	case "image/gif":
 		img, err = gif.Decode(bytes.NewReader(data))
 	default:
 		return nil, "", errors.New("Unknown image format " + mimetype)
+	}
+	if err != nil {
+		log.Warnf("Corrupt image format %s: %v", mimetype, err)
+		return nil, "", errors.New("Corrupt image format " + mimetype)
 	}
 	img = imaging.Resize(img, targetSize, targetSize, imaging.Lanczos)
 	buf := new(bytes.Buffer)

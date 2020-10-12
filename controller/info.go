@@ -23,7 +23,7 @@ func initInfo(r *gin.RouterGroup) {
 
 func getInfo(c *gin.Context) {
 	counterInfo.Add("GET /", 1)
-	info, err := infoManager.Info()
+	info, err := databaseAccess.InfoManager.Info()
 	if err == nil {
 		c.JSON(http.StatusOK, info)
 		return
@@ -33,7 +33,7 @@ func getInfo(c *gin.Context) {
 
 func getDecades(c *gin.Context) {
 	counterInfo.Add("GET /decades", 1)
-	decades, err := infoManager.GetDecades()
+	decades, err := databaseAccess.InfoManager.GetDecades()
 	if err == nil {
 		c.JSON(http.StatusOK, decades)
 		return
@@ -44,7 +44,7 @@ func getDecades(c *gin.Context) {
 func getYears(c *gin.Context) {
 	counterInfo.Add("GET /decades/:decade", 1)
 	decade := c.Param("decade")
-	years, err := infoManager.GetYears(decade)
+	years, err := databaseAccess.InfoManager.GetYears(decade)
 	if err == nil {
 		c.JSON(http.StatusOK, years)
 		return
@@ -54,7 +54,7 @@ func getYears(c *gin.Context) {
 
 func getGenres(c *gin.Context) {
 	counterInfo.Add("GET /genres", 1)
-	genres, err := infoManager.GetGenres()
+	genres, err := databaseAccess.InfoManager.GetGenres()
 	if err == nil {
 		c.JSON(http.StatusOK, genres)
 		return
@@ -66,7 +66,7 @@ func getSongsForYear(c *gin.Context) {
 	counterInfo.Add("GET /year/:year/songs", 1)
 	paging := extractPagingFromRequest(c)
 	year := c.Param("year")
-	songs, total, err := songManager.FindSongsByYear(year, paging)
+	songs, total, err := databaseAccess.SongManager.FindSongsByYear(year, paging)
 	if err == nil {
 		var description string
 		if len(songs) > 0 {
@@ -83,7 +83,7 @@ func getSongsForGenre(c *gin.Context) {
 	counterInfo.Add("GET /genres/:genre/songs", 1)
 	paging := extractPagingFromRequest(c)
 	genre := c.Param("genre")
-	songs, total, err := songManager.FindSongsByGenre(genre, paging)
+	songs, total, err := databaseAccess.SongManager.FindSongsByGenre(genre, paging)
 	if err == nil {
 		var description string
 		if len(songs) > 0 {

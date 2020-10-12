@@ -19,7 +19,7 @@ func initUser(r *gin.RouterGroup) {
 func getUsers(c *gin.Context) {
 	paging := extractPagingFromRequest(c)
 	filter := extractFilterFromRequest(c)
-	users, total, err := userManager.FindAllUsers(filter, paging)
+	users, total, err := databaseAccess.UserManager.FindAllUsers(filter, paging)
 	if err == nil {
 		c.JSON(http.StatusOK, model.UserCollection{users, paging, total})
 		return
@@ -29,7 +29,7 @@ func getUsers(c *gin.Context) {
 
 func getUser(c *gin.Context) {
 	id := c.Param("id")
-	user, err := userManager.FindUserById(id)
+	user, err := databaseAccess.UserManager.FindUserById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "user not found", c)
 		return
@@ -46,7 +46,7 @@ func createUser(c *gin.Context) {
 		return
 	}
 	user.Password = user.Username
-	user, err = userManager.CreateUser(*user)
+	user, err = databaseAccess.UserManager.CreateUser(*user)
 	if err != nil {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
@@ -62,7 +62,7 @@ func updateUser(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	user, err = userManager.UpdateUser(*user)
+	user, err = databaseAccess.UserManager.UpdateUser(*user)
 	if err != nil {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
@@ -72,7 +72,7 @@ func updateUser(c *gin.Context) {
 
 func deleteUser(c *gin.Context) {
 	id := c.Param("id")
-	if userManager.DeleteUser(id) != nil {
+	if databaseAccess.UserManager.DeleteUser(id) != nil {
 		respondWithError(http.StatusBadRequest, "cannot delete user", c)
 		return
 	}

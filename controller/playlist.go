@@ -44,7 +44,7 @@ func getPlaylists(c *gin.Context) {
 		kind = k
 	}
 	paging := extractPagingFromRequest(c)
-	playlists, total, err := playlistManager.FindAllPlaylistsOfKind(user.(*model.User).Id, kind, paging)
+	playlists, total, err := databaseAccess.PlaylistManager.FindAllPlaylistsOfKind(user.(*model.User).Id, kind, paging)
 	if err == nil {
 		playlistCollection := model.PlaylistCollection{Playlists: playlists, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, playlistCollection)
@@ -61,7 +61,7 @@ func getPlaylist(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	playlist, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -77,7 +77,7 @@ func getSongsForPlaylist(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	playlist, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -88,9 +88,9 @@ func getSongsForPlaylist(c *gin.Context) {
 	paging := extractPagingFromRequest(c)
 	var total int
 	if playlist.Query != "" {
-		songs, total, err = songManager.FindSongsByPlaylistQuery(playlist.Query, paging)
+		songs, total, err = databaseAccess.SongManager.FindSongsByPlaylistQuery(playlist.Query, paging)
 	} else {
-		songs, total, err = songManager.FindSongsByPlaylist(playlist.Id, paging)
+		songs, total, err = databaseAccess.SongManager.FindSongsByPlaylist(playlist.Id, paging)
 	}
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Description: "Playlist: " + playlist.Name, Paging: paging, Total: total}
@@ -115,7 +115,7 @@ func createPlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	playlist, err = playlistManager.CreatePlaylist(*playlist)
+	playlist, err = databaseAccess.PlaylistManager.CreatePlaylist(*playlist)
 	if err != nil {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
@@ -138,7 +138,7 @@ func updatePlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	playlist, err = playlistManager.UpdatePlaylist(*playlist)
+	playlist, err = databaseAccess.PlaylistManager.UpdatePlaylist(*playlist)
 	if err != nil {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
@@ -154,7 +154,7 @@ func deletePlaylist(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	if playlistManager.DeletePlaylist(id, user.(*model.User).Id) != nil {
+	if databaseAccess.PlaylistManager.DeletePlaylist(id, user.(*model.User).Id) != nil {
 		respondWithError(http.StatusBadRequest, "cannot delete playlist", c)
 		return
 	}
@@ -169,7 +169,7 @@ func addSongsToPlaylist(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	_, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	_, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -181,7 +181,7 @@ func addSongsToPlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	addedSongs := playlistManager.AddSongsToPlaylist(id, songIdsToAdd)
+	addedSongs := databaseAccess.PlaylistManager.AddSongsToPlaylist(id, songIdsToAdd)
 	c.JSON(http.StatusOK, gin.H{"added": addedSongs})
 }
 
@@ -193,7 +193,7 @@ func removeSongsFromPlaylist(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	_, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	_, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -205,7 +205,7 @@ func removeSongsFromPlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	removedSongs := playlistManager.RemoveSongsFromPlaylist(id, songIdsToRemove)
+	removedSongs := databaseAccess.PlaylistManager.RemoveSongsFromPlaylist(id, songIdsToRemove)
 	c.JSON(http.StatusOK, gin.H{"removed": removedSongs})
 }
 
@@ -217,7 +217,7 @@ func setSongsOfPlaylist(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	_, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	_, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -229,7 +229,7 @@ func setSongsOfPlaylist(c *gin.Context) {
 		respondWithError(http.StatusBadRequest, "bad request", c)
 		return
 	}
-	removedSongs, addedSongs := playlistManager.SetSongsOfPlaylist(id, songIdsToSet)
+	removedSongs, addedSongs := databaseAccess.PlaylistManager.SetSongsOfPlaylist(id, songIdsToSet)
 	c.JSON(http.StatusOK, gin.H{"removed": removedSongs, "added": addedSongs})
 }
 
@@ -241,7 +241,7 @@ func downloadPlaylist(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	playlist, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -251,9 +251,9 @@ func downloadPlaylist(c *gin.Context) {
 
 	paging := extractPagingFromRequest(c)
 	if playlist.Query != "" {
-		songs, _, err = songManager.FindSongsByPlaylistQuery(playlist.Query, paging)
+		songs, _, err = databaseAccess.SongManager.FindSongsByPlaylistQuery(playlist.Query, paging)
 	} else {
-		songs, _, err = songManager.FindSongsByPlaylist(playlist.Id, paging)
+		songs, _, err = databaseAccess.SongManager.FindSongsByPlaylist(playlist.Id, paging)
 	}
 	if err == nil {
 		if len(songs) > 0 {
@@ -272,7 +272,7 @@ func exportXSPF(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	playlist, err := playlistManager.FindPlaylistById(id, user.(*model.User).Id)
+	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -282,9 +282,9 @@ func exportXSPF(c *gin.Context) {
 
 	paging := extractPagingFromRequest(c)
 	if playlist.Query != "" {
-		songs, _, err = songManager.FindSongsByPlaylistQuery(playlist.Query, paging)
+		songs, _, err = databaseAccess.SongManager.FindSongsByPlaylistQuery(playlist.Query, paging)
 	} else {
-		songs, _, err = songManager.FindSongsByPlaylist(playlist.Id, paging)
+		songs, _, err = databaseAccess.SongManager.FindSongsByPlaylist(playlist.Id, paging)
 	}
 	if err == nil {
 		c.Header("Content-Type", "application/xspf+xml")

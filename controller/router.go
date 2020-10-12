@@ -5,7 +5,6 @@ import (
 	"go2music/assets"
 	"go2music/configuration"
 	"go2music/database"
-	"go2music/mysql"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -18,14 +17,8 @@ import (
 )
 
 var (
-	router          *gin.Engine
-	db              *mysql.DB
-	albumManager    database.AlbumManager
-	artistManager   database.ArtistManager
-	playlistManager database.PlaylistManager
-	songManager     database.SongManager
-	userManager     database.UserManager
-	infoManager     database.InfoManager
+	router         *gin.Engine
+	databaseAccess *database.DatabaseAccess
 )
 
 func initRouter() {
@@ -94,14 +87,8 @@ func noRoute(c *gin.Context) {
 }
 
 // Run initializes and starts all controller
-func Run(dbi *mysql.DB) {
-	db = dbi
-	albumManager = db
-	artistManager = db
-	playlistManager = db
-	songManager = db
-	userManager = db
-	infoManager = db
+func Run(da *database.DatabaseAccess) {
+	databaseAccess = da
 	initRouter()
 	serverAddress := fmt.Sprintf(":%d", configuration.Configuration(false).Server.Port)
 	router.Run(serverAddress)

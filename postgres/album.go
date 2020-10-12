@@ -1,4 +1,4 @@
-package mysql
+package postgres
 
 import (
 	"fmt"
@@ -215,7 +215,8 @@ func (db *DB) FindRecentlyAddedAlbums(num int) ([]*model.Album, error) {
 	SELECT DISTINCT
 		album.id,
 		album.title,
-		album.path
+		album.path,
+		song.added
 	FROM
 		song
 	INNER JOIN album ON song.album_id = album.id
@@ -230,7 +231,8 @@ func (db *DB) FindRecentlyAddedAlbums(num int) ([]*model.Album, error) {
 	albums := make([]*model.Album, 0)
 	for rows.Next() {
 		album := new(model.Album)
-		err := rows.Scan(&album.Id, &album.Title, &album.Path)
+		added := 0
+		err := rows.Scan(&album.Id, &album.Title, &album.Path, &added)
 		if err != nil {
 			log.Error(err)
 		}
@@ -259,7 +261,7 @@ func createOrderAndLimitForAlbum(paging model.Paging) (string, bool) {
 		}
 	}
 	if paging.Size > 0 {
-		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+		s += fmt.Sprintf(" LIMIT %d OFFSET %d", paging.Size, paging.Page*paging.Size)
 		l = true
 	}
 	return s, l

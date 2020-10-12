@@ -30,7 +30,7 @@ func getSyncInfo(c *gin.Context) {
 }
 
 func startSync(c *gin.Context) {
-	go fs.SyncWithFilesystem(albumManager, artistManager, songManager)
+	go fs.SyncWithFilesystem(databaseAccess)
 	c.JSON(http.StatusOK, fs.GetSyncState())
 }
 
@@ -40,7 +40,7 @@ func getDanglingSongs(c *gin.Context) {
 }
 
 func removeDanglingSongs(c *gin.Context) {
-	_, err := fs.RemoveDanglingSongs(songManager)
+	_, err := fs.RemoveDanglingSongs(databaseAccess.SongManager)
 	if err != nil {
 		respondWithError(http.StatusInternalServerError, "Error removing dangling songs", c)
 		return
@@ -50,7 +50,7 @@ func removeDanglingSongs(c *gin.Context) {
 
 func removeDanglingSong(c *gin.Context) {
 	id := c.Param("id")
-	err := fs.RemoveDanglingSong(id, songManager)
+	err := fs.RemoveDanglingSong(id, databaseAccess.SongManager)
 	if err != nil {
 		log.Warnf("Error removing dangling song: %v", err)
 		respondWithError(http.StatusInternalServerError, "Error removing dangling song", c)
@@ -61,7 +61,7 @@ func removeDanglingSong(c *gin.Context) {
 
 func removeEmptyAlbums(c *gin.Context) {
 	for id, _ := range fs.GetSyncState().EmptyAlbums {
-		err := albumManager.DeleteAlbum(id)
+		err := databaseAccess.AlbumManager.DeleteAlbum(id)
 		if err == nil {
 			delete(fs.GetSyncState().EmptyAlbums, id)
 		}
@@ -71,7 +71,7 @@ func removeEmptyAlbums(c *gin.Context) {
 
 func setAlbumTitleToFoldername(c *gin.Context) {
 	id := c.Param("id")
-	err := fs.SetAlbumTitleToFoldername(id, albumManager)
+	err := fs.SetAlbumTitleToFoldername(id, databaseAccess.AlbumManager)
 	if err != nil {
 		log.Warnf("Error setting title for album: %v", err)
 		respondWithError(http.StatusInternalServerError, "Error setting title for album", c)

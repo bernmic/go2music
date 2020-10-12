@@ -1,4 +1,4 @@
-package mysql
+package postgres
 
 import (
 	"go2music/model"
@@ -102,7 +102,7 @@ func (db *DB) Info() (*model.Info, error) {
 
 func (db *DB) GetDecades() ([]*model.NameCount, error) {
 	decades := make([]*model.NameCount, 0)
-	rows, err := db.Query(sanitizePlaceholder(getDecadesStatement))
+	rows, err := db.Query(getDecadesStatement)
 	if err != nil {
 		log.Errorf("Error get all decades: %v", err)
 		return nil, err
@@ -145,7 +145,7 @@ func (db *DB) GetYears(decade string) ([]*model.NameCount, error) {
 
 func (db *DB) GetGenres() ([]*model.NameCount, error) {
 	genres := make([]*model.NameCount, 0)
-	rows, err := db.Query(sanitizePlaceholder(getGenresStatement))
+	rows, err := db.Query(getGenresStatement)
 	if err != nil {
 		log.Errorf("Error get all genres: %v", err)
 		return nil, err

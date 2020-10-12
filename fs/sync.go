@@ -34,7 +34,7 @@ func GetSyncState() *model.SyncState {
 
 // SyncWithFilesystem syncs the database with the configured directory in filesystem.
 // New songs where added to database, removed songs where deleted from database.
-func SyncWithFilesystem(albumManager database.AlbumManager, artistManager database.ArtistManager, songManager database.SongManager) {
+func SyncWithFilesystem(databaseAccess *database.DatabaseAccess) {
 	if running {
 		log.Info("Scanning ist already running. stopping here.")
 		return
@@ -56,13 +56,13 @@ func SyncWithFilesystem(albumManager database.AlbumManager, artistManager databa
 		log.Infof("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
 		log.Info("Start sync found files with service...")
 		start = time.Now()
-		ID3Reader(result, albumManager, artistManager, songManager)
+		ID3Reader(result, databaseAccess.AlbumManager, databaseAccess.ArtistManager, databaseAccess.SongManager)
 		log.Infof("Sync finished...in %f seconds", time.Since(start).Seconds())
 	}
-	findDanglingSongs(songManager)
-	findEmptyAlbums(albumManager)
-	findAlbumsWithoutTitle(albumManager)
-	findArtistsWithoutName(artistManager)
+	findDanglingSongs(databaseAccess.SongManager)
+	findEmptyAlbums(databaseAccess.AlbumManager)
+	findAlbumsWithoutTitle(databaseAccess.AlbumManager)
+	findArtistsWithoutName(databaseAccess.ArtistManager)
 	syncState.State = SYNC_STATE_IDLE
 	syncState.LastSyncDuration = time.Now().Unix() - syncState.LastSyncStarted
 	running = false

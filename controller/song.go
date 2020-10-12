@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -27,7 +28,7 @@ func getSongs(c *gin.Context) {
 	counterSong.Add("GET /", 1)
 	paging := extractPagingFromRequest(c)
 	filter := extractFilterFromRequest(c)
-	songs, total, err := songManager.FindAllSongs(filter, paging)
+	songs, total, err := databaseAccess.SongManager.FindAllSongs(filter, paging)
 	if err == nil {
 		songCollection := model.SongCollection{Songs: songs, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, songCollection)
@@ -39,7 +40,7 @@ func getSongs(c *gin.Context) {
 func getSong(c *gin.Context) {
 	counterSong.Add("GET /:id", 1)
 	id := c.Param("id")
-	song, err := songManager.FindOneSong(id)
+	song, err := databaseAccess.SongManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
 		return
@@ -50,7 +51,7 @@ func getSong(c *gin.Context) {
 func streamSong(c *gin.Context) {
 	counterSong.Add("GET /:id/stream", 1)
 	id := c.Param("id")
-	song, err := songManager.FindOneSong(id)
+	song, err := databaseAccess.SongManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
 		return
@@ -89,7 +90,7 @@ func streamSong(c *gin.Context) {
 		return
 	}
 	user := *(u.(*model.User))
-	go songManager.SongPlayed(song, &user)
+	go databaseAccess.SongManager.SongPlayed(song, &user)
 }
 
 func rateSong(c *gin.Context) {
@@ -101,13 +102,13 @@ func rateSong(c *gin.Context) {
 		return
 	}
 
-	song, err := songManager.FindOneSong(id)
+	song, err := databaseAccess.SongManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
 		return
 	}
 	song.Rating = rating
-	song, err = songManager.UpdateSong(*song)
+	song, err = databaseAccess.SongManager.UpdateSong(*song)
 	if err != nil {
 		respondWithError(http.StatusInternalServerError, "Cannot save song", c)
 		return
@@ -128,18 +129,23 @@ func getCover(c *gin.Context) {
 			return
 		}
 	}
-	song, err := songManager.FindOneSong(id)
+	song, err := databaseAccess.SongManager.FindOneSong(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "song not found", c)
 		return
 	}
-	imageBytes, mimetype, err := songManager.GetCoverForSong(song)
+	imageBytes, mimetype, err := databaseAccess.SongManager.GetCoverForSong(song)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "no cover for song not found", c)
 		return
 	}
 
 	imageBytes, mimetype, err = resizeCover(imageBytes, mimetype, size)
+	if err != nil {
+		log.Infof("Error dedoding cover of %s: %v", song.Path, err)
+		respondWithError(http.StatusInternalServerError, "cannot decode image", c)
+		return
+	}
 	if imageBytes != nil {
 		c.Header("Content-Type", mimetype)
 		c.Header("Content-Length", strconv.Itoa(len(imageBytes)))

@@ -24,7 +24,7 @@ func getArtists(c *gin.Context) {
 	paging := extractPagingFromRequest(c)
 	filter := extractFilterFromRequest(c)
 
-	artists, total, err := artistManager.FindAllArtists(filter, paging)
+	artists, total, err := databaseAccess.ArtistManager.FindAllArtists(filter, paging)
 	if err == nil {
 		artistCollection := model.ArtistCollection{Artists: artists, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, artistCollection)
@@ -36,7 +36,7 @@ func getArtists(c *gin.Context) {
 func getArtist(c *gin.Context) {
 	counterArtist.Add("GET /:id", 1)
 	id := c.Param("id")
-	artist, err := artistManager.FindArtistById(id)
+	artist, err := databaseAccess.ArtistManager.FindArtistById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "artist not found", c)
 		return
@@ -48,7 +48,7 @@ func getSongForArtist(c *gin.Context) {
 	counterArtist.Add("GET /:id/songs", 1)
 	id := c.Param("id")
 	paging := extractPagingFromRequest(c)
-	songs, total, err := songManager.FindSongsByArtistId(id, paging)
+	songs, total, err := databaseAccess.SongManager.FindSongsByArtistId(id, paging)
 	if err == nil {
 		var description string
 		if len(songs) > 0 {
@@ -64,7 +64,7 @@ func getSongForArtist(c *gin.Context) {
 func getAlbumsForArtist(c *gin.Context) {
 	counterArtist.Add("GET /:id/albums", 1)
 	id := c.Param("id")
-	albums, err := albumManager.FindAlbumsForArtist(id)
+	albums, err := databaseAccess.AlbumManager.FindAlbumsForArtist(id)
 	if err == nil {
 		c.JSON(http.StatusOK, albums)
 		return

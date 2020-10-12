@@ -24,25 +24,21 @@ package main
 
 import (
 	"errors"
-	"github.com/jasonlvhit/gocron"
-	log "github.com/sirupsen/logrus"
 	"go2music/configuration"
 	"go2music/controller"
 	"go2music/database"
 	"go2music/fs"
 	"go2music/install"
 	"go2music/mysql"
+	"go2music/postgres"
 	"strconv"
 	"strings"
+
+	"github.com/jasonlvhit/gocron"
+	log "github.com/sirupsen/logrus"
 )
 
-var (
-	songManager     database.SongManager
-	albumManager    database.AlbumManager
-	artistManager   database.ArtistManager
-	playlistManager database.PlaylistManager
-	userManager     database.UserManager
-)
+var databaseAccess database.DatabaseAccess
 
 func main() {
 	if configuration.Configuration(true).Database.Type == "" {
@@ -68,18 +64,32 @@ func main() {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
 	}
-
-	db, _ := mysql.New()
-	songManager = db
-	albumManager = db
-	artistManager = db
-	playlistManager = db
-	userManager = db
+	databaseAccess := database.DatabaseAccess{}
+	databaseType := configuration.Configuration(false).Database.Type
+	if databaseType == "mysql" {
+		db, _ := mysql.New()
+		databaseAccess.SongManager = db
+		databaseAccess.AlbumManager = db
+		databaseAccess.ArtistManager = db
+		databaseAccess.PlaylistManager = db
+		databaseAccess.UserManager = db
+		databaseAccess.InfoManager = db
+	} else if databaseType == "postgres" {
+		db, _ := postgres.New()
+		databaseAccess.SongManager = db
+		databaseAccess.AlbumManager = db
+		databaseAccess.ArtistManager = db
+		databaseAccess.PlaylistManager = db
+		databaseAccess.UserManager = db
+		databaseAccess.InfoManager = db
+	} else {
+		panic(errors.New("Unknown database type " + databaseType))
+	}
 	startCron()
 	if configuration.Configuration(false).Media.SyncAtStart {
-		go fs.SyncWithFilesystem(albumManager, artistManager, songManager)
+		go fs.SyncWithFilesystem(&databaseAccess)
 	}
-	controller.Run(db)
+	controller.Run(&databaseAccess)
 }
 
 func startCron() {
@@ -109,7 +119,7 @@ func startCron() {
 }
 
 func cron() {
-	fs.SyncWithFilesystem(albumManager, artistManager, songManager)
+	fs.SyncWithFilesystem(&databaseAccess)
 }
 
 func parseFrequency(f string) (uint64, string, error) {

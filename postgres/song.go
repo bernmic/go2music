@@ -1,4 +1,4 @@
-package mysql
+package postgres
 
 import (
 	"database/sql"
@@ -232,7 +232,7 @@ func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, i
 	}
 	rows, err := db.Query(sanitizePlaceholder(database.SelectSongStatement + orderAndLimit))
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading all songs: ", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
@@ -250,7 +250,7 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*mo
 	stmt := sanitizePlaceholder(database.SelectSongStatement + ` WHERE album.id = ?` + orderAndLimit)
 	rows, err := db.Query(stmt, findAlbumId)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading songs by album: ", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
@@ -268,7 +268,7 @@ func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*
 	stmt := sanitizePlaceholder(database.SelectSongStatement + `WHERE artist.id = ?	` + orderAndLimit)
 	rows, err := db.Query(stmt, findArtistId)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading songs byartist:e ", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
@@ -297,7 +297,7 @@ func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*mo
 
 	rows, err := db.Query(stmt + where + orderAndLimit)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading songs by query playlist: ", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
@@ -325,7 +325,7 @@ func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*mo
 	stmt := sanitizePlaceholder(database.SelectSongStatement + " WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)" + orderAndLimit)
 	rows, err := db.Query(stmt, playlistId)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading songs by playlist: ", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
@@ -343,7 +343,7 @@ func (db *DB) FindSongsByYear(year string, paging model.Paging) ([]*model.Song, 
 	stmt := sanitizePlaceholder(database.SelectSongStatement + " WHERE song.yearpublished = ?" + orderAndLimit)
 	rows, err := db.Query(stmt, year)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading songs by year: ", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
@@ -361,7 +361,7 @@ func (db *DB) FindSongsByGenre(genre string, paging model.Paging) ([]*model.Song
 	stmt := sanitizePlaceholder(database.SelectSongStatement + " WHERE song.genre = ?" + orderAndLimit)
 	rows, err := db.Query(stmt, genre)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading songs by genre: ", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
@@ -377,7 +377,7 @@ func (db *DB) FindSongsByGenre(genre string, paging model.Paging) ([]*model.Song
 func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
 	rows, err := db.Query(sanitizePlaceholder(database.SelectSongStatement+" ORDER BY song.added DESC LIMIT ?"), num)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading recently added songs: ", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -389,7 +389,7 @@ func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
 func (db *DB) FindRecentlyPlayedSongs(num int) ([]*model.Song, error) {
 	rows, err := db.Query(sanitizePlaceholder(database.SelectSongStatement+" INNER JOIN user_song ON song.id = user_song.song_id ORDER BY lastplayed DESC LIMIT ?"), num)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading recently played songs: ", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -401,11 +401,11 @@ func (db *DB) FindRecentlyPlayedSongs(num int) ([]*model.Song, error) {
 func (db *DB) FindMostPlayedSongs(num int) ([]*model.Song, error) {
 	rows, err := db.Query(sanitizePlaceholder(database.SelectSongStatement+`
 	INNER JOIN user_song ON song.id = user_song.song_id
-	GROUP BY user_song.song_id
+	GROUP BY song.id, user_song.song_id, user_song.user_id, artist.id, album.id
 	ORDER BY SUM(user_song.playcount) DESC LIMIT ?
 		`), num)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Error("Error reading most played songs: ", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -508,7 +508,7 @@ func createOrderAndLimitForSong(paging model.Paging) (string, bool) {
 		}
 	}
 	if paging.Size > 0 {
-		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+		s += fmt.Sprintf(" LIMIT %d OFFSET %d", paging.Size, paging.Page*paging.Size)
 		l = true
 	}
 	return s, l

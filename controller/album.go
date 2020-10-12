@@ -2,10 +2,11 @@ package controller
 
 import (
 	"expvar"
-	"github.com/gin-gonic/gin"
 	"go2music/model"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -39,7 +40,7 @@ func getAlbums(c *gin.Context) {
 	paging := extractPagingFromRequest(c)
 	filter := extractFilterFromRequest(c)
 	titleMode := extractTitleFromRequest(c)
-	albums, total, err := albumManager.FindAllAlbums(filter, paging, titleMode)
+	albums, total, err := databaseAccess.AlbumManager.FindAllAlbums(filter, paging, titleMode)
 	if err == nil {
 		albumCollection := model.AlbumCollection{Albums: albums, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, albumCollection)
@@ -51,7 +52,7 @@ func getAlbums(c *gin.Context) {
 func getAlbum(c *gin.Context) {
 	counterAlbum.Add("GET /:id", 1)
 	id := c.Param("id")
-	album, err := albumManager.FindAlbumById(id)
+	album, err := databaseAccess.AlbumManager.FindAlbumById(id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "album not found", c)
 		return
@@ -63,7 +64,7 @@ func getSongForAlbum(c *gin.Context) {
 	counterAlbum.Add("GET /:id/songs", 1)
 	id := c.Param("id")
 	paging := extractPagingFromRequest(c)
-	songs, total, err := songManager.FindSongsByAlbumId(id, paging)
+	songs, total, err := databaseAccess.SongManager.FindSongsByAlbumId(id, paging)
 	if err == nil {
 		var description string
 		if len(songs) > 0 {
@@ -93,13 +94,13 @@ func getCoverForAlbum(c *gin.Context) {
 			return
 		}
 	}
-	songs, _, err := songManager.FindSongsByAlbumId(id, model.Paging{Size: 1})
+	songs, _, err := databaseAccess.SongManager.FindSongsByAlbumId(id, model.Paging{Size: 1})
 	if err != nil {
 		respondWithError(http.StatusNotFound, "album not found", c)
 		return
 	}
 	if len(songs) > 0 {
-		image, mimetype, _ := songManager.GetCoverForSong(songs[0])
+		image, mimetype, _ := databaseAccess.SongManager.GetCoverForSong(songs[0])
 		image, mimetype, err = resizeCover(image, mimetype, size)
 		if image != nil {
 			c.Header("Content-Type", mimetype)
@@ -115,7 +116,7 @@ func downloadAlbum(c *gin.Context) {
 	counterAlbum.Add("GET /:id/download", 1)
 	id := c.Param("id")
 	paging := extractPagingFromRequest(c)
-	songs, _, err := songManager.FindSongsByAlbumId(id, paging)
+	songs, _, err := databaseAccess.SongManager.FindSongsByAlbumId(id, paging)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "album not found", c)
 		return

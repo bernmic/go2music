@@ -1,4 +1,4 @@
-package mysql
+package postgres
 
 import (
 	"database/sql"
@@ -8,22 +8,19 @@ import (
 	"go2music/model"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 )
 
 // DB contains the session data for a database session
 type DB struct {
-	sql.DB
+	*sql.DB
 }
 
-// New create a new mysql database session and returens it
 func New() (*DB, error) {
 	c := configuration.Configuration(false)
-	//url := c.Database.Url + "/" + c.Database.Schema
-	//db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, url))
 	url := createUrl(c.Database)
-	log.Infof("Use mysql database at %v", url)
+	log.Infof("Use postgres database at %v", url)
 	db, err := sql.Open(c.Database.Type, url)
 	if err != nil {
 		log.Errorf("Error opening service " + url)
@@ -33,16 +30,24 @@ func New() (*DB, error) {
 		log.Errorf("Error accessing database: %v\n", err)
 		return nil, errors.New("Database not configured or accessible")
 	}
-	mysql := DB{*db}
-	mysql.initializeUser()
-	mysql.initializeArtist()
-	mysql.initializeAlbum()
-	mysql.initializeSong()
-	mysql.initializePlaylist()
-	mysql.initializeInfo()
+	pg := DB{db}
+	pg.initializeUser()
+	pg.initializeArtist()
+	pg.initializeAlbum()
+	pg.initializeSong()
+	pg.initializePlaylist()
+	pg.initializeInfo()
 	log.Info("Database initialized....")
 
-	return &mysql, nil
+	return &pg, nil
+
+}
+
+func createUrl(dbParam model.Database) string {
+	result := strings.Replace(dbParam.Url, "${username}", dbParam.Username, -1)
+	result = strings.Replace(result, "${password}", dbParam.Password, -1)
+	result = strings.Replace(result, "${schema}", dbParam.Schema, -1)
+	return result
 }
 
 func (db *DB) countRows(sql string, args ...interface{}) int {
@@ -62,11 +67,4 @@ func sanitizePlaceholder(sql string) string {
 		}
 	}
 	return sql
-}
-
-func createUrl(dbParam model.Database) string {
-	result := strings.Replace(dbParam.Url, "${username}", dbParam.Username, -1)
-	result = strings.Replace(result, "${password}", dbParam.Password, -1)
-	result = strings.Replace(result, "${schema}", dbParam.Schema, -1)
-	return result
 }

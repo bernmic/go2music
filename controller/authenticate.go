@@ -19,7 +19,7 @@ func authenticate(c *gin.Context) {
 		respondWithError(http.StatusUnauthorized, "missing token", c)
 		return
 	}
-	user, err := security.AuthenticateRequest(authHeader, userManager)
+	user, err := security.AuthenticateRequest(authHeader, databaseAccess.UserManager)
 	if err != nil {
 		respondWithError(http.StatusUnauthorized, "username / password wrong", c)
 		return
@@ -44,7 +44,7 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 		}
 		username, b := security.AuthenticateJWTString(authHeader)
 		if b {
-			user, err := security.GetPrincipal(username, userManager)
+			user, err := security.GetPrincipal(username, databaseAccess.UserManager)
 			if err == nil && (user.Role == security.UserRole || user.Role == security.AdminRole) {
 				c.Set("principal", user)
 				log.Println("INFO Authorization OK - " + username + " with role " + user.Role)
@@ -65,7 +65,7 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 		}
 		username, b := security.AuthenticateJWTString(c.GetHeader("Authorization"))
 		if b {
-			user, err := security.GetPrincipal(username, userManager)
+			user, err := security.GetPrincipal(username, databaseAccess.UserManager)
 			if err == nil && (user.Role == security.AdminRole) {
 				c.Set("principal", user)
 				log.Info("Authorization OK - " + username + " with role " + user.Role)
