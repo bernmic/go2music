@@ -125,18 +125,20 @@ func ID3Reader(filenames []string, albumManager database.AlbumManager, artistMan
 func GetCoverFromID3(filename string) ([]byte, string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
-		log.Errorf("error loading file: %v", err)
+		log.Errorf("error opening file: %v", err)
 		return nil, "", err
 	}
 	defer f.Close()
 
 	id3tag, err := tag.ReadFrom(f)
 	if err != nil {
-		log.Errorf("ERROR Error opening mp3 file: %v", err)
+		log.Errorf("ERROR Error reading mp3 file: %v", err)
+		return nil, "", err
 	}
 	if p := id3tag.Picture(); p != nil {
 		return p.Data, p.MIMEType, nil
 	}
+	log.Warn("No cover found in ID3")
 	return nil, "", errors.New("no cover found")
 }
 

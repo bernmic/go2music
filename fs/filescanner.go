@@ -63,6 +63,7 @@ func GetCoverFromPath(path string) ([]byte, string, error) {
 		return nil
 	})
 
+	log.Infof("Found cover files: %v", files)
 	if len(files) > 0 {
 		image, err := ioutil.ReadFile(files[0].path)
 		return image, files[0].mimetype, err
