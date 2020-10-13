@@ -56,7 +56,7 @@ func SyncWithFilesystem(databaseAccess *database.DatabaseAccess) {
 		log.Infof("Found %d files with extension %s in %f seconds", len(result), ".mp3", time.Since(start).Seconds())
 		log.Info("Start sync found files with service...")
 		start = time.Now()
-		ID3Reader(result, databaseAccess.AlbumManager, databaseAccess.ArtistManager, databaseAccess.SongManager)
+		ID3Reader(result, databaseAccess)
 		log.Infof("Sync finished...in %f seconds", time.Since(start).Seconds())
 	}
 	findDanglingSongs(databaseAccess.SongManager)

@@ -94,18 +94,20 @@ func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 }
 
 // ID3Reader adds all songfiles to the database if they don't exists there.
-func ID3Reader(filenames []string, albumManager database.AlbumManager, artistManager database.ArtistManager, songManager database.SongManager) {
+func ID3Reader(filenames []string, databaseAccess *database.DatabaseAccess) {
 	counter := 0
+	fmt.Printf("databaseAccess=%v\n", databaseAccess)
+	fmt.Printf("SongManager=%v\n", databaseAccess.SongManager)
 	for _, filename := range filenames {
-		if !songManager.SongExists(filename) {
+		if !databaseAccess.SongManager.SongExists(filename) {
 			song, err := readData(filename)
 			if err == nil {
 				song, err = readMetaData(filename, song)
 			}
 			if err == nil {
-				song.Artist, err = artistManager.CreateIfNotExistsArtist(*song.Artist)
-				song.Album, err = albumManager.CreateIfNotExistsAlbum(*song.Album)
-				song, err = songManager.CreateSong(*song)
+				song.Artist, err = databaseAccess.ArtistManager.CreateIfNotExistsArtist(*song.Artist)
+				song.Album, err = databaseAccess.AlbumManager.CreateIfNotExistsAlbum(*song.Album)
+				song, err = databaseAccess.SongManager.CreateSong(*song)
 				if err != nil {
 					log.Errorf("Error creating song: %v, %v", err, song)
 					problemSong(filename, err)

@@ -64,7 +64,7 @@ func main() {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
 	}
-	databaseAccess := database.DatabaseAccess{}
+	databaseAccess = database.DatabaseAccess{}
 	databaseType := configuration.Configuration(false).Database.Type
 	if databaseType == "mysql" {
 		db, _ := mysql.New()
