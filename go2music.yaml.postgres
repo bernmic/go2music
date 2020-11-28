@@ -3,20 +3,20 @@ application:
   loglevel: debug
   cors: all
 server:
-  port: 8080
-database:
+  port: 8085
+databasem:
   username: go2music
   password: go2music
   schema: go2music
   type: mysql
   url: ${username}:${password}@tcp(localhost:3306)/${schema}
-databasep:
-  username: root
-  password:
+database:
+  username: go2music
+  password: go2music
   schema: go2music?sslmode=disable
   type: postgres
-  url: postgresql://${username}:${password}@localhost:26257/${schema}
+  url: postgresql://${username}:${password}@localhost:5432/${schema}
 media:
-  path: /Volumes/VollFit/Audio
+  path: /mnt/t/Sortiert/Audio
   syncfrequency: 1800s
   syncatstart: true
