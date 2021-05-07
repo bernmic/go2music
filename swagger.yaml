@@ -1,0 +1,1431 @@
+openapi: 3.0.1
+info:
+  description: "Music management software written with Go"
+  version: "0.0.0"
+  title: "Go2Music"
+  license:
+    name: "MIT"
+    url: "https://opensource.org/licenses/MIT"
+tags:
+  - name: album
+    description: "requests regarding albums"
+  - name: artist
+    description: "requests regarding artists"
+  - name: song
+    description: "requests regarding songs"
+  - name: playlist
+    description: "requests regarding playlists"
+  - name: info
+    description: "search for genres, decades, years"
+  - name: user
+    description: "user management"
+  - name: sync
+    description: "synchronizing database with filesystem"
+paths:
+  /album:
+    get:
+      tags:
+        - album
+      summary: Get albums
+      description: ""
+      operationId: getAlbums
+      parameters:
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+        - $ref: "#/components/parameters/filterParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlbumCollection"
+        500:
+          description: "Server error"
+  /album/{albumId}:
+    get:
+      tags:
+        - album
+      summary: Get album
+      description: ""
+      operationId: getAlbum
+      parameters:
+        - name: albumId
+          in: path
+          description: "Id of the album to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Album"
+        404:
+          description: "Album with the given id not found"
+        500:
+          description: "Server error"
+  /album/{albumId}/songs:
+    get:
+      tags:
+        - album
+      summary: Get songs for album
+      description: ""
+      operationId: getSongsForAlbum
+      parameters:
+        - name: albumId
+          in: path
+          description: "Id of the album to load"
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongCollection"
+        404:
+          description: "Album with the given id not found"
+        500:
+          description: "Server error"
+  /album/{albumId}/cover:
+    get:
+      tags:
+        - album
+      summary: Get cover for album
+      description: ""
+      operationId: getCoverForAlbum
+      parameters:
+        - name: albumId
+          in: path
+          description: "Id of the album to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: "Album with the given id not found"
+        500:
+          description: "Server error"
+  /album/{albumId}/cover/{size}:
+    get:
+      tags:
+        - album
+      summary: Get cover for album with size
+      description: ""
+      operationId: getCoverForAlbumWithSize
+      parameters:
+        - name: albumId
+          in: path
+          description: "Id of the album to load"
+          required: true
+          schema:
+            type: string
+        - name: size
+          in: path
+          description: "width in pixel for the image"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "successful"
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: "Album with the given id not found"
+        500:
+          description: "Server error"
+  /album/{albumId}/download:
+    get:
+      tags:
+        - album
+      summary: Download album
+      description: ""
+      operationId: getAlbumAsZip
+      parameters:
+        - name: albumId
+          in: path
+          description: "Id of the album to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: "Album with the given id not found"
+        500:
+          description: "Server error"
+  /artist:
+    get:
+      tags:
+        - artist
+      summary: Get artists
+      description: ""
+      operationId: getArtists
+      parameters:
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+        - $ref: "#/components/parameters/filterParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtistCollection"
+        500:
+          description: "Server error"
+  /artist/{artistId}:
+    get:
+      tags:
+        - artist
+      summary: Get artist
+      description: ""
+      operationId: getArtist
+      parameters:
+        - name: artistId
+          in: path
+          description: "Id of the artist to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Artist"
+        404:
+          description: "Artist with the given id not found"
+        500:
+          description: "Server error"
+  /artist/{artistId}/songs:
+    get:
+      tags:
+        - artist
+      summary: Get songs for artist
+      description: ""
+      operationId: getSongsForArtist
+      parameters:
+        - name: artistId
+          in: path
+          description: "Id of the artist to load"
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongCollection"
+        404:
+          description: "Artist with the given id not found"
+        500:
+          description: "Server error"
+  /artist/{artistId}/albums:
+    get:
+      tags:
+        - artist
+      summary: Get albums for artist
+      description: ""
+      operationId: getAlbumsForArtist
+      parameters:
+        - name: artistId
+          in: path
+          description: "Id of the artist to load"
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlbumCollection"
+        404:
+          description: "Artist with the given id not found"
+        500:
+          description: "Server error"
+  /song:
+    get:
+      tags:
+        - song
+      summary: Get songs
+      description: ""
+      operationId: getSongs
+      parameters:
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+        - $ref: "#/components/parameters/filterParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongCollection"
+        500:
+          description: "Server error"
+  /song/{songId}:
+    get:
+      tags:
+        - song
+      summary: Get song
+      description: ""
+      operationId: getSong
+      parameters:
+        - name: songId
+          in: path
+          description: "Id of the song to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+        404:
+          description: "Song with the given id not found"
+        500:
+          description: "Server error"
+  /song/{songId}/cover:
+    get:
+      tags:
+        - song
+      summary: Get cover for song
+      description: ""
+      operationId: getCoverForSong
+      parameters:
+        - name: songId
+          in: path
+          description: "Id of the song to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: "Song with the given id not found"
+        500:
+          description: "Server error"
+  /song/{songId}/cover/{size}:
+    get:
+      tags:
+        - song
+      summary: Get cover for song with size
+      description: ""
+      operationId: getCoverForSongWithSize
+      parameters:
+        - name: songId
+          in: path
+          description: "Id of the song to load"
+          required: true
+          schema:
+            type: string
+        - name: size
+          in: path
+          description: "width in pixel for the image"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "successful"
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: "Album with the given id not found"
+        500:
+          description: "Server error"
+  /song/{songId}/stream:
+    get:
+      tags:
+        - song
+      summary: Get song as MP3
+      description: ""
+      operationId: getSongAsMp3
+      parameters:
+        - name: songId
+          in: path
+          description: "Id of the song to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: "Song with the given id not found"
+        500:
+          description: "Server error"
+  /song/{songId}/rating/{rating}:
+    post:
+      tags:
+        - song
+      summary: Rate a song
+      description: ""
+      operationId: rateSong
+      parameters:
+        - name: songId
+          in: path
+          description: "Id of the song to rate"
+          required: true
+          schema:
+            type: string
+        - name: rating
+          in: path
+          description: "The new rating for the song"
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 255
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+        400:
+          description: "Invalid rating value"
+        404:
+          description: "Song with the given id not found"
+        500:
+          description: "Server error"
+  /playlist:
+    get:
+      tags:
+        - playlist
+      summary: Get playlists
+      description: ""
+      operationId: getPlaylists
+      parameters:
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaylistCollection"
+        500:
+          description: "Server error"
+    post:
+      tags:
+        - playlist
+      summary: Create playlist
+      description: ""
+      operationId: createPlaylist
+      requestBody:
+        description: The playlist to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaylistCreate"
+      responses:
+        201:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Playlist"
+        400:
+          description: "Invalid data"
+    put:
+      tags:
+        - playlist
+      summary: Update playlist
+      description: ""
+      operationId: updatePlaylist
+      requestBody:
+        description: The playlist to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Playlist"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Playlist"
+        400:
+          description: "Invalid data"
+  /playlist/{playlistId}:
+    get:
+      tags:
+        - playlist
+      summary: Get playlist
+      description: ""
+      operationId: getPlaylist
+      parameters:
+        - name: playlistId
+          in: path
+          description: "Id of the playlist to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Playlist"
+        404:
+          description: "Playlist with the given id not found"
+        500:
+          description: "Server error"
+    delete:
+      tags:
+        - playlist
+      summary: Delete playlist
+      description: ""
+      operationId: deletePlaylist
+      parameters:
+        - name: playlistId
+          in: path
+          description: "Id of the playlist to delete"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+        400:
+          description: "Playlist with the given id not found"
+  /playlist/{playlistId}/songs:
+    get:
+      tags:
+        - playlist
+      summary: Get songs for playlist
+      description: ""
+      operationId: getSongsForPlaylist
+      parameters:
+        - name: playlistId
+          in: path
+          description: "Id of the playlist to load"
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongCollection"
+        404:
+          description: "Playlist with the given id not found"
+        500:
+          description: "Server error"
+    post:
+      tags:
+        - playlist
+      summary: Add songs to playlist
+      description: ""
+      operationId: addSongsToPlaylist
+      parameters:
+        - name: playlistId
+          in: path
+          description: "Id of the playlist to load"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Id's of the songs to add
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  added:
+                    type: integer
+        400:
+          description: "One or more id of songs to add are invalid"
+        404:
+          description: "Playlist with the given id not found"
+        500:
+          description: "Server error"
+    put:
+      tags:
+        - playlist
+      summary: Set songs of playlist
+      description: "Removes all songs from playlist and replaces them with the given list."
+      operationId: setSongsOfPlaylist
+      parameters:
+        - name: playlistId
+          in: path
+          description: "Id of the playlist to load"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Id's of the songs to set
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  added:
+                    type: integer
+                  removed:
+                    type: integer
+        400:
+          description: "One or more id of songs to add are invalid"
+        404:
+          description: "Playlist with the given id not found"
+        500:
+          description: "Server error"
+    delete:
+      tags:
+        - playlist
+      summary: Delete songs from playlist
+      description: ""
+      operationId: deleteSongsFromPlaylist
+      parameters:
+        - name: playlistId
+          in: path
+          description: "Id of the playlist to load"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Id's of the songs to delete
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  removed:
+                    type: integer
+        400:
+          description: "One or more id of songs to add are invalid"
+        404:
+          description: "Playlist with the given id not found"
+        500:
+          description: "Server error"
+  /playlist/{playlistId}/download:
+    get:
+      tags:
+        - playlist
+      summary: Download playlist
+      description: ""
+      operationId: getPlaylistAsZip
+      parameters:
+        - name: playlistId
+          in: path
+          description: "Id of the playlist to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: "Album with the given id not found"
+        500:
+          description: "Server error"
+  /playlist/{playlistId}/exportXSPF:
+    get:
+      tags:
+        - playlist
+      summary: Export playlist as XSPF
+      description: ""
+      operationId: exportPlaylistAsXSPF
+      parameters:
+        - name: playlistId
+          in: path
+          description: "Id of the playlist to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/xspf+xml:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: "Album with the given id not found"
+        500:
+          description: "Server error"
+  /info:
+    get:
+      tags:
+        - info
+      summary: Get statistics of the music library
+      description: ""
+      operationId: getInfo
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Info"
+        500:
+          description: server error
+  /info/decades:
+    get:
+      tags:
+        - info
+      summary: Get decades with song in library
+      description: ""
+      operationId: getDecades
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NameCount"
+        500:
+          description: server error
+  /info/decades/{decade}:
+    get:
+      tags:
+        - info
+      summary: Get years of a decade with song in library
+      description: ""
+      operationId: getYearsOfDecade
+      parameters:
+        - name: decade
+          in: path
+          description: "The decade to look for"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NameCount"
+        500:
+          description: server error
+  /info/year/{year}/songs:
+    get:
+      tags:
+        - info
+      summary: Get songs for year
+      description: ""
+      operationId: getSongsForYear
+      parameters:
+        - name: year
+          in: path
+          description: "The year to look after songs"
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongCollection"
+        500:
+          description: "Server error"
+  /info/genres:
+    get:
+      tags:
+        - info
+      summary: Get genres with songs in library
+      description: ""
+      operationId: getGenres
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NameCount"
+        500:
+          description: server error
+  /info/genre/{genre}/songs:
+    get:
+      tags:
+        - info
+      summary: Get songs for genre
+      description: ""
+      operationId: getSongsForGenre
+      parameters:
+        - name: genre
+          in: path
+          description: "The genre to look after songs"
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongCollection"
+        500:
+          description: "Server error"
+  /user:
+    get:
+      tags:
+        - user
+      summary: Get users
+      description: ""
+      operationId: getUsers
+      parameters:
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/sizeParam"
+        - $ref: "#/components/parameters/sortParam"
+        - $ref: "#/components/parameters/dirParam"
+        - $ref: "#/components/parameters/filterParam"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserCollection"
+        500:
+          description: "Server error"
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: ""
+      operationId: createUser
+      requestBody:
+        description: The user to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
+      responses:
+        201:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        400:
+          description: "Invalid values"
+    put:
+      tags:
+        - user
+      summary: Update user
+      description: ""
+      operationId: updateUser
+      requestBody:
+        description: The user to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        400:
+          description: "Invalid values"
+  /user/{userId}:
+    get:
+      tags:
+        - user
+      summary: Get user
+      description: ""
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          description: "Id of the user to load"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        404:
+          description: "User with the given id not found"
+        500:
+          description: "Server error"
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: ""
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          description: "Id of the user to delete"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+        400:
+          description: "User cannot be deleted"
+  /sync:
+    get:
+      tags:
+        - sync
+      summary: Get sync infos
+      description: ""
+      operationId: getSyncInfo
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncState"
+        500:
+          description: "Server error"
+    post:
+      tags:
+        - sync
+      summary: Start sync
+      description: ""
+      operationId: startSync
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncState"
+        500:
+          description: "Server error"
+  /sync/dangling:
+    get:
+      tags:
+        - sync
+      summary: Get danngling songs
+      description: ""
+      operationId: getDanglingSongs
+      responses:
+        200:
+          description: "successful"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dangling_songs:
+                    $ref: "#/components/schemas/SongMap"
+        500:
+          description: "Server error"
+    delete:
+      tags:
+        - sync
+      summary: Delete dangling songs
+      operationId: removeDanglingSongs
+      responses:
+        200:
+          description: "successful"
+        500:
+          description: "Server error"
+  /sync/dangling/{songId}:
+    delete:
+      tags:
+        - sync
+      summary: Delete dangling song
+      operationId: removeDanglingSong
+      parameters:
+        - name: songId
+          in: path
+          description: "Id of the dangling song to delete"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+        500:
+          description: "Server error"
+  /sync/emptyalbums:
+    delete:
+      tags:
+        - sync
+      summary: Delete ampty albums
+      operationId: removeEmptyAlbums
+      responses:
+        200:
+          description: "successful"
+        500:
+          description: "Server error"
+  /sync/album/{albumId}:
+    put:
+      tags:
+        - sync
+      summary: Set album title to folder name
+      operationId: setAlbumTitleToFoldername
+      parameters:
+        - name: albumId
+          in: path
+          description: "Id of the album to rename"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful"
+        500:
+          description: "Server error"
+components:
+  schemas:
+    Paging:
+      type: "object"
+      properties:
+        page:
+          type: "integer"
+        size:
+          type: "integer"
+        sort:
+          type: "string"
+        direction:
+          type: "string"
+    Album:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        title:
+          type: "string"
+    AlbumCollection:
+      type: "object"
+      properties:
+        albums:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Album"
+        paging:
+          $ref: "#/components/schemas/Paging"
+        total:
+          type: "integer"
+    Artist:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+    ArtistCollection:
+      type: "object"
+      properties:
+        artists:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Artist"
+        paging:
+          $ref: "#/components/schemas/Paging"
+        total:
+          type: "integer"
+    Song:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        album:
+          $ref: "#/components/schemas/Album"
+        artist:
+          $ref: "#/components/schemas/Artist"
+        genre:
+          type: string
+        track:
+          type: integer
+        yearPublished:
+          type: string
+        bitRate:
+          type: integer
+        sampleRate:
+          type: integer
+        duration:
+          type: integer
+        mode:
+          type: string
+        vbr:
+          type: boolean
+        added:
+          type: integer
+          format: int64
+        fileDate:
+          type: integer
+          format: int64
+        rating:
+          type: integer
+    SongCollection:
+      type: "object"
+      properties:
+        songs:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Song"
+        paging:
+          $ref: "#/components/schemas/Paging"
+        total:
+          type: "integer"
+    Playlist:
+      type: "object"
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        query:
+          type: string
+    PlaylistCreate:
+      type: "object"
+      properties:
+        name:
+          type: string
+        query:
+          type: string
+    PlaylistCollection:
+      type: "object"
+      properties:
+        playlists:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Playlist"
+        paging:
+          $ref: "#/components/schemas/Paging"
+        total:
+          type: "integer"
+    Info:
+      type: object
+      properties:
+        songCount:
+          type: integer
+          description: Number of songs in database
+        albumCount:
+          type: integer
+          description: Number of albums in database
+        artistCount:
+          type: integer
+          description: Number of artists in database
+        playlistCount:
+          type: integer
+          description: Number of playlists in database
+        userCount:
+          type: integer
+          description: Number of users in database
+        totalLength:
+          type: integer
+          description: Total play length of songs in database in seconds
+        songsRecentlyAdded:
+          description: Newest songs added to database
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
+        songsRecentlyPlayed:
+          description: last songs played
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
+        songsMostPlayed:
+          description: songs most played
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
+        albumsRecentlyAdded:
+          description: Newest albums added to database
+          type: array
+          items:
+            $ref: "#/components/schemas/Album"
+    NameCount:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the value
+        count:
+          type: integer
+          description: Number of items
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        role:
+          type: string
+        email:
+          type: string
+    UserCreate:
+      type: object
+      properties:
+        username:
+          type: string
+        role:
+          type: string
+        email:
+          type: string
+    UserCollection:
+      type: "object"
+      properties:
+        playlists:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/User"
+        paging:
+          $ref: "#/components/schemas/Paging"
+        total:
+          type: "integer"
+    SyncState:
+      type: object
+      properties:
+        state:
+          type: string
+        last_sync_started:
+          type: integer
+          format: int64
+        last_sync_duration:
+          type: integer
+          format: int64
+        songs_found:
+          type: integer
+        new_songs_added:
+          type: integer
+        new_songs_problems:
+          type: integer
+        dangling_songs_added:
+          type: integer
+        problem_songs:
+          type: object
+          additionalProperties:
+            type: string
+        dangling_songs:
+          type: object
+          additionalProperties:
+            type: string
+        empty_albums:
+          type: object
+          additionalProperties:
+            type: string
+        albums_without_title:
+          type: object
+          additionalProperties:
+            type: string
+        artists_without_name:
+          type: object
+          additionalProperties:
+            type: string
+    Sort:
+      type: string
+      enum:
+        - asc
+        - desc
+    State:
+      type: string
+      enum:
+        - idle
+        - running
+    SongMap:
+      type: object
+      additionalProperties:
+        type: string
+  parameters:
+    pageParam:
+      name: "page"
+      in: "query"
+      required: false
+      schema:
+        type: "integer"
+      description: "No. of the page to load"
+    sizeParam:
+      name: "size"
+      in: "query"
+      required: false
+      schema:
+        type: "integer"
+      description: "Size of the page to load"
+    sortParam:
+      name: "sort"
+      in: "query"
+      required: false
+      schema:
+        type: "string"
+      description: "Sort field"
+    dirParam:
+      name: "dir"
+      in: "query"
+      required: false
+      schema:
+        $ref: "#/components/schemas/Sort"
+      description: "Sort direction"
+    filterParam:
+      name: "filter"
+      in: "query"
+      required: false
+      schema:
+        type: "string"
+      description: "String for filtering result set"
