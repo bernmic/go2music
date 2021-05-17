@@ -1,12 +1,14 @@
 openapi: 3.0.1
 info:
   description: "Music management software written with Go"
-  version: "0.0.0"
+  version: "1.0.0"
   title: "Go2Music"
   license:
     name: "MIT"
     url: "https://opensource.org/licenses/MIT"
 tags:
+  - name: authenticate
+    description: "Authentication"
   - name: album
     description: "requests regarding albums"
   - name: artist
@@ -22,13 +24,47 @@ tags:
   - name: sync
     description: "synchronizing database with filesystem"
 paths:
-  /album:
+  /token:
+    get:
+      tags:
+        - authenticate
+      summary: authenticate
+      description: "Authenticate with username/password"
+      operationId: authenticate
+      security:
+        - basicAuth: []
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthenticateResponse"
+  /api/authenticate:
+    post:
+      tags:
+        - authenticate
+      summary: authenticate
+      description: "Authenticate with username/password"
+      operationId: authenticate
+      security:
+        - basicAuth: []
+      responses:
+        200:
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthenticateResponse"
+  /api/album:
     get:
       tags:
         - album
       summary: Get albums
       description: ""
       operationId: getAlbums
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/pageParam"
         - $ref: "#/components/parameters/sizeParam"
@@ -44,13 +80,15 @@ paths:
                 $ref: "#/components/schemas/AlbumCollection"
         500:
           description: "Server error"
-  /album/{albumId}:
+  /api/album/{albumId}:
     get:
       tags:
         - album
       summary: Get album
       description: ""
       operationId: getAlbum
+      security:
+        - bearerAuth: []
       parameters:
         - name: albumId
           in: path
@@ -69,13 +107,15 @@ paths:
           description: "Album with the given id not found"
         500:
           description: "Server error"
-  /album/{albumId}/songs:
+  /api/album/{albumId}/songs:
     get:
       tags:
         - album
       summary: Get songs for album
       description: ""
       operationId: getSongsForAlbum
+      security:
+        - bearerAuth: []
       parameters:
         - name: albumId
           in: path
@@ -98,13 +138,15 @@ paths:
           description: "Album with the given id not found"
         500:
           description: "Server error"
-  /album/{albumId}/cover:
+  /api/album/{albumId}/cover:
     get:
       tags:
         - album
       summary: Get cover for album
       description: ""
       operationId: getCoverForAlbum
+      security:
+        - bearerAuth: []
       parameters:
         - name: albumId
           in: path
@@ -132,13 +174,15 @@ paths:
           description: "Album with the given id not found"
         500:
           description: "Server error"
-  /album/{albumId}/cover/{size}:
+  /api/album/{albumId}/cover/{size}:
     get:
       tags:
         - album
       summary: Get cover for album with size
       description: ""
       operationId: getCoverForAlbumWithSize
+      security:
+        - bearerAuth: []
       parameters:
         - name: albumId
           in: path
@@ -172,13 +216,15 @@ paths:
           description: "Album with the given id not found"
         500:
           description: "Server error"
-  /album/{albumId}/download:
+  /api/album/{albumId}/download:
     get:
       tags:
         - album
       summary: Download album
       description: ""
       operationId: getAlbumAsZip
+      security:
+        - bearerAuth: []
       parameters:
         - name: albumId
           in: path
@@ -198,13 +244,15 @@ paths:
           description: "Album with the given id not found"
         500:
           description: "Server error"
-  /artist:
+  /api/artist:
     get:
       tags:
         - artist
       summary: Get artists
       description: ""
       operationId: getArtists
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/pageParam"
         - $ref: "#/components/parameters/sizeParam"
@@ -220,13 +268,15 @@ paths:
                 $ref: "#/components/schemas/ArtistCollection"
         500:
           description: "Server error"
-  /artist/{artistId}:
+  /api/artist/{artistId}:
     get:
       tags:
         - artist
       summary: Get artist
       description: ""
       operationId: getArtist
+      security:
+        - bearerAuth: []
       parameters:
         - name: artistId
           in: path
@@ -245,13 +295,15 @@ paths:
           description: "Artist with the given id not found"
         500:
           description: "Server error"
-  /artist/{artistId}/songs:
+  /api/artist/{artistId}/songs:
     get:
       tags:
         - artist
       summary: Get songs for artist
       description: ""
       operationId: getSongsForArtist
+      security:
+        - bearerAuth: []
       parameters:
         - name: artistId
           in: path
@@ -274,13 +326,15 @@ paths:
           description: "Artist with the given id not found"
         500:
           description: "Server error"
-  /artist/{artistId}/albums:
+  /api/artist/{artistId}/albums:
     get:
       tags:
         - artist
       summary: Get albums for artist
       description: ""
       operationId: getAlbumsForArtist
+      security:
+        - bearerAuth: []
       parameters:
         - name: artistId
           in: path
@@ -303,13 +357,15 @@ paths:
           description: "Artist with the given id not found"
         500:
           description: "Server error"
-  /song:
+  /api/song:
     get:
       tags:
         - song
       summary: Get songs
       description: ""
       operationId: getSongs
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/pageParam"
         - $ref: "#/components/parameters/sizeParam"
@@ -325,13 +381,15 @@ paths:
                 $ref: "#/components/schemas/SongCollection"
         500:
           description: "Server error"
-  /song/{songId}:
+  /api/song/{songId}:
     get:
       tags:
         - song
       summary: Get song
       description: ""
       operationId: getSong
+      security:
+        - bearerAuth: []
       parameters:
         - name: songId
           in: path
@@ -350,13 +408,15 @@ paths:
           description: "Song with the given id not found"
         500:
           description: "Server error"
-  /song/{songId}/cover:
+  /api/song/{songId}/cover:
     get:
       tags:
         - song
       summary: Get cover for song
       description: ""
       operationId: getCoverForSong
+      security:
+        - bearerAuth: []
       parameters:
         - name: songId
           in: path
@@ -384,13 +444,15 @@ paths:
           description: "Song with the given id not found"
         500:
           description: "Server error"
-  /song/{songId}/cover/{size}:
+  /api/song/{songId}/cover/{size}:
     get:
       tags:
         - song
       summary: Get cover for song with size
       description: ""
       operationId: getCoverForSongWithSize
+      security:
+        - bearerAuth: []
       parameters:
         - name: songId
           in: path
@@ -424,13 +486,15 @@ paths:
           description: "Album with the given id not found"
         500:
           description: "Server error"
-  /song/{songId}/stream:
+  /api/song/{songId}/stream:
     get:
       tags:
         - song
       summary: Get song as MP3
       description: ""
       operationId: getSongAsMp3
+      security:
+        - bearerAuth: []
       parameters:
         - name: songId
           in: path
@@ -450,13 +514,15 @@ paths:
           description: "Song with the given id not found"
         500:
           description: "Server error"
-  /song/{songId}/rating/{rating}:
+  /api/song/{songId}/rating/{rating}:
     post:
       tags:
         - song
       summary: Rate a song
       description: ""
       operationId: rateSong
+      security:
+        - bearerAuth: []
       parameters:
         - name: songId
           in: path
@@ -485,13 +551,15 @@ paths:
           description: "Song with the given id not found"
         500:
           description: "Server error"
-  /playlist:
+  /api/playlist:
     get:
       tags:
         - playlist
       summary: Get playlists
       description: ""
       operationId: getPlaylists
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/pageParam"
         - $ref: "#/components/parameters/sizeParam"
@@ -519,6 +587,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/PlaylistCreate"
+      security:
+        - bearerAuth: []
       responses:
         201:
           description: "successful"
@@ -541,6 +611,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Playlist"
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: "successful"
@@ -550,13 +622,15 @@ paths:
                 $ref: "#/components/schemas/Playlist"
         400:
           description: "Invalid data"
-  /playlist/{playlistId}:
+  /api/playlist/{playlistId}:
     get:
       tags:
         - playlist
       summary: Get playlist
       description: ""
       operationId: getPlaylist
+      security:
+        - bearerAuth: []
       parameters:
         - name: playlistId
           in: path
@@ -581,6 +655,8 @@ paths:
       summary: Delete playlist
       description: ""
       operationId: deletePlaylist
+      security:
+        - bearerAuth: []
       parameters:
         - name: playlistId
           in: path
@@ -593,13 +669,15 @@ paths:
           description: "successful"
         400:
           description: "Playlist with the given id not found"
-  /playlist/{playlistId}/songs:
+  /api/playlist/{playlistId}/songs:
     get:
       tags:
         - playlist
       summary: Get songs for playlist
       description: ""
       operationId: getSongsForPlaylist
+      security:
+        - bearerAuth: []
       parameters:
         - name: playlistId
           in: path
@@ -628,6 +706,8 @@ paths:
       summary: Add songs to playlist
       description: ""
       operationId: addSongsToPlaylist
+      security:
+        - bearerAuth: []
       parameters:
         - name: playlistId
           in: path
@@ -666,6 +746,8 @@ paths:
       summary: Set songs of playlist
       description: "Removes all songs from playlist and replaces them with the given list."
       operationId: setSongsOfPlaylist
+      security:
+        - bearerAuth: []
       parameters:
         - name: playlistId
           in: path
@@ -706,6 +788,8 @@ paths:
       summary: Delete songs from playlist
       description: ""
       operationId: deleteSongsFromPlaylist
+      security:
+        - bearerAuth: []
       parameters:
         - name: playlistId
           in: path
@@ -738,13 +822,15 @@ paths:
           description: "Playlist with the given id not found"
         500:
           description: "Server error"
-  /playlist/{playlistId}/download:
+  /api/playlist/{playlistId}/download:
     get:
       tags:
         - playlist
       summary: Download playlist
       description: ""
       operationId: getPlaylistAsZip
+      security:
+        - bearerAuth: []
       parameters:
         - name: playlistId
           in: path
@@ -764,13 +850,15 @@ paths:
           description: "Album with the given id not found"
         500:
           description: "Server error"
-  /playlist/{playlistId}/exportXSPF:
+  /api/playlist/{playlistId}/exportXSPF:
     get:
       tags:
         - playlist
       summary: Export playlist as XSPF
       description: ""
       operationId: exportPlaylistAsXSPF
+      security:
+        - bearerAuth: []
       parameters:
         - name: playlistId
           in: path
@@ -790,13 +878,15 @@ paths:
           description: "Album with the given id not found"
         500:
           description: "Server error"
-  /info:
+  /api/info:
     get:
       tags:
         - info
       summary: Get statistics of the music library
       description: ""
       operationId: getInfo
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: successful
@@ -806,13 +896,15 @@ paths:
                 $ref: "#/components/schemas/Info"
         500:
           description: server error
-  /info/decades:
+  /api/info/decades:
     get:
       tags:
         - info
       summary: Get decades with song in library
       description: ""
       operationId: getDecades
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: successful
@@ -824,13 +916,15 @@ paths:
                   $ref: "#/components/schemas/NameCount"
         500:
           description: server error
-  /info/decades/{decade}:
+  /api/info/decades/{decade}:
     get:
       tags:
         - info
       summary: Get years of a decade with song in library
       description: ""
       operationId: getYearsOfDecade
+      security:
+        - bearerAuth: []
       parameters:
         - name: decade
           in: path
@@ -849,13 +943,15 @@ paths:
                   $ref: "#/components/schemas/NameCount"
         500:
           description: server error
-  /info/year/{year}/songs:
+  /api/info/year/{year}/songs:
     get:
       tags:
         - info
       summary: Get songs for year
       description: ""
       operationId: getSongsForYear
+      security:
+        - bearerAuth: []
       parameters:
         - name: year
           in: path
@@ -876,13 +972,15 @@ paths:
                 $ref: "#/components/schemas/SongCollection"
         500:
           description: "Server error"
-  /info/genres:
+  /api/info/genres:
     get:
       tags:
         - info
       summary: Get genres with songs in library
       description: ""
       operationId: getGenres
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: successful
@@ -894,13 +992,15 @@ paths:
                   $ref: "#/components/schemas/NameCount"
         500:
           description: server error
-  /info/genre/{genre}/songs:
+  /api/info/genre/{genre}/songs:
     get:
       tags:
         - info
       summary: Get songs for genre
       description: ""
       operationId: getSongsForGenre
+      security:
+        - bearerAuth: []
       parameters:
         - name: genre
           in: path
@@ -921,13 +1021,15 @@ paths:
                 $ref: "#/components/schemas/SongCollection"
         500:
           description: "Server error"
-  /user:
+  /api/user:
     get:
       tags:
         - user
       summary: Get users
       description: ""
       operationId: getUsers
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/pageParam"
         - $ref: "#/components/parameters/sizeParam"
@@ -949,6 +1051,8 @@ paths:
       summary: Create user
       description: ""
       operationId: createUser
+      security:
+        - bearerAuth: []
       requestBody:
         description: The user to create
         required: true
@@ -971,6 +1075,8 @@ paths:
       summary: Update user
       description: ""
       operationId: updateUser
+      security:
+        - bearerAuth: []
       requestBody:
         description: The user to update
         required: true
@@ -987,13 +1093,15 @@ paths:
                 $ref: "#/components/schemas/User"
         400:
           description: "Invalid values"
-  /user/{userId}:
+  /api/user/{userId}:
     get:
       tags:
         - user
       summary: Get user
       description: ""
       operationId: getUser
+      security:
+        - bearerAuth: []
       parameters:
         - name: userId
           in: path
@@ -1018,6 +1126,8 @@ paths:
       summary: Delete user
       description: ""
       operationId: deleteUser
+      security:
+        - bearerAuth: []
       parameters:
         - name: userId
           in: path
@@ -1030,13 +1140,15 @@ paths:
           description: "successful"
         400:
           description: "User cannot be deleted"
-  /sync:
+  /api/sync:
     get:
       tags:
         - sync
       summary: Get sync infos
       description: ""
       operationId: getSyncInfo
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: "successful"
@@ -1052,6 +1164,8 @@ paths:
       summary: Start sync
       description: ""
       operationId: startSync
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: "successful"
@@ -1061,13 +1175,15 @@ paths:
                 $ref: "#/components/schemas/SyncState"
         500:
           description: "Server error"
-  /sync/dangling:
+  /api/sync/dangling:
     get:
       tags:
         - sync
       summary: Get danngling songs
       description: ""
       operationId: getDanglingSongs
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: "successful"
@@ -1085,17 +1201,21 @@ paths:
         - sync
       summary: Delete dangling songs
       operationId: removeDanglingSongs
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: "successful"
         500:
           description: "Server error"
-  /sync/dangling/{songId}:
+  /api/sync/dangling/{songId}:
     delete:
       tags:
         - sync
       summary: Delete dangling song
       operationId: removeDanglingSong
+      security:
+        - bearerAuth: []
       parameters:
         - name: songId
           in: path
@@ -1108,23 +1228,27 @@ paths:
           description: "successful"
         500:
           description: "Server error"
-  /sync/emptyalbums:
+  /api/sync/emptyalbums:
     delete:
       tags:
         - sync
       summary: Delete ampty albums
       operationId: removeEmptyAlbums
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: "successful"
         500:
           description: "Server error"
-  /sync/album/{albumId}:
+  /api/sync/album/{albumId}:
     put:
       tags:
         - sync
       summary: Set album title to folder name
       operationId: setAlbumTitleToFoldername
+      security:
+        - bearerAuth: []
       parameters:
         - name: albumId
           in: path
@@ -1138,7 +1262,22 @@ paths:
         500:
           description: "Server error"
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    AuthenticateResponse:
+      type: "object"
+      properties:
+        token:
+          type: "string"
+        role:
+          type: "string"
     Paging:
       type: "object"
       properties:
@@ -1429,3 +1568,6 @@ components:
       schema:
         type: "string"
       description: "String for filtering result set"
+security:
+  - bearerAuth: []
+  - basicAuth: []
