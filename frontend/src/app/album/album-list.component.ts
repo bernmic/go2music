@@ -1,12 +1,11 @@
-import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {Album} from "./album.model";
-import {AlbumService} from "./album.service";
-import {MediaMatcher} from "@angular/cdk/layout";
-import {isNullOrUndefined} from "util";
-import {MatPaginator} from "@angular/material/paginator";
-import {Paging} from "../shared/paging.model";
-import {fromEvent} from "rxjs";
-import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Album } from "./album.model";
+import { AlbumService } from "./album.service";
+import { MediaMatcher } from "@angular/cdk/layout";
+import { MatPaginator } from "@angular/material/paginator";
+import { Paging } from "../shared/paging.model";
+import { fromEvent } from "rxjs";
+import { debounceTime, distinctUntilChanged, tap } from "rxjs/operators";
 
 @Component({
   selector: 'app-album-list',
@@ -62,7 +61,7 @@ export class AlbumListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   cover(album: Album): string {
-    if (isNullOrUndefined(album)) {
+    if (album === null || album === undefined) {
       return "../assets/img/defaultAlbum.png";
     }
     return this.albumService.albumCoverUrl(album);

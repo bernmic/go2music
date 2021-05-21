@@ -1,8 +1,7 @@
-import {Component, OnInit} from "@angular/core";
-import {ManagementService} from "./management.service";
-import {Sync} from "./management.model";
-import {MatSnackBar} from "@angular/material/snack-bar";
-import {isNullOrUndefined} from 'util';
+import { Component, OnInit } from "@angular/core";
+import { ManagementService } from "./management.service";
+import { Sync } from "./management.model";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-management',
@@ -60,21 +59,21 @@ export class ManagementComponent implements OnInit {
   }
 
   emptyAlbumsCount(): number {
-    if (isNullOrUndefined(this.sync) || isNullOrUndefined(this.sync.empty_albums)) {
+    if (this.isNullOrUndefined(this.sync) || this.isNullOrUndefined(this.sync.empty_albums)) {
       return 0;
     }
     return Object.keys(this.sync.empty_albums).length;
   }
 
   albumsWithoutTitleCount(): number {
-    if (isNullOrUndefined(this.sync) || isNullOrUndefined(this.sync.albums_without_title)) {
+    if (this.isNullOrUndefined(this.sync) || this.isNullOrUndefined(this.sync.albums_without_title)) {
       return 0;
     }
     return Object.keys(this.sync.albums_without_title).length;
   }
 
   artistsWithoutNameCount(): number {
-    if (isNullOrUndefined(this.sync) || isNullOrUndefined(this.sync.artists_without_name)) {
+    if (this.isNullOrUndefined(this.sync) || this.isNullOrUndefined(this.sync.artists_without_name)) {
       return 0;
     }
     return Object.keys(this.sync.artists_without_name).length;
@@ -88,4 +87,7 @@ export class ManagementComponent implements OnInit {
     });
   }
 
+  private isNullOrUndefined(o: any): boolean {
+    return o === null || o === undefined;
+  }
 }

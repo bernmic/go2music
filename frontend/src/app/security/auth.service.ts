@@ -1,10 +1,8 @@
-import {Injectable} from "@angular/core";
-import {Observable} from "rxjs";
-import {BehaviorSubject} from "rxjs";
-import {Router} from "@angular/router";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {environment} from "../../environments/environment";
-import {isNullOrUndefined} from "util";
+import { Injectable } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
+import { Router } from "@angular/router";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { environment } from "../../environments/environment";
 
 @Injectable()
 export class AuthService {
@@ -13,14 +11,14 @@ export class AuthService {
   private loggedIn = new BehaviorSubject<boolean>(false);
   private token: string = null;
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(private router: Router, private http: HttpClient) { }
 
   get isLoggedIn() {
     return this.loggedIn.asObservable();
   }
 
   isAdmin() {
-    if (isNullOrUndefined(this.auth)) {
+    if (this.isNullOrUndefined(this.auth)) {
       return false;
     }
     return this.auth.isAdmin;
@@ -31,18 +29,18 @@ export class AuthService {
   }
 
   getLoggedInUsername(): string {
-    if (!isNullOrUndefined(this.auth)) {
+    if (!this.isNullOrUndefined(this.auth)) {
       return this.auth.username;
     }
     return "";
   }
 
-  login(username: string, password: string){
-    if (username !== '' && password !== '' ) {
+  login(username: string, password: string) {
+    if (username !== '' && password !== '') {
       let headers = new HttpHeaders();
       headers = headers.append("Authorization", "Basic " + btoa(username + ":" + password));
       // headers = headers.append("Content-Type", "application/x-www-form-urlencoded");
-      this.http.get(environment.restserver + "/token", {headers: headers}).subscribe(response => {
+      this.http.get(environment.restserver + "/token", { headers: headers }).subscribe(response => {
         this.token = response['token'];
         this.auth = new Auth(response['token'], username, response['role'] === "admin");
         console.log("Successfully logged in with token " + this.token);
@@ -65,8 +63,12 @@ export class AuthService {
   clearToken(): void {
     this.token = null;
   }
+
+  private isNullOrUndefined(o: any): boolean {
+    return o === null || o === undefined;
+  }
 }
 
 export class Auth {
-  constructor(public token: string, public username: string, public isAdmin: boolean) {}
+  constructor(public token: string, public username: string, public isAdmin: boolean) { }
 }

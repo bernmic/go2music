@@ -1,13 +1,12 @@
-import {Injectable} from "@angular/core";
-import {Observable} from "rxjs/index";
-import {HttpClient} from "@angular/common/http";
-import {environment} from "../../environments/environment";
-import {SongService} from "../song/song.service";
-import {Artist, ArtistCollection} from "./artist.model";
-import {Album} from "../album/album.model";
-import {Paging} from "../shared/paging.model";
-import {isNullOrUndefined} from "util";
-import {BaseService} from "../shared/base.service";
+import { Injectable } from "@angular/core";
+import { Observable } from "rxjs/index";
+import { HttpClient } from "@angular/common/http";
+import { environment } from "../../environments/environment";
+import { SongService } from "../song/song.service";
+import { Artist, ArtistCollection } from "./artist.model";
+import { Album } from "../album/album.model";
+import { Paging } from "../shared/paging.model";
+import { BaseService } from "../shared/base.service";
 
 @Injectable()
 export class ArtistService extends BaseService {
@@ -16,8 +15,8 @@ export class ArtistService extends BaseService {
   }
 
   getAllArtists(filter: string, paging?: Paging): Observable<ArtistCollection> {
-    let parameter =  this.getPagingForUrl(paging);
-    if (!isNullOrUndefined(filter) && filter !== "") {
+    let parameter = this.getPagingForUrl(paging);
+    if (filter !== null && filter !== undefined && filter !== "") {
       if (parameter === "") {
         parameter = "?filter=" + filter;
       } else {

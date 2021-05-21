@@ -1,22 +1,21 @@
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {environment} from "../../environments/environment";
-import {Injectable} from "@angular/core";
-import {User, UserCollection} from "./user.model";
-import {Paging} from "../shared/paging.model";
-import {isNullOrUndefined} from "util";
-import {BaseService} from "../shared/base.service";
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { environment } from "../../environments/environment";
+import { Injectable } from "@angular/core";
+import { User, UserCollection } from "./user.model";
+import { Paging } from "../shared/paging.model";
+import { BaseService } from "../shared/base.service";
 
 @Injectable()
-export class UserService extends BaseService{
+export class UserService extends BaseService {
 
   constructor(private http: HttpClient) {
     super();
   }
 
   getUsers(filter: string, paging?: Paging): Observable<UserCollection> {
-    let parameter =  this.getPagingForUrl(paging);
-    if (!isNullOrUndefined(filter) && filter !== "") {
+    let parameter = this.getPagingForUrl(paging);
+    if (filter !== null && filter !== undefined && filter !== "") {
       if (parameter === "") {
         parameter = "?filter=" + filter;
       } else {

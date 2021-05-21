@@ -1,8 +1,7 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {PlaylistService} from "./playlist.service";
-import {Playlist} from "./playlist.model";
-import {ActivatedRoute, Router} from "@angular/router";
-import {isNullOrUndefined} from "util";
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { PlaylistService } from "./playlist.service";
+import { Playlist } from "./playlist.model";
+import { ActivatedRoute, Router } from "@angular/router";
 
 @Component({
   selector: 'app-playlist-detail',
@@ -34,7 +33,7 @@ export class PlaylistDetailComponent implements OnInit {
       this.playlistService.getPlaylist(params.get('id')).subscribe((playlist: Playlist) => {
         this.playlist = playlist;
         this.nameInput.nativeElement.value = this.playlist.name;
-        if (!isNullOrUndefined(this.queryInput)) {
+        if (this.queryInput !== null && this.queryInput !== undefined) {
           this.queryInput.nativeElement.value = this.playlist.query;
           this.kind = this.KIND_QUERY;
         } else {
@@ -46,7 +45,7 @@ export class PlaylistDetailComponent implements OnInit {
 
   save() {
     this.playlist.name = this.nameInput.nativeElement.value;
-    if (!isNullOrUndefined(this.queryInput)) {
+    if (this.queryInput !== null && this.queryInput !== undefined) {
       this.playlist.query = this.queryInput.nativeElement.value;
     }
     this.playlistService.savePlaylist(this.playlist).subscribe(() => {
@@ -55,7 +54,7 @@ export class PlaylistDetailComponent implements OnInit {
   }
 
   isNew(): boolean {
-    if (!isNullOrUndefined(this.playlist)) {
+    if (this.playlist !== null && this.playlist !== undefined) {
       if (this.playlist.playlistId === "" || this.playlist.playlistId === null) {
         return true;
       }

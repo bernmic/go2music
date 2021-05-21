@@ -1,11 +1,10 @@
-import {Injectable} from "@angular/core";
-import {Subject} from "rxjs/index";
-import {Song} from "../song/song.model";
-import {isNullOrUndefined} from "util";
-import {environment} from "../../environments/environment";
-import {AuthService} from "../security/auth.service";
-import {PlaylistService} from "../playlist/playlist.service";
-import {Playlist} from "../playlist/playlist.model";
+import { Injectable } from "@angular/core";
+import { Subject } from "rxjs";
+import { Song } from "../song/song.model";
+import { environment } from "../../environments/environment";
+import { AuthService } from "../security/auth.service";
+import { PlaylistService } from "../playlist/playlist.service";
+import { Playlist } from "../playlist/playlist.model";
 
 @Injectable()
 export class PlayerService {
@@ -17,7 +16,7 @@ export class PlayerService {
   currentSong: Song;
   songlist: Song[] = [];
 
-  constructor(private authService: AuthService, private playlistService: PlaylistService) {}
+  constructor(private authService: AuthService, private playlistService: PlaylistService) { }
 
   playSong(song: Song) {
     this.currentSong = song;
@@ -26,7 +25,7 @@ export class PlayerService {
 
   addAndPlaySong(song: Song) {
     let found = this.songlist.find(s => s.songId == song.songId);
-    if (isNullOrUndefined(found)) {
+    if (found === null || found === undefined) {
       this.addSong(song);
       found = song;
     }
@@ -54,13 +53,13 @@ export class PlayerService {
       }
       this.playlistService.addSongsToPlaylist(p.playlistId, songIds).subscribe(() => {
         console.log("Success writing playlist")
-      }, error => {console.log("Error writing playlist: " + error)});
-    }, error => {console.log("Error creating playlist: " + error)});
+      }, error => { console.log("Error writing playlist: " + error) });
+    }, error => { console.log("Error creating playlist: " + error) });
   }
 
   nextSong() {
     if (this.songlist.length > 0) {
-      if (isNullOrUndefined(this.currentSong)) {
+      if (this.currentSong === null || this.currentSong === undefined) {
         this.playSong(this.songlist[0]);
       } else {
         const index = this.songlist.indexOf(this.currentSong) + 1;
@@ -73,7 +72,7 @@ export class PlayerService {
 
   previousSong() {
     if (this.songlist.length > 0) {
-      if (isNullOrUndefined(this.currentSong)) {
+      if (this.currentSong === null || this.currentSong === undefined) {
         this.playSong(this.songlist[0]);
       } else {
         const index = this.songlist.indexOf(this.currentSong) - 1;

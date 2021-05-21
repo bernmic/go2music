@@ -1,16 +1,15 @@
-import {AfterViewInit, Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
-import {Howl} from "howler";
-import {isNullOrUndefined} from "util";
-import {Subscription} from "rxjs";
-import {MatSlider} from "@angular/material/slider";
-import {MatSnackBar} from "@angular/material/snack-bar";
+import { AfterViewInit, Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { Howl } from "howler";
+import { Subscription } from "rxjs";
+import { MatSlider } from "@angular/material/slider";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
-import {Song} from "../song/song.model";
-import {PlayerService} from "./player.service";
-import {PlayerDialog} from "./player.dialog";
+import { Song } from "../song/song.model";
+import { PlayerService } from "./player.service";
+import { PlayerDialog } from "./player.dialog";
 import { MatDialog } from "@angular/material/dialog";
-import {TextinputDialogComponent} from "../shared/textinput-dialog.component";
-import {YesnoAlertComponent} from "../shared/yesno-alert.component";
+import { TextinputDialogComponent } from "../shared/textinput-dialog.component";
+import { YesnoAlertComponent } from "../shared/yesno-alert.component";
 
 @Component({
   selector: 'app-player',
@@ -59,7 +58,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   }
 
   playerReady(): boolean {
-    return !isNullOrUndefined(this.audio);
+    return !this.isNullOrUndefined(this.audio);
   }
 
   play() {
@@ -90,7 +89,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   openFullscreen(): void {
     let dialogRef = this.dialog.open(PlayerDialog, {
       width: '100vh',
-      height:  '100vh',
+      height: '100vh',
       maxWidth: '100vh',
       maxHeight: '100vh',
       hasBackdrop: false
@@ -98,7 +97,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   }
 
   cover(): string {
-    if (isNullOrUndefined(this.playerService.currentSong)) {
+    if (this.playerService.currentSong === null || this.playerService.currentSong === undefined) {
       return "../assets/img/defaultAlbum.png";
     }
     return this.playerService.songCoverUrl(this.playerService.currentSong);
@@ -106,26 +105,26 @@ export class PlayerComponent implements OnInit, AfterViewInit {
 
   volumeChanged(volume) {
     this.volume = volume;
-    if (!isNullOrUndefined(this.audio)) {
+    if (!this.isNullOrUndefined(this.audio)) {
       this.audio.volume(this.volume / 100);
     }
   }
 
   canPlay(): boolean {
-    return !isNullOrUndefined(this.playerService.currentSong);
+    return !this.isNullOrUndefined(this.playerService.currentSong);
   }
 
   isPlaying(): boolean {
-    return !isNullOrUndefined(this.audio) && this.audio.playing();
+    return !this.isNullOrUndefined(this.audio) && this.audio.playing();
   }
 
   isPaused(): boolean {
-    return !isNullOrUndefined(this.audio) && !this.audio.playing() && this.position !== 0;
+    return !this.isNullOrUndefined(this.audio) && !this.audio.playing() && this.position !== 0;
   }
 
   playSong(song: Song) {
     this.playerService.currentSong = song;
-    if (!isNullOrUndefined(this.audio)) {
+    if (!this.isNullOrUndefined(this.audio)) {
       this.audio.unload();
     }
     this.audio = new Howl({
@@ -162,11 +161,11 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   createPlaylist() {
     const dialogRef = this.dialog.open(TextinputDialogComponent, {
       width: '400px',
-      data: {title: "Create playlist from queue", prompt: "Enter playlist name", input: ""}
+      data: { title: "Create playlist from queue", prompt: "Enter playlist name", input: "" }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (!isNullOrUndefined(result) && result != "") {
+      if (!this.isNullOrUndefined(result) && result != "") {
         this.playerService.createPlaylist(result);
       }
     });
@@ -175,7 +174,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   clearQueue() {
     const dialogRef = this.dialog.open(YesnoAlertComponent, {
       width: '400px',
-      data: {title: "Empty play queue", prompt: "Are you sure?"}
+      data: { title: "Empty play queue", prompt: "Are you sure?" }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -196,5 +195,9 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     this.snackBar.open(message, action, {
       duration: 2000,
     });
+  }
+
+  private isNullOrUndefined(o: any): boolean {
+    return o === null || o === undefined;
   }
 }
