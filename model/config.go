@@ -23,9 +23,10 @@ type Media struct {
 
 // Application contains the application relevant configurations
 type Application struct {
-	Mode     string `yaml:"mode,omitempty" json:"mode,omitempty"`
-	Loglevel string `yaml:"loglevel,omitempty" json:"loglevel,omitempty"`
-	Cors     string `yaml:"cors,omitempty" json:"cors,omitempty"`
+	Mode          string `yaml:"mode,omitempty" json:"mode,omitempty"`
+	Loglevel      string `yaml:"loglevel,omitempty" json:"loglevel,omitempty"`
+	Cors          string `yaml:"cors,omitempty" json:"cors,omitempty"`
+	TokenLifetime string `yaml:"tokenlifetime,omitempty" json:"tokenlifetime,omitempty"`
 }
 
 // Config is the root structure of the configuration

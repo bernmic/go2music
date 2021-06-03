@@ -64,6 +64,9 @@ func main() {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
 	}
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
 	databaseAccess = database.DatabaseAccess{}
 	databaseType := configuration.Configuration(false).Database.Type
 	if databaseType == "mysql" {

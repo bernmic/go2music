@@ -42,6 +42,7 @@ func getDanglingSongs(c *gin.Context) {
 func removeDanglingSongs(c *gin.Context) {
 	_, err := fs.RemoveDanglingSongs(databaseAccess.SongManager)
 	if err != nil {
+		log.Errorf("Error removing dangling songs: %v", err)
 		respondWithError(http.StatusInternalServerError, "Error removing dangling songs", c)
 		return
 	}

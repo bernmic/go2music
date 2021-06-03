@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"go2music/configuration"
 	"go2music/database"
 	"go2music/model"
 	"go2music/mysql"
@@ -35,10 +36,16 @@ func init() {
 
 // GenerateJWT generates a JSON Web Token for the given user
 func GenerateJWT(user *model.User) (tokenString string, err error) {
+	tlt := configuration.Configuration(false).Application.TokenLifetime
+	log.Infof("TLT = %s", tlt)
+	duration, err := time.ParseDuration(tlt)
+	if err != nil {
+		duration = time.Hour * 1
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"usr": user.Username,
 		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(time.Hour * 1).Unix()})
+		"exp": time.Now().Add(duration).Unix()})
 
 	// Sign and get the complete encoded token as a string
 	tokenString, err = token.SignedString([]byte("secret"))
@@ -89,6 +96,7 @@ func AuthenticateJWTString(authHeader string) (username string, valid bool) {
 		return []byte("secret"), nil
 	})
 
+	log.Infof("Token expires at %s.", time.Unix(claims.ExpiresAt, 0))
 	if token != nil && token.Valid {
 		return claims.User, true
 	} else {

@@ -140,7 +140,7 @@ func GetCoverFromID3(filename string) ([]byte, string, error) {
 	if p := id3tag.Picture(); p != nil {
 		return p.Data, p.MIMEType, nil
 	}
-	log.Warn("No cover found in ID3")
+	log.Warn("No cover found in ID3: " + filename)
 	return nil, "", errors.New("no cover found")
 }
 

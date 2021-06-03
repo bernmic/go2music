@@ -136,7 +136,7 @@ func getCover(c *gin.Context) {
 	}
 	imageBytes, mimetype, err := databaseAccess.SongManager.GetCoverForSong(song)
 	if err != nil {
-		respondWithError(http.StatusNotFound, "no cover for song not found", c)
+		respondWithError(http.StatusNotFound, "no cover for song found", c)
 		return
 	}
 

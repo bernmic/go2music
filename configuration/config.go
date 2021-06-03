@@ -62,6 +62,10 @@ func Configuration(force bool) *model.Config {
 			config.Application.Cors = "direct"
 		}
 
+		if config.Application.TokenLifetime == "" {
+			config.Application.TokenLifetime = "1h"
+		}
+
 		if config.Server.Port == 0 {
 			config.Server.Port = 8080
 		}

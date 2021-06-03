@@ -6,12 +6,19 @@ import { environment } from "../../environments/environment";
 
 @Injectable()
 export class AuthService {
-  private auth: Auth = null;
+  private AUTH = "go2music_auth";
+  private auth: Auth = JSON.parse(localStorage.getItem(this.AUTH));
 
   private loggedIn = new BehaviorSubject<boolean>(false);
   private token: string = null;
 
-  constructor(private router: Router, private http: HttpClient) { }
+  constructor(private router: Router, private http: HttpClient) {
+    if (this.auth) {
+      console.log("Found auth for user " + this.auth.username + ". Reusing this.");
+      this.token = this.auth.token;
+      this.loggedIn.next(true);
+    }
+  }
 
   get isLoggedIn() {
     return this.loggedIn.asObservable();
@@ -45,6 +52,7 @@ export class AuthService {
         this.auth = new Auth(response['token'], username, response['role'] === "admin");
         console.log("Successfully logged in with token " + this.token);
         this.loggedIn.next(true);
+        localStorage.setItem(this.AUTH, JSON.stringify(this.auth));
         this.router.navigate(['/']);
       }, error => {
         console.log("Got an error while logging in");
@@ -56,6 +64,7 @@ export class AuthService {
   logout() {                            // {4}
     this.loggedIn.next(false);
     this.auth = null;
+    localStorage.removeItem(this.AUTH);
     this.router.navigate(['/login']);
   }
 
