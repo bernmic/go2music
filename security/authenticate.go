@@ -37,7 +37,6 @@ func init() {
 // GenerateJWT generates a JSON Web Token for the given user
 func GenerateJWT(user *model.User) (tokenString string, err error) {
 	tlt := configuration.Configuration(false).Application.TokenLifetime
-	log.Infof("TLT = %s", tlt)
 	duration, err := time.ParseDuration(tlt)
 	if err != nil {
 		duration = time.Hour * 1

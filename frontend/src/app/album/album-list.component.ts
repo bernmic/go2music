@@ -39,7 +39,6 @@ export class AlbumListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.paginator.page.subscribe($event => {
-      console.log($event.pageIndex);
       this.fetchAlbums("", new Paging($event.pageIndex, $event.pageSize, "title", "asc"));
     });
 

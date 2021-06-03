@@ -52,7 +52,6 @@ export class AlbumListNewComponent implements OnInit, AfterViewInit {
   }
 
   initPaginator(numcols: number) {
-    console.log(numcols);
     if (this.linesPerPage === 0) {
       if (localStorage.getItem("albumLinesPerPage")) {
         this.linesPerPage = +localStorage.getItem("albumLinesPerPage");

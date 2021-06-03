@@ -14,7 +14,6 @@ export class AuthService {
 
   constructor(private router: Router, private http: HttpClient) {
     if (this.auth) {
-      console.log("Found auth for user " + this.auth.username + ". Reusing this.");
       this.token = this.auth.token;
       this.loggedIn.next(true);
     }
