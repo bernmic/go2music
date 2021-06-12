@@ -65,6 +65,17 @@ func GetCoverFromPath(path string) ([]byte, string, error) {
 
 	log.Infof("Found cover files: %v", files)
 	if len(files) > 0 {
+		// todo select the correct cover file
+		for _, f := range files {
+			lcFilename := filepath.Base(f.path)
+			lcFilename = strings.ToLower(lcFilename)
+			if strings.Contains(lcFilename, "cover") ||
+				strings.Contains(lcFilename, "front") ||
+				strings.Contains(lcFilename, "folder") {
+				image, err := ioutil.ReadFile(f.path)
+				return image, f.mimetype, err
+			}
+		}
 		image, err := ioutil.ReadFile(files[0].path)
 		return image, files[0].mimetype, err
 	}

@@ -2,7 +2,9 @@ package controller
 
 import (
 	"expvar"
+	"go2music/assets"
 	"go2music/model"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -107,6 +109,16 @@ func getCoverForAlbum(c *gin.Context) {
 			c.Header("Content-Length", strconv.Itoa(len(image)))
 			c.Data(http.StatusOK, mimetype, image)
 			return
+		}
+		f, err := assets.FrontendAssets.Open("/assets/img/defaultAlbum.png")
+		if err == nil {
+			image, err = ioutil.ReadAll(f)
+			if err == nil {
+				c.Header("Content-Type", "image/png")
+				c.Header("Content-Length", strconv.Itoa(len(image)))
+				c.Data(http.StatusOK, "image/png", image)
+				return
+			}
 		}
 	}
 	respondWithError(http.StatusNotFound, "No cover found", c)

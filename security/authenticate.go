@@ -95,8 +95,8 @@ func AuthenticateJWTString(authHeader string) (username string, valid bool) {
 		return []byte("secret"), nil
 	})
 
-	log.Infof("Token expires at %s.", time.Unix(claims.ExpiresAt, 0))
 	if token != nil && token.Valid {
+		log.Infof("Token expires at %s.", time.Unix(claims.ExpiresAt, 0))
 		return claims.User, true
 	} else {
 		return "", false
