@@ -3,6 +3,7 @@ package controller
 import (
 	"expvar"
 	"go2music/model"
+	"go2music/thirdparty"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,7 @@ var (
 func initArtist(r *gin.RouterGroup) {
 	r.GET("/artist", getArtists)
 	r.GET("/artist/:id", getArtist)
+	r.GET("/artist/:id/info", getArtistInfo)
 	r.GET("/artist/:id/songs", getSongForArtist)
 	r.GET("/artist/:id/albums", getAlbumsForArtist)
 }
@@ -42,6 +44,22 @@ func getArtist(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, artist)
+}
+
+func getArtistInfo(c *gin.Context) {
+	counterArtist.Add("GET /:id/info", 1)
+	id := c.Param("id")
+	artist, err := databaseAccess.ArtistManager.FindArtistById(id)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "artist not found", c)
+		return
+	}
+	artistInfo, err := thirdparty.GetArtistInfo(artist.Name)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "no informations for artist found", c)
+		return
+	}
+	c.JSON(http.StatusOK, artistInfo)
 }
 
 func getSongForArtist(c *gin.Context) {

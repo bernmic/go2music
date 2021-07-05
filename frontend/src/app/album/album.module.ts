@@ -15,6 +15,9 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {AlbumDetailComponent} from "./album-detail.component";
+import {MatChipsModule} from "@angular/material/chips";
+import {MatButtonModule} from "@angular/material/button";
 
 @NgModule({
   imports: [
@@ -22,7 +25,9 @@ import {MatTooltipModule} from "@angular/material/tooltip";
     FlexLayoutModule,
     HttpClientModule,
     RouterModule,
+    MatButtonModule,
     MatCardModule,
+    MatChipsModule,
     MatFormFieldModule,
     MatGridListModule,
     MatIconModule,
@@ -34,11 +39,13 @@ import {MatTooltipModule} from "@angular/material/tooltip";
     AlbumCoverComponent,
     AlbumCoverNewComponent,
     AlbumListComponent,
-    AlbumListNewComponent
+    AlbumListNewComponent,
+    AlbumDetailComponent
   ],
   exports: [
     AlbumListComponent,
-    AlbumListNewComponent
+    AlbumListNewComponent,
+    AlbumDetailComponent
   ],
   providers: [
     AlbumService

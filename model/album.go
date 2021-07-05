@@ -12,6 +12,8 @@ type Album struct {
 	Title string `json:"title,omitempty"`
 	// Path to the song files
 	Path string `json:"-"`
+	// Artist, if all songs from the same artist
+	Artist *Artist `json:"-"`
 }
 
 // AlbumCollection is a trunc of albums with paging informations

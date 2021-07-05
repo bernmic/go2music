@@ -30,6 +30,11 @@ export class ArtistService extends BaseService {
     return this.http.get<Artist>(environment.restserver + "/api/artist/" + id);
   }
 
+  getArtistInfo(id: string): Observable<any> {
+    return this.http.get<any>(environment.restserver + "/api/artist/" + id + "/info");
+  }
+
+
   getAlbumsForArtist(id: string): Observable<Album[]> {
     return this.http.get<Album[]>(environment.restserver + "/api/artist/" + id + "/albums");
   }

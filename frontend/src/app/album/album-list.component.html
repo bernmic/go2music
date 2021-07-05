@@ -8,7 +8,8 @@
 
   <mat-grid-list [cols]="mobileQuery.matches ? 2 : 6" rowHeight="1:1">
     <mat-grid-tile *ngFor="let album of albums">
-      <a routerLink="/song/album/{{album.albumId}}"><img [src]="cover(album)" class="cover"></a>
+      <!--<a routerLink="/song/album/{{album.albumId}}"><img [src]="cover(album)" class="cover"></a>-->
+      <a routerLink="/album/{{album.albumId}}"><img [src]="cover(album)" class="cover"></a>
     </mat-grid-tile>
   </mat-grid-list>
   <mat-paginator #paginator

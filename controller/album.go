@@ -4,6 +4,7 @@ import (
 	"expvar"
 	"go2music/assets"
 	"go2music/model"
+	"go2music/thirdparty"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -31,6 +32,7 @@ func initAlbum(r *gin.RouterGroup) {
 	//       $ref: '#/responses/HTTPError'
 	r.GET("/album", getAlbums)
 	r.GET("/album/:id", getAlbum)
+	r.GET("/album/:id/info", getAlbumInfo)
 	r.GET("/album/:id/songs", getSongForAlbum)
 	r.GET("/album/:id/cover", getCoverForAlbum)
 	r.GET("/album/:id/cover/:size", getCoverForAlbum)
@@ -60,6 +62,35 @@ func getAlbum(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, album)
+}
+
+func getAlbumInfo(c *gin.Context) {
+	counterAlbum.Add("GET /:id/info", 1)
+	id := c.Param("id")
+	album, err := databaseAccess.AlbumManager.FindAlbumById(id)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "album not found", c)
+		return
+	}
+	songs, _, err := databaseAccess.SongManager.FindSongsByAlbumId(id, model.Paging{})
+	if err != nil || len(songs) == 0 {
+		respondWithError(http.StatusInternalServerError, "No songs for album found", c)
+		return
+	}
+
+	s := songs[0].Artist.Name
+	for _, song := range songs {
+		if song.Artist.Name != s {
+			respondWithError(http.StatusUnprocessableEntity, "Multiple artists on album", c)
+			return
+		}
+	}
+	albumInfo, err := thirdparty.GetAlbumInfo(album.Title, s)
+	if err != nil {
+		respondWithError(http.StatusNotFound, "no informations for album found", c)
+		return
+	}
+	c.JSON(http.StatusOK, albumInfo)
 }
 
 func getSongForAlbum(c *gin.Context) {

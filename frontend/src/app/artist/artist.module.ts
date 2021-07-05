@@ -13,12 +13,19 @@ import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatTableModule} from "@angular/material/table";
 import {MatSortModule} from "@angular/material/sort";
+import {ArtistDetailComponent} from "./artist-detail.component";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
+import {MatChipsModule} from "@angular/material/chips";
 
 @NgModule({
   imports: [
     BrowserModule,
     HttpClientModule,
     RouterModule,
+    MatButtonModule,
+    MatCardModule,
+    MatChipsModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -30,11 +37,13 @@ import {MatSortModule} from "@angular/material/sort";
   ],
   declarations: [
     ArtistListComponent,
-    ArtistNewListComponent
+    ArtistNewListComponent,
+    ArtistDetailComponent
   ],
   exports: [
     ArtistListComponent,
-    ArtistNewListComponent
+    ArtistNewListComponent,
+    ArtistDetailComponent
   ],
   providers: [
     ArtistService

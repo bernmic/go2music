@@ -90,6 +90,7 @@ export class ArtistListComponent implements AfterViewInit, OnInit {
   );
 
   gotoSongs(artist: Artist) {
-    this.router.navigate(["/song/artist/" + artist.artistId]);
+    //this.router.navigate(["/song/artist/" + artist.artistId]);
+    this.router.navigate(["/artist/" + artist.artistId]);
   }
 }

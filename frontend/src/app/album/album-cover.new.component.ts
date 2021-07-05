@@ -24,6 +24,7 @@ export class AlbumCoverNewComponent implements OnInit{
   }
 
   gotoAlbum() {
-    this.router.navigate(["/song/album/" + this.album.albumId]);
+    //this.router.navigate(["/song/album/" + this.album.albumId]);
+    this.router.navigate(["/album/" + this.album.albumId]);
   }
 }

@@ -1,0 +1,19 @@
+<mat-card class="album-card">
+  <mat-card-header>
+    <mat-card-title>{{albumInfo?.name}}</mat-card-title>
+    <mat-card-subtitle>{{albumInfo?.artist}}</mat-card-subtitle>
+  </mat-card-header>
+  <img mat-card-image src="{{cover('large')}}">
+  <mat-card-content>
+    <p>
+      {{albumInfo?.wiki?.summary}}
+    </p>
+    <mat-chip-list *ngIf="albumInfo?.tags">
+      <mat-chip *ngFor="let tag of albumInfo.tags.tag">{{tag.name}}</mat-chip>
+    </mat-chip-list>
+  </mat-card-content>
+  <mat-card-actions>
+    <a mat-button routerLink="/song/album/{{albumId}}">Songs</a>
+    <a mat-button *ngIf="albumInfo?.url" href="{{albumInfo.url}}" target="_blank">last.fm</a>
+  </mat-card-actions>
+</mat-card>
