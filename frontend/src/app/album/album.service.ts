@@ -41,7 +41,7 @@ export class AlbumService extends BaseService {
     return this.http.get<Album>(environment.restserver + "/api/album/" + id);
   }
 
-  getAlbumInfo(id: string): Observable<any> {
+  getAlbumInfo(id: string): Observable<Album> {
     return this.http.get<any>(environment.restserver + "/api/album/" + id + "/info");
   }
 

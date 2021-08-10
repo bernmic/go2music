@@ -68,10 +68,21 @@ export class ArtistListComponent implements AfterViewInit, OnInit {
       this.pageSize = +localStorage.getItem("pageSize");
     }
     this.dataSource = new ArtistDataSource(this.artistService);
-    this.route.paramMap.subscribe((params) => {
-      this.dataSource.loadArtists("", new Paging(0, this.pageSize, "", "asc"));
+    this.route.queryParams.subscribe((params) => {
+      let filter = "";
+      if (params["filter"] !== null && params["filter"] !== undefined) {
+        filter = params["filter"];
+      }
+      this.dataSource.loadArtists(filter, new Paging(0, this.pageSize, "", "asc"));
       this.dataSource.artistTotalSubject.subscribe(total => {
         this.total = total;
+        if (total == 1) {
+          this.dataSource.artistsSubject.subscribe(artists => {
+            if (artists !== null && artists !== undefined && artists.length === 1) {
+              this.router.navigate(["/artist", artists[0].artistId])
+            }
+          });
+        }
       });
     });
   }

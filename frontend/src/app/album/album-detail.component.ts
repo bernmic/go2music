@@ -11,6 +11,7 @@ import {Album} from "./album.model";
 })
 export class AlbumDetailComponent implements OnInit {
   albumInfo: any;
+  album: Album;
   albumId: string;
 
   constructor(
@@ -24,9 +25,10 @@ export class AlbumDetailComponent implements OnInit {
         return;
       }
       this.albumId = params.get("id");
-      this.albumService.getAlbumInfo(params.get('id')).subscribe(ai => {
-        this.albumInfo = ai;
-        console.log(ai.tags);
+      this.albumService.getAlbumInfo(params.get('id')).subscribe(a => {
+        this.album = a;
+        this.albumInfo = a.info;
+        this.albumId = a.albumId;
       });
     });
   }
@@ -42,5 +44,9 @@ export class AlbumDetailComponent implements OnInit {
       }
     }
     return "";
+  }
+
+  artistClicked() {
+    this.router.navigate(["/artist/" + this.album.artist.artistId]);
   }
 }

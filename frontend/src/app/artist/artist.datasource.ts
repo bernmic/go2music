@@ -7,7 +7,7 @@ import {Artist, ArtistCollection} from "./artist.model";
 import {ArtistService} from "./artist.service";
 
 export class ArtistDataSource implements DataSource<Artist> {
-  private artistsSubject = new BehaviorSubject<Artist[]>([]);
+  public artistsSubject = new BehaviorSubject<Artist[]>([]);
   public artistTotalSubject = new BehaviorSubject<number>(0);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public artists: Artist[] = [];

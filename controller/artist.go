@@ -59,7 +59,8 @@ func getArtistInfo(c *gin.Context) {
 		respondWithError(http.StatusNotFound, "no informations for artist found", c)
 		return
 	}
-	c.JSON(http.StatusOK, artistInfo)
+	artist.Info = artistInfo
+	c.JSON(http.StatusOK, artist)
 }
 
 func getSongForArtist(c *gin.Context) {

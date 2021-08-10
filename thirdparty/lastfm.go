@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 )
 
 const (
@@ -33,6 +34,13 @@ func GetArtistInfo(artistname string) (*LastfmArtistInfo, error) {
 		log.Warnf("Error unmashal Lastfm get artistinfo: %s\n", err)
 		return nil, err
 	}
+	re := regexp.MustCompile("<a.*</a>")
+	if artistInfo.Artist.Bio != nil && artistInfo.Artist.Bio.Summary != "" {
+		artistInfo.Artist.Bio.Summary = re.ReplaceAllString(artistInfo.Artist.Bio.Summary, "..")
+	}
+	if artistInfo.Artist.Bio != nil && artistInfo.Artist.Bio.Content != "" {
+		artistInfo.Artist.Bio.Content = re.ReplaceAllString(artistInfo.Artist.Bio.Content, "..")
+	}
 	return &artistInfo.Artist, nil
 }
 
@@ -55,6 +63,13 @@ func GetAlbumInfo(albumname string, artistname string) (*LastfmAlbumInfo, error)
 	if err != nil {
 		log.Warnf("Error unmashal Lastfm get albuminfo: %s\n", err)
 		return nil, err
+	}
+	re := regexp.MustCompile("<a.*</a>")
+	if albumInfo.Album.Wiki != nil && albumInfo.Album.Wiki.Summary != "" {
+		albumInfo.Album.Wiki.Summary = re.ReplaceAllString(albumInfo.Album.Wiki.Summary, "..")
+	}
+	if albumInfo.Album.Wiki != nil && albumInfo.Album.Wiki.Content != "" {
+		albumInfo.Album.Wiki.Content = re.ReplaceAllString(albumInfo.Album.Wiki.Content, "..")
 	}
 	return albumInfo.Album, nil
 }

@@ -1,6 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {ArtistService} from "./artist.service";
+import {Artist} from "./artist.model";
 
 @Component({
   selector: 'app-artist-detail',
@@ -11,6 +12,7 @@ export class ArtistDetailComponent implements OnInit {
 
   artistInfo: any;
   artistId: string;
+  artist: Artist;
 
   constructor(
     private router: Router,
@@ -23,9 +25,10 @@ export class ArtistDetailComponent implements OnInit {
         return;
       }
       this.artistId = params.get("id");
-      this.artistService.getArtistInfo(params.get('id')).subscribe(ai => {
-        this.artistInfo = ai;
-        console.log(ai);
+      this.artistService.getArtistInfo(params.get('id')).subscribe(a => {
+        this.artistInfo = a.info;
+        this.artist = a;
+        this.artistId = a.artistId;
       });
     });
   }

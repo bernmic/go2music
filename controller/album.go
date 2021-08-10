@@ -85,12 +85,14 @@ func getAlbumInfo(c *gin.Context) {
 			return
 		}
 	}
+	album.Artist = songs[0].Artist
 	albumInfo, err := thirdparty.GetAlbumInfo(album.Title, s)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "no informations for album found", c)
 		return
 	}
-	c.JSON(http.StatusOK, albumInfo)
+	album.Info = albumInfo
+	c.JSON(http.StatusOK, album)
 }
 
 func getSongForAlbum(c *gin.Context) {

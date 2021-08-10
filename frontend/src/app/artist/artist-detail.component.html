@@ -1,17 +1,18 @@
 <mat-card class="artist-card">
   <mat-card-header>
     <mat-card-title>{{artistInfo?.name}}</mat-card-title>
-    <mat-card-subtitle>{{artistInfo?.artist}}</mat-card-subtitle>
   </mat-card-header>
   <img mat-card-image src="{{cover('large')}}">
   <mat-card-content>
     <p>
-      {{artistInfo?.bio?.summary}}
+      {{artistInfo?.bio?.summary}} <a mat-button href="{{artistInfo?.url}}" target="_blank">Read more</a>
     </p>
+    <hr/>
     <p>Similar</p>
     <mat-chip-list *ngIf="artistInfo?.similar" aria-label="Tags">
-      <mat-chip *ngFor="let artist of artistInfo.similar.artist">{{artist.name}}</mat-chip>
+      <mat-chip *ngFor="let artist of artistInfo.similar.artist" routerLink="/artist" [queryParams]="{filter: artist.name}">{{artist.name}}</mat-chip>
     </mat-chip-list>
+    <hr/>
     <p>Tags</p>
     <mat-chip-list *ngIf="artistInfo?.tags" aria-label="Tags">
       <mat-chip *ngFor="let tag of artistInfo.tags.tag">{{tag.name}}</mat-chip>
@@ -22,4 +23,3 @@
     <a mat-button *ngIf="artistInfo?.url" href="{{artistInfo.url}}" target="_blank">last.fm</a>
   </mat-card-actions>
 </mat-card>
-

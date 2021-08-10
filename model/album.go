@@ -1,5 +1,7 @@
 package model
 
+import "go2music/thirdparty"
+
 // Album is the representation of a music album
 //
 // It contains a title and the filesystem path to the songs
@@ -13,7 +15,9 @@ type Album struct {
 	// Path to the song files
 	Path string `json:"-"`
 	// Artist, if all songs from the same artist
-	Artist *Artist `json:"-"`
+	Artist *Artist `json:"artist,omitempty"`
+	// Info, last.fm info
+	Info *thirdparty.LastfmAlbumInfo `json:"info,omitempty"`
 }
 
 // AlbumCollection is a trunc of albums with paging informations

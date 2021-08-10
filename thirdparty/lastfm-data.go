@@ -5,6 +5,7 @@ package thirdparty
 type LastfmArtistInfoWrapper struct {
 	Artist LastfmArtistInfo `json:"artist,omitempty"`
 }
+
 type LastfmArtistInfo struct {
 	Name       string                `json:"name,omitempty"`
 	Mbid       string                `json:"mbid,omitempty"`
