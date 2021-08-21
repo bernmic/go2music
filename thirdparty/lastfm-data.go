@@ -13,7 +13,7 @@ type LastfmArtistInfo struct {
 	Bio        *LastFmBio            `json:"bio,omitempty"`
 	Stats      *LastfmStats          `json:"stats,omitempty"`
 	Streamable string                `json:"streamable,omitempty"`
-	Ontour     int                   `json:"ontour,omitempty"`
+	Ontour     string                `json:"ontour,omitempty"`
 	Tags       *LastfmTags           `json:"tags,omitempty"`
 	Image      []*LastfmImage        `json:"image,omitempty"`
 	Similar    *LastfmSimilarArtists `json:"similar,omitempty"`
@@ -36,8 +36,8 @@ type LastfmLinks struct {
 }
 
 type LastfmStats struct {
-	Listeners int64 `json:"listeners,omitempty"`
-	Plays     int64 `json:"plays,omitempty"`
+	Listeners string `json:"listeners,omitempty"`
+	Plays     string `json:"plays,omitempty"`
 }
 
 type LastfmTags struct {
