@@ -9,14 +9,17 @@ pipeline {
                 sh 'echo $PWD'
             }
         }
-        stage('Generate') {
-            steps {
-                echo 'Generate...'
-            }
-        }
         stage('Build') {
             steps {
                 echo 'Build...'
+                sh 'go get ./...'
+                sh 'go build ./...'
+                sh 'go build'
+            }
+        }
+        stage('test') {
+            steps {
+                echo 'Test...'
             }
         }
     }
