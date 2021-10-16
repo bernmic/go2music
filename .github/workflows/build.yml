@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - run: cd frondend
+      - run: cd frontend
       - name: Setup NodeJS
         uses: actions/setup-node@v2
         with:
