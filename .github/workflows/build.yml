@@ -18,6 +18,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      # Frontend
       - name: Setup NodeJS
         uses: actions/setup-node@v2
         with:
@@ -30,5 +31,23 @@ jobs:
         run: npm install -g @angular/cli > /dev/null
         working-directory: ./frontend
       - name: Build frontend
-        run: ng build --prod
+        run: ng build --configuration production
         working-directory: ./frontend
+      # Services
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.17'
+      - name: Install dependencies and generate artifacts
+        run: |
+          go version
+          go install golang.org/x/lint/golint
+          go generate ./...
+      - name: Build
+        run: go build -v ./...
+      - name: Lint
+        run: |
+          go vet .
+          golint
+      - name: Test
+        run: go test -v ./...
