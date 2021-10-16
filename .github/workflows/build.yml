@@ -52,3 +52,4 @@ jobs:
           golint
       - name: Test
         #run: go test -v ./...
+        run: echo "Tests should go here....."
