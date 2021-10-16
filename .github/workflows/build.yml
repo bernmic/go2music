@@ -18,12 +18,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - run: cd frondend
       - name: Setup NodeJS
         uses: actions/setup-node@v2
         with:
           node-version: '14.x'
           cache: 'npm'
-      - run: cd frondend
       - name: Install dependencies
         run: npm install
       - name: Install Angular/CLI
