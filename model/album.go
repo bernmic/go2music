@@ -1,6 +1,8 @@
 package model
 
-import "go2music/thirdparty"
+import (
+	"go2music/thirdparty"
+)
 
 // Album is the representation of a music album
 //
@@ -16,6 +18,8 @@ type Album struct {
 	Path string `json:"-"`
 	// Artist, if all songs from the same artist
 	Artist *Artist `json:"artist,omitempty"`
+	//Mbid Music Brainz ID
+	Mbid string `json:"mbid,omitempty"`
 	// Info, last.fm info
 	Info *thirdparty.LastfmAlbumInfo `json:"info,omitempty"`
 }

@@ -38,7 +38,14 @@ func (db *DB) initializeSong() {
 			log.Error("Error creating song table index for path")
 			panic(fmt.Sprintf("%v", err))
 		} else {
-			log.Info("Index on path generated....")
+			log.Info("Index on song path generated....")
+		}
+		_, err = db.Exec("CREATE INDEX song_mbid ON song (mbid)")
+		if err != nil {
+			log.Error("Error creating song table index for mbid")
+			panic(fmt.Sprintf("%v", err))
+		} else {
+			log.Info("Index on song mbid generated....")
 		}
 	}
 }
@@ -46,7 +53,7 @@ func (db *DB) initializeSong() {
 // CreateSong create a new song in the database
 func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 	song.Id = xid.New().String()
-	_, err := db.Exec(sanitizePlaceholder("INSERT INTO song (id, path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, vbr, added, filedate, rating) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"),
+	_, err := db.Exec(sanitizePlaceholder("INSERT INTO song (id, path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, vbr, added, filedate, rating, mbid) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"),
 		song.Id,
 		song.Path,
 		song.Title,
@@ -62,7 +69,8 @@ func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 		song.Vbr,
 		song.Added,
 		song.Filedate,
-		song.Rating)
+		song.Rating,
+		song.Mbid)
 	if err != nil {
 		log.Error(err)
 	}
@@ -71,7 +79,7 @@ func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 
 // UpdateSong update the given song in the database
 func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
-	_, err := db.Exec(sanitizePlaceholder("UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=?, bitrate=?, samplerate=?, duration=?, mode=?, vbr=?, added=?, filedate=?, rating=? WHERE id=?"),
+	_, err := db.Exec(sanitizePlaceholder("UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=?, bitrate=?, samplerate=?, duration=?, mode=?, vbr=?, added=?, filedate=?, rating=?, mbid=? WHERE id=?"),
 		song.Path,
 		song.Title,
 		song.Artist.Id,
@@ -87,6 +95,7 @@ func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
 		song.Added,
 		song.Filedate,
 		song.Rating,
+		song.Mbid,
 		song.Id)
 	return &song, err
 }
@@ -130,6 +139,7 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 	var albumId sql.NullString
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
+	var mbid sql.NullString
 	err := db.QueryRow(sanitizePlaceholder(stmt), id).Scan(
 		&song.Id,
 		&song.Path,
@@ -149,7 +159,8 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 		&artistName,
 		&albumId,
 		&albumTitle,
-		&albumPath)
+		&albumPath,
+		&mbid)
 	if err != nil {
 		log.Errorf("Error get song: %v", err)
 		return nil, err
@@ -165,6 +176,9 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 		song.Album.Title = albumTitle.String
 		song.Album.Path = albumPath.String
 	}
+	if mbid.Valid {
+		song.Mbid = mbid.String
+	}
 	return song, err
 }
 
@@ -175,6 +189,7 @@ func fetchSongs(rows *sql.Rows) ([]*model.Song, error) {
 	var albumId sql.NullString
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
+	var mbid sql.NullString
 	for rows.Next() {
 		song := new(model.Song)
 		err := rows.Scan(
@@ -196,7 +211,8 @@ func fetchSongs(rows *sql.Rows) ([]*model.Song, error) {
 			&artistName,
 			&albumId,
 			&albumTitle,
-			&albumPath)
+			&albumPath,
+			&mbid)
 		if err != nil {
 			log.Error(err)
 		}
@@ -210,6 +226,9 @@ func fetchSongs(rows *sql.Rows) ([]*model.Song, error) {
 			song.Album.Id = albumId.String
 			song.Album.Title = albumTitle.String
 			song.Album.Path = albumPath.String
+		}
+		if mbid.Valid {
+			song.Mbid = mbid.String
 		}
 		songs = append(songs, song)
 	}

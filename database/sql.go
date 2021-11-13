@@ -19,6 +19,7 @@ const (
 		added INT NOT NULL,
 		filedate INT NOT NULL,
 		rating INT NOT NULL,
+		mbid VARCHAR(36),
 		PRIMARY KEY (id),
 		FOREIGN KEY (artist_id) REFERENCES artist(id),
 		FOREIGN KEY (album_id) REFERENCES album(id)
@@ -58,7 +59,8 @@ SELECT
 	artist.name,
 	album.id album_id,
 	album.title album_title,
-	album.path album_path
+	album.path album_path,
+	song.mbid
 FROM
 	song
 LEFT JOIN artist ON song.artist_id = artist.id

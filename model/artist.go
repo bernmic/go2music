@@ -1,11 +1,14 @@
 package model
 
-import "go2music/thirdparty"
+import (
+	"go2music/thirdparty"
+)
 
 // Artist is the representation of an artist with its name
 type Artist struct {
 	Id   string                       `json:"artistId,omitempty"`
 	Name string                       `json:"name,omitempty"`
+	Mbid string                       `json:"mbid,omitempty"`
 	Info *thirdparty.LastfmArtistInfo `json:"info,omitempty"`
 }
 

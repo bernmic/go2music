@@ -90,14 +90,19 @@ type LastfmTracks struct {
 }
 
 type LastfmTrack struct {
-	Artist   *LastfmArtistInfo `json:"artist,omitempty"`
-	Attr     *LastfmTrackAttr  `json:"@attr,omitempty"`
-	Duration int               `json:"duration,omitempty"`
-	Name     string            `json:"name,omitempty"`
-	Url      string            `json:"url,omitempty"`
-	Mbid     string            `json:"mbid,omitempty"`
+	Artist    *LastfmArtistInfo `json:"artist,omitempty"`
+	Album     *LastfmAlbumInfo  `json:"album,omitempty"`
+	Wiki      *LastfmAlbumWiki  `json:"wiki,omitempty"`
+	Attr      *LastfmTrackAttr  `json:"@attr,omitempty"`
+	Duration  int               `json:"duration,omitempty"`
+	Name      string            `json:"name,omitempty"`
+	Url       string            `json:"url,omitempty"`
+	Mbid      string            `json:"mbid,omitempty"`
+	Listeners int               `json:"listeners,omitempty"`
+	Playcount int               `json:"playcount,omitempty"`
 }
 
 type LastfmTrackAttr struct {
-	Rank int `json:"rank,omitempty"`
+	Rank     int `json:"rank,omitempty"`
+	Position int `json:"position,omitempty"`
 }
