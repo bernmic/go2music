@@ -72,7 +72,7 @@ func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 		song.Rating,
 		song.Mbid)
 	if err != nil {
-		log.Error(err)
+		err = fmt.Errorf("Error inserting row to database: %v", err)
 	}
 	return &song, err
 }
@@ -97,6 +97,9 @@ func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
 		song.Rating,
 		song.Mbid,
 		song.Id)
+	if err != nil {
+		err = fmt.Errorf("Error updating row to database: %v", err)
+	}
 	return &song, err
 }
 
@@ -234,7 +237,7 @@ func fetchSongs(rows *sql.Rows) ([]*model.Song, error) {
 	}
 	err := rows.Err()
 	if err != nil {
-		log.Error(err)
+		err = fmt.Errorf("Error fetchins songs from database: %v", err)
 	}
 	return songs, err
 }

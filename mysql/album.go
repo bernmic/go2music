@@ -41,7 +41,7 @@ func (db *DB) initializeAlbum() {
 // CreateAlbum create a new album in the database
 func (db *DB) CreateAlbum(album model.Album) (*model.Album, error) {
 	album.Id = xid.New().String()
-	_, err := db.Exec(sanitizePlaceholder("INSERT INTO album (id, title, path) VALUES(?, ?, ?, ?)"), album.Id, album.Title, album.Path, album.Mbid)
+	_, err := db.Exec(sanitizePlaceholder("INSERT INTO album (id, title, path, mbid) VALUES(?, ?, ?, ?)"), album.Id, album.Title, album.Path, album.Mbid)
 	if err != nil {
 		log.Error(err)
 	}
@@ -55,7 +55,7 @@ func (db *DB) CreateIfNotExistsAlbum(album model.Album) (*model.Album, error) {
 	if findErr == nil {
 		return existingAlbum, findErr
 	}
-	_, err := db.Exec(sanitizePlaceholder("INSERT INTO album (id, title, path) VALUES(?, ?, ?, ?)"), album.Id, album.Title, album.Path, album.Mbid)
+	_, err := db.Exec(sanitizePlaceholder("INSERT INTO album (id, title, path, mbid) VALUES(?, ?, ?, ?)"), album.Id, album.Title, album.Path, album.Mbid)
 	if err != nil {
 		log.Error(err)
 	}
