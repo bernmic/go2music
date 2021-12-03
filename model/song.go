@@ -31,9 +31,9 @@ type SongCollection struct {
 
 // UserSong contains the user specific informations of songs
 type UserSong struct {
-	UserId     string
-	SongId     string
-	Rating     int
-	PlayCount  int
-	LastPlayed int64
+	UserId     string `json:"userId"`
+	SongId     string `json:"songId"`
+	Rating     int    `json:"rating"`
+	PlayCount  int    `json:"playCount"`
+	LastPlayed int64  `json:"lastPlayed"`
 }

@@ -14,10 +14,10 @@ func TestMain(m *testing.M) {
 	// Pretend to open our DB connection
 	url := os.Getenv("DATABASE_URL")
 	if url == "" {
-		url = "go2music:go2music@/go2music_test"
+		return
 	}
 
-	db, err := sql.Open("mysql", url)
+	db, err := sql.Open("postgres", url)
 	if err != nil {
 		fmt.Printf("Error opening service " + url)
 		panic(fmt.Sprintf("%v", err))

@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 	}
 	if err := db.Ping(); err != nil {
 		fmt.Printf("Error accessing database: %v\n", err)
-		os.Exit(1)
+		return
 	}
 	testDatabase = DB{*db}
 	cleanDatabase(db)

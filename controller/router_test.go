@@ -14,10 +14,6 @@ type MockDB struct {
 var testRouter *gin.Engine
 
 func TestMain(m *testing.M) {
-	mockDB := MockDB{}
-	albumManager = &mockDB
-	artistManager = &mockDB
-
 	testRouter = gin.Default()
 	initAlbum(&testRouter.RouterGroup)
 	initArtist(&testRouter.RouterGroup)
