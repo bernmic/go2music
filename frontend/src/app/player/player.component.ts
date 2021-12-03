@@ -135,7 +135,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     });
     this.audio.play();
     setInterval(() => {
-      const pos = this.audio.seek();
+      const pos: any = this.audio.seek();
       this.position = (pos instanceof Howl) ? 0 : Math.round(pos);
       this.progress = (pos instanceof Howl) ? 0 : Math.round(pos * 100.0 / this.audio.duration());
     }, 1000);
