@@ -19,7 +19,7 @@ func Filescanner(root string, extension string) ([]string, error) {
 				return err
 			}
 			if strings.HasSuffix(strings.ToLower(path), extension) && !info.IsDir() {
-				result = append(result, path)
+				result = append(result, strings.ReplaceAll(path, "\\", "/"))
 			}
 			return nil
 		})
