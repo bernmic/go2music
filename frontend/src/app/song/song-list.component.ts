@@ -149,8 +149,10 @@ export class SongListComponent implements AfterViewInit, OnInit {
 
   cellClicked(song: Song, column: string) {
     if (column === "album.title") {
+      console.log("navigate to album " + song.album.albumId)
       this.router.navigate(["/song/album/" + song.album.albumId]);
     } else if (column === "artist.name") {
+      console.log("navigate to artist " + song.artist.artistId)
       this.router.navigate(["/song/artist/" + song.artist.artistId]);
     } else if (column === "genre") {
       this.router.navigate(["/song/genre/" + song.genre]);

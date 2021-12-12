@@ -3,6 +3,8 @@ package controller
 import (
 	"expvar"
 	"go2music/fs"
+	"go2music/model"
+	"go2music/thirdparty"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -22,6 +24,12 @@ func initSync(r *gin.RouterGroup) {
 	r.DELETE("/sync/dangling/:id", removeDanglingSong)
 	r.DELETE("/sync/emptyalbums", removeEmptyAlbums)
 	r.PUT("/sync/album/:id", setAlbumTitleToFoldername)
+	r.POST("/sync/lastfm", syncLastFM)
+}
+
+func syncLastFM(c *gin.Context) {
+	go SyncMbIdsWithLastFM()
+	c.JSON(http.StatusOK, gin.H{"sync": "started"})
 }
 
 func getSyncInfo(c *gin.Context) {
@@ -79,4 +87,29 @@ func setAlbumTitleToFoldername(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, fs.GetSyncState())
+}
+
+func SyncMbIdsWithLastFM() {
+	log.Info("Start syncing Mbid's with LastFM")
+	artists, _, err := databaseAccess.ArtistManager.FindAllArtists("", model.Paging{
+		Page:      0,
+		Size:      0,
+		Sort:      "",
+		Direction: "",
+	})
+
+	if err != nil {
+		log.Errorf("Error getting artists for LastFM sync: %v", err)
+		return
+	}
+	for _, artist := range artists {
+		if artist.Mbid == "" {
+			info, err := thirdparty.GetArtistInfo(artist.Name)
+			if err == nil && info.Mbid != "" {
+				artist.Mbid = info.Mbid
+				databaseAccess.ArtistManager.UpdateArtist(*artist)
+			}
+		}
+	}
+	log.Info("Finished syncing Mbid's with LastFM")
 }
