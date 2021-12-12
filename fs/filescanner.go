@@ -2,18 +2,33 @@ package fs
 
 import (
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var result []string
 
-// Filescanner gets a list of all files having the given extension recursive in den path
-func Filescanner(root string, extension string, level ...int) ([]string, error) {
+func Filescanner(root string, extension string) ([]string, error) {
+	result := make([]string, 0)
+	err := filepath.Walk(root,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if strings.HasSuffix(strings.ToLower(path), extension) && !info.IsDir() {
+				result = append(result, path)
+			}
+			return nil
+		})
+
+	return result, err
+}
+
+// Filescanner gets a list of all files having the given extension recursive in the path
+func FilescannerOld(root string, extension string, level ...int) ([]string, error) {
 	var clevel int
 	if clevel = 0; len(level) > 0 {
 		clevel = level[0]
@@ -29,7 +44,7 @@ func Filescanner(root string, extension string, level ...int) ([]string, error) 
 	}
 	for _, file := range files {
 		if file.IsDir() {
-			Filescanner(root+"/"+file.Name(), extension, clevel+1)
+			FilescannerOld(root+"/"+file.Name(), extension, clevel+1)
 		} else if strings.HasSuffix(strings.ToLower(file.Name()), extension) {
 			result = append(result, root+"/"+file.Name())
 		}
