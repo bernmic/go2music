@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"go2music/configuration"
 	"go2music/tagging"
 	"net/http"
 	"strings"
@@ -16,15 +17,15 @@ import (
 var m *tagging.Media
 
 func initTagging(r *gin.RouterGroup) {
-	m = tagging.NewMedia("")
-	r.GET("/media", media)
-	r.PUT("/media", setMedia)
+	//m = tagging.NewMedia("")
+	r.GET("/tagging/media", media)
+	r.PUT("/tagging/media", setMedia)
 
-	r.GET("/song", songsFromMedia)
-	r.GET("/song/:file", song)
-	r.GET("/song/:file/cover", cover)
-	r.PUT("/song/:file", setTag)
-	r.DELETE("/song/:file", removeTag)
+	r.GET("/tagging/song", songsFromMedia)
+	r.GET("/tagging/song/:file", song)
+	r.GET("/tagging/song/:file/cover", cover)
+	r.PUT("/tagging/song/:file", setTag)
+	r.DELETE("/tagging/song/:file", removeTag)
 }
 
 func media(c *gin.Context) {
@@ -39,12 +40,13 @@ func setMedia(c *gin.Context) {
 		return
 	}
 	m.MediaPath = m2.MediaPath
+	configuration.Configuration(false).Tagging.Path = m2.MediaPath
 	media(c)
 }
 
 func songsFromMedia(c *gin.Context) {
 	dir := c.Query("path")
-	files, dirs, err := m.ParseDir(dir)
+	files, dirs, err := tagging.ParseDir(dir)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 	} else {

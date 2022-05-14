@@ -43,6 +43,7 @@ func initRouter() {
 		initSong(api)
 		initPlaylist(api)
 		initInfo(api)
+		initTagging(api)
 	}
 	if configuration.Configuration(false).Application.Cors == "all" {
 		api.Use(CorsMiddleware())
