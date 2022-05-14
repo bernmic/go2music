@@ -9,6 +9,7 @@ import (
 	"github.com/go-flac/go-flac"
 )
 
+// ParseFlac gets metadata from a flac song
 func (m *Media) ParseFlac(file string) (*TaggingSong, error) {
 	vc, pic, si := extractFLACComment(file)
 	//fmt.Printf("%v, %d", vc, pic)

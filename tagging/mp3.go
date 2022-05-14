@@ -6,6 +6,7 @@ import (
 	"github.com/bogem/id3v2/v2"
 )
 
+// ParseMP3 gets ID3V2 metadata from a mp3 file
 func (m *Media) ParseMP3(f string) (*TaggingSong, error) {
 	//log.Printf("Parsing %s\n", f)
 	tag, err := id3v2.Open(f, id3v2.Options{Parse: true})
@@ -66,6 +67,7 @@ func (m *Media) mp3Song(tag *id3v2.Tag) (*TaggingSong, error) {
 	return &songData, nil
 }
 
+// SongMP3 writes ID3V2 metadata to a mp3 file
 func (m *Media) SongMP3(TaggingSong *TaggingSong, tag *id3v2.Tag) error {
 	tag.SetTitle(TaggingSong.Title)
 	tag.SetArtist(TaggingSong.Artist)

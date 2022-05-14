@@ -153,6 +153,7 @@ var _genres = map[byte]string{
 	125: "dance_hall",
 }
 
+// Open reads ID3V1 tag from file and returns all found data or nil and an error
 func Open(file string) (*V1Tag, error) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -190,6 +191,7 @@ func Open(file string) (*V1Tag, error) {
 	return &tag, nil
 }
 
+// HasID3V1 checks if a file has an ID3V1 header
 func HasID3V1(file string) bool {
 	f, err := os.Open(file)
 	if err != nil {
@@ -214,6 +216,7 @@ func HasID3V1(file string) bool {
 	return string(data[:3]) == "TAG"
 }
 
+// RemoveID3V1 removes an ID3V1 header if exists
 func RemoveID3V1(file string, removeTmp bool) error {
 	if HasID3V1(file) {
 		s, err := ioutil.ReadFile(file)

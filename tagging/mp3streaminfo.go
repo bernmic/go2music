@@ -37,6 +37,7 @@ type MP3Frame struct {
 	Channel    uint8
 }
 
+// StreamInfo gets stream information from a mp3 file
 func StreamInfo(filename string) (*Mp3StreamInfo, error) {
 	var pos int64
 	f, err := os.Open(filename)
