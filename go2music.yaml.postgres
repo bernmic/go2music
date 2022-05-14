@@ -20,3 +20,5 @@ media:
   path: /mnt/t/Sortiert/Audio
   syncfrequency: 1800s
   syncatstart: true
+tagging:
+  path: /mnt/t/Unsortiert/Audio

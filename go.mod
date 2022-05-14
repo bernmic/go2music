@@ -3,12 +3,16 @@ module go2music
 go 1.16
 
 require (
+	github.com/bogem/id3v2/v2 v2.1.2 // indirect
 	github.com/creack/pty v1.1.17 // indirect
 	github.com/dhowden/tag v0.0.0-20201120070457-d52dcb253c63
 	github.com/disintegration/imaging v1.6.2
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
 	github.com/gin-gonic/gin v1.7.7
+	github.com/go-flac/flacpicture v0.2.0 // indirect
+	github.com/go-flac/flacvorbis v0.1.0 // indirect
+	github.com/go-flac/go-flac v0.3.1 // indirect
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.6.0

@@ -2,11 +2,12 @@ package configuration
 
 import (
 	"flag"
-	log "github.com/sirupsen/logrus"
 	"go2music/model"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
+
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 var config model.Config
@@ -78,6 +79,12 @@ func Configuration(force bool) *model.Config {
 		if config.Media.Syncfrequency == "" {
 			config.Media.Syncfrequency = "30m"
 			config.Media.SyncAtStart = true
+		}
+		if config.Tagging.Path == "" {
+			config.Tagging.Path = os.Getenv("GO2MUSIC_TAGGINGPATH")
+			if config.Tagging.Path == "" {
+				config.Tagging.Path = "${home}/Music"
+			}
 		}
 		if config.Database.Type == "" {
 			config.Database.Username = os.Getenv("GO2MUSIC_DBUSERNAME")

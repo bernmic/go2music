@@ -35,4 +35,10 @@ type Config struct {
 	Server      Server      `yaml:"server,omitempty" json:"server,omitempty"`
 	Database    Database    `yaml:"database,omitempty" json:"database,omitempty"`
 	Media       Media       `yaml:"media,omitempty" json:"media,omitempty"`
+	Tagging     Tagging     `yaml:"tagging,omitempty" json:"tagging,omitempty"`
+}
+
+// Tagging contains the configuration for the tagging features
+type Tagging struct {
+	Path string `yaml:"path,omitempty" json:"path,omitempty"`
 }
