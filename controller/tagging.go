@@ -17,7 +17,7 @@ import (
 var m *tagging.Media
 
 func initTagging(r *gin.RouterGroup) {
-	//m = tagging.NewMedia("")
+	m = tagging.NewMedia("")
 	r.GET("/tagging/media", media)
 	r.PUT("/tagging/media", setMedia)
 
