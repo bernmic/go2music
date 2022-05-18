@@ -2,6 +2,7 @@ package controller
 
 import (
 	"expvar"
+	"go2music/metrics"
 	"go2music/model"
 	"net/http"
 	"os"
@@ -26,6 +27,7 @@ func initSong(r *gin.RouterGroup) {
 
 func getSongs(c *gin.Context) {
 	counterSong.Add("GET /", 1)
+	metrics.PageRequest("api_song")
 	paging := extractPagingFromRequest(c)
 	filter := extractFilterFromRequest(c)
 	songs, total, err := databaseAccess.SongManager.FindAllSongs(filter, paging)
@@ -39,6 +41,7 @@ func getSongs(c *gin.Context) {
 
 func getSong(c *gin.Context) {
 	counterSong.Add("GET /:id", 1)
+	metrics.PageRequest("api_song_id")
 	id := c.Param("id")
 	song, err := databaseAccess.SongManager.FindOneSong(id)
 	if err != nil {
@@ -50,6 +53,7 @@ func getSong(c *gin.Context) {
 
 func streamSong(c *gin.Context) {
 	counterSong.Add("GET /:id/stream", 1)
+	metrics.PageRequest("api_song_id_stream")
 	id := c.Param("id")
 	song, err := databaseAccess.SongManager.FindOneSong(id)
 	if err != nil {
@@ -95,6 +99,7 @@ func streamSong(c *gin.Context) {
 
 func rateSong(c *gin.Context) {
 	counterSong.Add("GET /:id/rate/:rating", 1)
+	metrics.PageRequest("api_song_id_rate_rating")
 	id := c.Param("id")
 	rating, err := strconv.Atoi(c.Param("rating"))
 	if err != nil {
@@ -118,6 +123,7 @@ func rateSong(c *gin.Context) {
 
 func getCover(c *gin.Context) {
 	counterSong.Add("GET /:id/cover", 1)
+	metrics.PageRequest("api_song_id_cover")
 	id := c.Param("id")
 	s := c.Param("size")
 	size := COVER_SIZE

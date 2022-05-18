@@ -5,6 +5,7 @@ import (
 	"go2music/model"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -85,6 +86,20 @@ func Configuration(force bool) *model.Config {
 			if config.Tagging.Path == "" {
 				config.Tagging.Path = "${home}/Music"
 			}
+		}
+		if config.Metrics.Collect == false {
+			s := os.Getenv("GO2MUSIC_METRICS_COLLECT")
+			if s != "" {
+				b, err := strconv.ParseBool(s)
+				if err == nil {
+					config.Metrics.Collect = b
+				} else {
+					log.Warnf("format error in metrics.collect. expecting bool got %s", s)
+				}
+			}
+		}
+		if config.Metrics.Port == 0 {
+			config.Server.Port = 2112
 		}
 		if config.Database.Type == "" {
 			config.Database.Username = os.Getenv("GO2MUSIC_DBUSERNAME")

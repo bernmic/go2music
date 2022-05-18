@@ -5,6 +5,7 @@ import (
 	"go2music/assets"
 	"go2music/configuration"
 	"go2music/database"
+	"go2music/metrics"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -18,6 +19,7 @@ import (
 
 var (
 	router         *gin.Engine
+	metricsRouter  *gin.Engine
 	databaseAccess *database.DatabaseAccess
 )
 
@@ -30,7 +32,9 @@ func initRouter() {
 	if configuration.Configuration(false).Application.Cors == "all" {
 		router.Use(CorsMiddleware())
 	}
-
+	if configuration.Configuration(false).Metrics.Collect {
+		router.Use(metrics.PrometheusMetricsMiddleware())
+	}
 	router.GET("/debug/vars", expvar.Handler())
 
 	initAuthentication(&router.RouterGroup)
@@ -61,6 +65,14 @@ func initRouter() {
 	}
 
 	router.NoRoute(noRoute)
+
+	if configuration.Configuration(false).Metrics.Collect {
+		metricsRouter = gin.New()
+		metricsRouter.GET("/metrics", metrics.PrometheusHandler())
+		mp := fmt.Sprintf(":%d", configuration.Configuration(false).Metrics.Port)
+		//router.Use(metrics.PrometheusMetricsMiddleware())
+		go metricsRouter.Run(mp)
+	}
 }
 
 func noRoute(c *gin.Context) {

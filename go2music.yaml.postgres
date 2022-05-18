@@ -22,3 +22,7 @@ media:
   syncatstart: true
 tagging:
   path: /mnt/t/Unsortiert/Audio
+Metrics:
+  Collect: true
+  Port: 8081
+  

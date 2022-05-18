@@ -36,9 +36,16 @@ type Config struct {
 	Database    Database    `yaml:"database,omitempty" json:"database,omitempty"`
 	Media       Media       `yaml:"media,omitempty" json:"media,omitempty"`
 	Tagging     Tagging     `yaml:"tagging,omitempty" json:"tagging,omitempty"`
+	Metrics     Metrics     `yaml:"metrics,omitempty" json:"metrics,omitempty"`
 }
 
 // Tagging contains the configuration for the tagging features
 type Tagging struct {
 	Path string `yaml:"path,omitempty" json:"path,omitempty"`
+}
+
+// Metrics contains the configuration for the metrics
+type Metrics struct {
+	Collect bool `yaml:"collect,omitempty" json:"collect,omitempty"`
+	Port    int  `yaml:"port,omitempty" json:"port,omitempty"`
 }
