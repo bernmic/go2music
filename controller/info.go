@@ -23,7 +23,7 @@ func initInfo(r *gin.RouterGroup) {
 
 func getInfo(c *gin.Context) {
 	counterInfo.Add("GET /", 1)
-	info, err := databaseAccess.InfoManager.Info()
+	info, err := databaseAccess.InfoManager.Info(false)
 	if err == nil {
 		c.JSON(http.StatusOK, info)
 		return

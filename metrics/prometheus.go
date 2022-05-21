@@ -4,29 +4,33 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go2music/database"
 )
 
 var (
-	status  map[int]prometheus.Counter
-	pages   map[string]prometheus.Counter
-	methods *prometheus.CounterVec
-	collect bool = false
+	requests       *prometheus.CounterVec
+	collect        bool = false
+	databaseAccess *database.DatabaseAccess
+	statistics     *prometheus.GaugeVec
 )
 
 func init() {
-	pages = make(map[string]prometheus.Counter, 0)
-	status = make(map[int]prometheus.Counter, 0)
-	methods = prometheus.NewCounterVec(prometheus.CounterOpts{
+	statistics = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "statistics",
+		Help: "statistics about songs, artist, etc",
+	}, []string{"value"})
+	prometheus.MustRegister(statistics)
+	requests = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "http_total",
 		Help: "The total number of http requests",
-	}, []string{"method"})
-	prometheus.MustRegister(methods)
+	}, []string{"method", "uri", "status"})
+	prometheus.MustRegister(requests)
 }
 
-func PrometheusHandler() gin.HandlerFunc {
+func PrometheusHandler(da *database.DatabaseAccess) gin.HandlerFunc {
 	collect = true
+	databaseAccess = da
 	h := promhttp.Handler()
 
 	return func(c *gin.Context) {
@@ -36,26 +40,16 @@ func PrometheusHandler() gin.HandlerFunc {
 
 func PrometheusMetricsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		methods.With(prometheus.Labels{"method": c.Request.Method}).Inc()
 		c.Next()
-		if status[c.Writer.Status()] == nil {
-			status[c.Writer.Status()] = promauto.NewCounter(prometheus.CounterOpts{
-				Name: fmt.Sprintf("http_%d_total", c.Writer.Status()),
-				Help: fmt.Sprintf("The total number of http requests with status %d", c.Writer.Status()),
-			})
+		m, err := databaseAccess.InfoManager.Info(true)
+		if err == nil {
+			statistics.With(prometheus.Labels{"value": "songs"}).Set(float64(m.SongCount))
+			statistics.With(prometheus.Labels{"value": "artists"}).Set(float64(m.ArtistCount))
+			statistics.With(prometheus.Labels{"value": "albums"}).Set(float64(m.AlbumCount))
+			statistics.With(prometheus.Labels{"value": "playlists"}).Set(float64(m.PlaylistCount))
+			statistics.With(prometheus.Labels{"value": "users"}).Set(float64(m.UserCount))
+			statistics.With(prometheus.Labels{"value": "totalLength"}).Set(float64(m.TotalLength))
 		}
-		status[c.Writer.Status()].Inc()
-	}
-}
-
-func PageRequest(url string) {
-	if collect {
-		if pages[url] == nil {
-			pages[url] = promauto.NewCounter(prometheus.CounterOpts{
-				Name: fmt.Sprintf("page_%s_total", url),
-				Help: fmt.Sprintf("The total number of requests for page %s", url),
-			})
-		}
-		pages[url].Inc()
+		requests.With(prometheus.Labels{"method": c.Request.Method, "uri": c.FullPath(), "status": fmt.Sprintf("%d", c.Writer.Status())}).Inc()
 	}
 }

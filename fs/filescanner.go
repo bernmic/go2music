@@ -2,6 +2,7 @@ package fs
 
 import (
 	"errors"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
@@ -9,8 +10,7 @@ import (
 	"strings"
 )
 
-var result []string
-
+// Filescanner gets a list of all files having the given extension recursive in the path
 func Filescanner(root string, extension string) ([]string, error) {
 	result := make([]string, 0)
 	err := filepath.Walk(root,
@@ -27,32 +27,6 @@ func Filescanner(root string, extension string) ([]string, error) {
 	return result, err
 }
 
-// Filescanner gets a list of all files having the given extension recursive in the path
-func FilescannerOld(root string, extension string, level ...int) ([]string, error) {
-	var clevel int
-	if clevel = 0; len(level) > 0 {
-		clevel = level[0]
-	}
-	files, err := ioutil.ReadDir(root)
-	if err != nil {
-		log.Error("error reading dir: ", err)
-		return nil, err
-	}
-	if clevel == 0 {
-		result = nil
-		extension = strings.ToLower(extension)
-	}
-	for _, file := range files {
-		if file.IsDir() {
-			FilescannerOld(root+"/"+file.Name(), extension, clevel+1)
-		} else if strings.HasSuffix(strings.ToLower(file.Name()), extension) {
-			result = append(result, root+"/"+file.Name())
-		}
-	}
-
-	return result, nil
-}
-
 // ImageType contains data about an image
 type ImageFile struct {
 	path     string
@@ -62,7 +36,7 @@ type ImageFile struct {
 // GetCoverFromPath gets a cover from the path if there is one
 func GetCoverFromPath(path string) ([]byte, string, error) {
 	var files []ImageFile
-	filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
 		if err == nil && !f.IsDir() {
 			ext := strings.ToLower(f.Name())
 			if filepath.Ext(ext) == ".gif" {
@@ -78,6 +52,9 @@ func GetCoverFromPath(path string) ([]byte, string, error) {
 		return nil
 	})
 
+	if err != nil {
+		return nil, "", fmt.Errorf("error in Walk: %v", err)
+	}
 	log.Infof("Found cover files: %v", files)
 	if len(files) > 0 {
 		// todo select the correct cover file

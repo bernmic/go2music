@@ -68,9 +68,8 @@ func initRouter() {
 
 	if configuration.Configuration(false).Metrics.Collect {
 		metricsRouter = gin.New()
-		metricsRouter.GET("/metrics", metrics.PrometheusHandler())
+		metricsRouter.GET("/metrics", metrics.PrometheusHandler(databaseAccess))
 		mp := fmt.Sprintf(":%d", configuration.Configuration(false).Metrics.Port)
-		//router.Use(metrics.PrometheusMetricsMiddleware())
 		go metricsRouter.Run(mp)
 	}
 }

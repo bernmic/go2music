@@ -43,61 +43,68 @@ order by
 `
 )
 
+var (
+	infoCache  = model.Info{}
+	dirtyCache = true
+)
+
 func (db *DB) initializeInfo() {
 }
 
 // Info returns the dashboard informations
-func (db *DB) Info() (*model.Info, error) {
-	info := model.Info{}
-
+func (db *DB) Info(cached bool) (*model.Info, error) {
+	if cached && !dirtyCache {
+		return &infoCache, nil
+	}
 	var waiter sync.WaitGroup
 	waiter.Add(10)
 	go func() {
 		defer waiter.Done()
-		info.SongCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song"))
+		infoCache.SongCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song"))
 	}()
 	go func() {
 		defer waiter.Done()
-		info.TotalLength = db.countRows(sanitizePlaceholder("SELECT SUM(duration) FROM song"))
+		infoCache.TotalLength = db.countRows(sanitizePlaceholder("SELECT SUM(duration) FROM song"))
 	}()
 	go func() {
 		defer waiter.Done()
-		info.AlbumCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM album"))
+		infoCache.AlbumCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM album"))
 	}()
 	go func() {
 		defer waiter.Done()
-		info.ArtistCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM artist"))
+		infoCache.ArtistCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM artist"))
 	}()
 	go func() {
 		defer waiter.Done()
-		info.PlaylistCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM playlist"))
+		infoCache.PlaylistCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM playlist"))
 	}()
 	go func() {
 		defer waiter.Done()
-		info.UserCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM guser"))
+		infoCache.UserCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM guser"))
 	}()
 	go func() {
 		defer waiter.Done()
 		songs, _ := db.FindRecentlyAddedSongs(5)
-		info.SongsRecentlyAdded = songs
+		infoCache.SongsRecentlyAdded = songs
 	}()
 	go func() {
 		defer waiter.Done()
 		songs, _ := db.FindRecentlyPlayedSongs(5)
-		info.SongsRecentlyPlayed = songs
+		infoCache.SongsRecentlyPlayed = songs
 	}()
 	go func() {
 		defer waiter.Done()
 		songs, _ := db.FindMostPlayedSongs(5)
-		info.SongsMostPlayed = songs
+		infoCache.SongsMostPlayed = songs
 	}()
 	go func() {
 		defer waiter.Done()
 		albums, _ := db.FindRecentlyAddedAlbums(5)
-		info.AlbumsRecentlyAdded = albums
+		infoCache.AlbumsRecentlyAdded = albums
 	}()
 	waiter.Wait()
-	return &info, nil
+	dirtyCache = false
+	return &infoCache, nil
 }
 
 func (db *DB) GetDecades() ([]*model.NameCount, error) {

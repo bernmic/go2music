@@ -2,8 +2,9 @@ package controller
 
 import (
 	"expvar"
-	"go2music/metrics"
+	"go2music/assets"
 	"go2music/model"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -27,7 +28,6 @@ func initSong(r *gin.RouterGroup) {
 
 func getSongs(c *gin.Context) {
 	counterSong.Add("GET /", 1)
-	metrics.PageRequest("api_song")
 	paging := extractPagingFromRequest(c)
 	filter := extractFilterFromRequest(c)
 	songs, total, err := databaseAccess.SongManager.FindAllSongs(filter, paging)
@@ -41,7 +41,6 @@ func getSongs(c *gin.Context) {
 
 func getSong(c *gin.Context) {
 	counterSong.Add("GET /:id", 1)
-	metrics.PageRequest("api_song_id")
 	id := c.Param("id")
 	song, err := databaseAccess.SongManager.FindOneSong(id)
 	if err != nil {
@@ -53,7 +52,6 @@ func getSong(c *gin.Context) {
 
 func streamSong(c *gin.Context) {
 	counterSong.Add("GET /:id/stream", 1)
-	metrics.PageRequest("api_song_id_stream")
 	id := c.Param("id")
 	song, err := databaseAccess.SongManager.FindOneSong(id)
 	if err != nil {
@@ -79,8 +77,6 @@ func streamSong(c *gin.Context) {
 	fileStat, _ := file.Stat()                         //Get info from file
 	fileSize := strconv.FormatInt(fileStat.Size(), 10) //Get file size as a string
 
-	//file.Close()
-
 	//Send the headers
 	c.Header("Content-Disposition", "attachment; filename=\""+song.Path+"\"")
 	c.Header("Content-Type", fileContentType)
@@ -99,7 +95,6 @@ func streamSong(c *gin.Context) {
 
 func rateSong(c *gin.Context) {
 	counterSong.Add("GET /:id/rate/:rating", 1)
-	metrics.PageRequest("api_song_id_rate_rating")
 	id := c.Param("id")
 	rating, err := strconv.Atoi(c.Param("rating"))
 	if err != nil {
@@ -123,7 +118,6 @@ func rateSong(c *gin.Context) {
 
 func getCover(c *gin.Context) {
 	counterSong.Add("GET /:id/cover", 1)
-	metrics.PageRequest("api_song_id_cover")
 	id := c.Param("id")
 	s := c.Param("size")
 	size := COVER_SIZE
@@ -142,6 +136,18 @@ func getCover(c *gin.Context) {
 	}
 	imageBytes, mimetype, err := databaseAccess.SongManager.GetCoverForSong(song)
 	if err != nil {
+		f, err := assets.FrontendAssets.Open("/assets/img/defaultAlbum.png")
+		if err == nil {
+			defer f.Close()
+			image, err := ioutil.ReadAll(f)
+			if err == nil {
+				c.Header("Content-Type", "image/png")
+				c.Header("Content-Length", strconv.Itoa(len(image)))
+				c.Data(http.StatusOK, "image/png", image)
+				return
+			}
+		}
+
 		respondWithError(http.StatusNotFound, "no cover for song found", c)
 		return
 	}

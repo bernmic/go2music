@@ -145,6 +145,7 @@ func getCoverForAlbum(c *gin.Context) {
 		}
 		f, err := assets.FrontendAssets.Open("/assets/img/defaultAlbum.png")
 		if err == nil {
+			defer f.Close()
 			image, err = ioutil.ReadAll(f)
 			if err == nil {
 				c.Header("Content-Type", "image/png")
