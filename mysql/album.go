@@ -212,8 +212,7 @@ func (db *DB) FindRecentlyAddedAlbums(num int) ([]*model.Album, error) {
 		album.id,
 		album.title,
 		album.path,
-		album.mbid,
-		song.added
+		album.mbid
 	FROM
 		song
 	INNER JOIN album ON song.album_id = album.id

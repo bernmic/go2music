@@ -52,3 +52,5 @@ There is a complete web frontend for go2music in the frontend folder. It is a si
 
 - bind artists, albums, songs to a musicbrainz id
 - bring playcount and rating to the frontend
+- Rewrite authentication and authorization.
+- 

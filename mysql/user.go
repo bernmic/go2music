@@ -115,7 +115,7 @@ func (db *DB) FindUserById(id string) (*model.User, error) {
 		&user.Role,
 		&user.Email)
 	if err != nil {
-		log.Error(err)
+		return user, fmt.Errorf("error fínding user by id %s: %v", id, err)
 	}
 	return user, err
 }
@@ -131,7 +131,7 @@ func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 		&user.Role,
 		&user.Email)
 	if err != nil {
-		return user, err
+		return user, fmt.Errorf("error fínding user by username %s: %v", name, err)
 	}
 	return user, err
 }

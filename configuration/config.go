@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"flag"
+	"fmt"
 	"go2music/model"
 	"io/ioutil"
 	"os"
@@ -68,6 +69,17 @@ func Configuration(force bool) *model.Config {
 			config.Application.TokenLifetime = "1h"
 		}
 
+		if config.Application.TokenSecret == "" {
+			ts := os.Getenv("GO2MUSIC_TOKENSECRET")
+			if ts == "" {
+				fmt.Println("*********************************")
+				fmt.Println("**** TOKEN SECRET IS NOT SET ****")
+				fmt.Println("**** USING DEFAULT **************")
+				fmt.Println("*********************************")
+				ts = "VerySecret"
+			}
+			config.Application.TokenSecret = ts
+		}
 		if config.Server.Port == 0 {
 			config.Server.Port = 8080
 		}

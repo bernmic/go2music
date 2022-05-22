@@ -57,7 +57,7 @@
             <img matListAvatar [src]="coverUrlForSong(song)">
             <p mat-line>{{song.title}}</p>
             <p mat-line><small>{{song.artist?.name}}</small></p>
-            <p>0</p>
+            <p>{{song.playCount}}</p>
           </mat-list-item>
         </mat-list>
       </mat-card-content>

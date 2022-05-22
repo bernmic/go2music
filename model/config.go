@@ -27,6 +27,7 @@ type Application struct {
 	Loglevel      string `yaml:"loglevel,omitempty" json:"loglevel,omitempty"`
 	Cors          string `yaml:"cors,omitempty" json:"cors,omitempty"`
 	TokenLifetime string `yaml:"tokenlifetime,omitempty" json:"tokenlifetime,omitempty"`
+	TokenSecret   string `yaml:"tokenSecret,omitempty" json:"tokenSecret,omitempty"`
 }
 
 // Config is the root structure of the configuration

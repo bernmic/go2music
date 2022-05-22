@@ -19,6 +19,7 @@ type Song struct {
 	Filedate      int64   `json:"filedate"`
 	Rating        int     `json:"rating"`
 	Mbid          string  `json:"mbid,omitempty"`
+	PlayCount     int     `json:"playCount,omitempty"`
 }
 
 // SongCollection is a list of songs with paging informations

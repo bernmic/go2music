@@ -14,3 +14,6 @@ media:
   path: /data
   syncfrequency: 30s
   syncatstart: true
+metrics:
+  collect: true
+  port: 2112

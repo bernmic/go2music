@@ -18,7 +18,9 @@ export class Song {
     public yearPublished: string,
     public cbrvbr: string,
     public rating: number,
-    public filedate: number
+    public filedate: number,
+    public mbid: string,
+    public playCount: number,
   ) {}
 }
 

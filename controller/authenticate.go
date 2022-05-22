@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"go2music/security"
+	"go2music/auth"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -19,12 +20,12 @@ func authenticate(c *gin.Context) {
 		respondWithError(http.StatusUnauthorized, "missing token", c)
 		return
 	}
-	user, err := security.AuthenticateRequest(authHeader, databaseAccess.UserManager)
+	user, err := auth.AuthenticateRequest(authHeader, databaseAccess.UserManager)
 	if err != nil {
 		respondWithError(http.StatusUnauthorized, "username / password wrong", c)
 		return
 	}
-	token, err := security.GenerateJWT(user)
+	token, err := auth.GenerateTokenForUser(user)
 	if err != nil {
 		respondWithError(http.StatusInternalServerError, "unknown error", c)
 		return
@@ -42,15 +43,12 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 				authHeader = "Bearer " + bearer
 			}
 		}
-		username, b := security.AuthenticateJWTString(authHeader)
-		if b {
-			user, err := security.GetPrincipal(username, databaseAccess.UserManager)
-			if err == nil && (user.Role == security.UserRole || user.Role == security.AdminRole) {
-				c.Set("principal", user)
-				log.Println("INFO Authorization OK - " + username + " with role " + user.Role)
-				c.Next()
-				return
-			}
+		user, err := auth.ValidateUser(strings.Split(authHeader, " ")[1])
+		if err == nil && (user.Role == auth.UserRole || user.Role == auth.AdminRole) {
+			c.Set("principal", user)
+			log.Println("INFO Authorization OK - " + user.Username + " with role " + user.Role)
+			c.Next()
+			return
 		}
 		respondWithError(http.StatusUnauthorized, "Unauthorized", c)
 	}
@@ -63,15 +61,18 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 		if bearer != "" {
 			c.Header("Authorization", "Bearer "+bearer)
 		}
-		username, b := security.AuthenticateJWTString(c.GetHeader("Authorization"))
-		if b {
-			user, err := security.GetPrincipal(username, databaseAccess.UserManager)
-			if err == nil && (user.Role == security.AdminRole) {
-				c.Set("principal", user)
-				log.Info("Authorization OK - " + username + " with role " + user.Role)
-				c.Next()
-				return
-			}
+
+		b := strings.Split(c.GetHeader("Authorization"), " ")
+		if len(b) != 2 {
+			respondWithError(http.StatusUnauthorized, "Unauthorized", c)
+			return
+		}
+		user, err := auth.ValidateUser(b[1])
+		if err == nil && (user.Role == auth.UserRole || user.Role == auth.AdminRole) {
+			c.Set("principal", user)
+			log.Println("INFO Authorization OK - " + user.Username + " with role " + user.Role)
+			c.Next()
+			return
 		}
 		respondWithError(http.StatusUnauthorized, "Unauthorized", c)
 	}

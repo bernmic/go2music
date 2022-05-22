@@ -58,6 +58,6 @@ export class AlbumService extends BaseService {
   }
 
   albumCoverUrl(album: Album): string {
-    return environment.restserver + "/api/album/" + album.albumId + "/cover?bearer=" + this.authService.getToken();
+    return environment.restserver + "/api/album/" + album.albumId + "/cover?bearer=" + encodeURIComponent(this.authService.getToken());
   }
 }

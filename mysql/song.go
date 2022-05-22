@@ -432,6 +432,9 @@ func (db *DB) FindMostPlayedSongs(num int) ([]*model.Song, error) {
 	}
 	defer rows.Close()
 	songs, err := fetchSongs(rows)
+	for _, s := range songs {
+		s.PlayCount = db.countRows(sanitizePlaceholder("SELECT SUM(user_song.playcount) FROM song INNER JOIN user_song ON song.id = user_song.song_id WHERE song_id = ?"), s.Id)
+	}
 	return songs, err
 }
 
