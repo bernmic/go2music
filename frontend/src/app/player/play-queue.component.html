@@ -24,5 +24,13 @@
       <mat-icon>delete</mat-icon>
       <span>Delete</span>
     </button>
+    <button *ngIf="hasArtist(index)" mat-menu-item (click)="artistIndex(index)">
+      <mat-icon>interpreter_mode</mat-icon>
+      <span>Artist</span>
+    </button>
+    <button *ngIf="hasAlbum(index)"  mat-menu-item (click)="albumIndex(index)">
+      <mat-icon>album</mat-icon>
+      <span>Album</span>
+    </button>
   </ng-template>
 </mat-menu>

@@ -57,7 +57,7 @@ func (db *DB) countRows(sql string, args ...interface{}) int {
 	return count
 }
 
-// postgres can't handle ? placeholder in sql. so we have to chanbge them to $n
+// postgres can't handle ? placeholder in sql. so we have to change them to $n
 func sanitizePlaceholder(sql string) string {
 	if configuration.Configuration(false).Database.Type == "postgres" {
 		counter := 1
