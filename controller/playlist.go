@@ -33,9 +33,9 @@ func initPlaylist(r *gin.RouterGroup) {
 
 func getPlaylists(c *gin.Context) {
 	counterPlaylist.Add("GET /", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	values := c.Request.URL.Query()
@@ -44,7 +44,7 @@ func getPlaylists(c *gin.Context) {
 		kind = k
 	}
 	paging := extractPagingFromRequest(c)
-	playlists, total, err := databaseAccess.PlaylistManager.FindAllPlaylistsOfKind(user.(*model.User).Id, kind, paging)
+	playlists, total, err := databaseAccess.PlaylistManager.FindAllPlaylistsOfKind(u.Id, kind, paging)
 	if err == nil {
 		playlistCollection := model.PlaylistCollection{Playlists: playlists, Paging: paging, Total: total}
 		c.JSON(http.StatusOK, playlistCollection)
@@ -55,13 +55,13 @@ func getPlaylists(c *gin.Context) {
 
 func getPlaylist(c *gin.Context) {
 	counterPlaylist.Add("GET /:id", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	id := c.Param("id")
-	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
+	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, u.Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -71,13 +71,13 @@ func getPlaylist(c *gin.Context) {
 
 func getSongsForPlaylist(c *gin.Context) {
 	counterPlaylist.Add("GET /:id/songs", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	id := c.Param("id")
-	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
+	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, u.Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -102,14 +102,14 @@ func getSongsForPlaylist(c *gin.Context) {
 
 func createPlaylist(c *gin.Context) {
 	counterPlaylist.Add("POST /:id", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	playlist := &model.Playlist{}
-	playlist.User = *(user.(*model.User))
-	err := c.BindJSON(playlist)
+	playlist.User = *u
+	err = c.BindJSON(playlist)
 	if err != nil {
 		log.Warn("cannot decode request", err)
 		respondWithError(http.StatusBadRequest, "bad request", c)
@@ -125,14 +125,14 @@ func createPlaylist(c *gin.Context) {
 
 func updatePlaylist(c *gin.Context) {
 	counterPlaylist.Add("PUT /:id", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	playlist := &model.Playlist{}
-	playlist.User = *(user.(*model.User))
-	err := c.BindJSON(playlist)
+	playlist.User = *u
+	err = c.BindJSON(playlist)
 	if err != nil {
 		log.Warn("cannot decode request", err)
 		respondWithError(http.StatusBadRequest, "bad request", c)
@@ -148,13 +148,13 @@ func updatePlaylist(c *gin.Context) {
 
 func deletePlaylist(c *gin.Context) {
 	counterPlaylist.Add("DELETE /:id", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	id := c.Param("id")
-	if databaseAccess.PlaylistManager.DeletePlaylist(id, user.(*model.User).Id) != nil {
+	if databaseAccess.PlaylistManager.DeletePlaylist(id, u.Id) != nil {
 		respondWithError(http.StatusBadRequest, "cannot delete playlist", c)
 		return
 	}
@@ -163,13 +163,13 @@ func deletePlaylist(c *gin.Context) {
 
 func addSongsToPlaylist(c *gin.Context) {
 	counterPlaylist.Add("POST /:id/songs", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	id := c.Param("id")
-	_, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
+	_, err = databaseAccess.PlaylistManager.FindPlaylistById(id, u.Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -187,13 +187,13 @@ func addSongsToPlaylist(c *gin.Context) {
 
 func removeSongsFromPlaylist(c *gin.Context) {
 	counterPlaylist.Add("DELETE /:id/songs", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	id := c.Param("id")
-	_, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
+	_, err = databaseAccess.PlaylistManager.FindPlaylistById(id, u.Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -211,13 +211,13 @@ func removeSongsFromPlaylist(c *gin.Context) {
 
 func setSongsOfPlaylist(c *gin.Context) {
 	counterPlaylist.Add("PUT /:id/songs", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	id := c.Param("id")
-	_, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
+	_, err = databaseAccess.PlaylistManager.FindPlaylistById(id, u.Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -235,13 +235,13 @@ func setSongsOfPlaylist(c *gin.Context) {
 
 func downloadPlaylist(c *gin.Context) {
 	counterPlaylist.Add("GET /:id/download", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	id := c.Param("id")
-	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
+	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, u.Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return
@@ -266,13 +266,13 @@ func downloadPlaylist(c *gin.Context) {
 
 func exportXSPF(c *gin.Context) {
 	counterPlaylist.Add("GET /:id/xspf", 1)
-	user, ok := c.Get("principal")
-	if !ok {
-		respondWithError(http.StatusUnauthorized, "not allowed", c)
+	u, err := principal(c)
+	if err != nil {
+		respondWithError(http.StatusUnauthorized, "unauthorized", c)
 		return
 	}
 	id := c.Param("id")
-	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, user.(*model.User).Id)
+	playlist, err := databaseAccess.PlaylistManager.FindPlaylistById(id, u.Id)
 	if err != nil {
 		respondWithError(http.StatusNotFound, "playlist not found", c)
 		return

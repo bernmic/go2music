@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	getDecadesStatement = `
+	sqlDecades = `
 select 
 	count(id) count,
 	concat(left(yearpublished, 3), '0s') as decade
@@ -20,7 +20,7 @@ where
 group by
 	concat(left(yearpublished, 3), '0s')
 `
-	getYearsStatement = `
+	sqlYears = `
 select 
 	count(id) count,
 	LEFT(yearpublished, 4)
@@ -30,7 +30,7 @@ where LEFT(yearpublished, 3) = LEFT(?, 3)
 group by
 	LEFT(yearpublished, 4)`
 
-	getGenresStatement = `
+	sqlGenres = `
 select 
 	count(id) count,
 	genre
@@ -60,27 +60,27 @@ func (db *DB) Info(cached bool) (*model.Info, error) {
 	waiter.Add(10)
 	go func() {
 		defer waiter.Done()
-		infoCache.SongCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM song"))
+		infoCache.SongCount = db.countRows(sanitizePlaceholder(sqlSongCount))
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.TotalLength = db.countRows(sanitizePlaceholder("SELECT SUM(duration) FROM song"))
+		infoCache.TotalLength = db.countRows(sanitizePlaceholder(sqlSongDuration))
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.AlbumCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM album"))
+		infoCache.AlbumCount = db.countRows(sanitizePlaceholder(sqlAlbumCount))
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.ArtistCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM artist"))
+		infoCache.ArtistCount = db.countRows(sanitizePlaceholder(sqlArtistCount))
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.PlaylistCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM playlist"))
+		infoCache.PlaylistCount = db.countRows(sanitizePlaceholder(sqlPlaylistCount))
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.UserCount = db.countRows(sanitizePlaceholder("SELECT COUNT(*) FROM guser"))
+		infoCache.UserCount = db.countRows(sanitizePlaceholder(sqlUserCount))
 	}()
 	go func() {
 		defer waiter.Done()
@@ -109,7 +109,7 @@ func (db *DB) Info(cached bool) (*model.Info, error) {
 
 func (db *DB) GetDecades() ([]*model.NameCount, error) {
 	decades := make([]*model.NameCount, 0)
-	rows, err := db.Query(sanitizePlaceholder(getDecadesStatement))
+	rows, err := db.Query(sanitizePlaceholder(sqlDecades))
 	if err != nil {
 		log.Errorf("Error get all decades: %v", err)
 		return nil, err
@@ -132,7 +132,7 @@ func (db *DB) GetDecades() ([]*model.NameCount, error) {
 
 func (db *DB) GetYears(decade string) ([]*model.NameCount, error) {
 	years := make([]*model.NameCount, 0)
-	rows, err := db.Query(sanitizePlaceholder(getYearsStatement), decade)
+	rows, err := db.Query(sanitizePlaceholder(sqlYears), decade)
 	if err != nil {
 		log.Errorf("Error get all years: %v", err)
 		return nil, err
@@ -152,7 +152,7 @@ func (db *DB) GetYears(decade string) ([]*model.NameCount, error) {
 
 func (db *DB) GetGenres() ([]*model.NameCount, error) {
 	genres := make([]*model.NameCount, 0)
-	rows, err := db.Query(sanitizePlaceholder(getGenresStatement))
+	rows, err := db.Query(sanitizePlaceholder(sqlGenres))
 	if err != nil {
 		log.Errorf("Error get all genres: %v", err)
 		return nil, err

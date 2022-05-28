@@ -213,3 +213,11 @@ func resizeCover(data []byte, mimetype string, targetSize int) ([]byte, string, 
 	}
 	return buf.Bytes(), "image/jpeg", nil
 }
+
+func principal(c *gin.Context) (*model.User, error) {
+	user, ok := c.Get("principal")
+	if !ok {
+		return nil, errors.New("unauthorized")
+	}
+	return databaseAccess.UserManager.FindUserByUsername(user.(*model.User).Username)
+}
