@@ -15,6 +15,8 @@ import (
 // DB contains the session data for a database session
 type DB struct {
 	sql.DB
+	stmt      map[string]string
+	sanitizer func(string) string
 }
 
 // New create a new mysql database session and returens it
@@ -33,7 +35,7 @@ func New() (*DB, error) {
 		log.Errorf("Error accessing database: %v\n", err)
 		return nil, errors.New("Database not configured or accessible")
 	}
-	mysql := DB{*db}
+	mysql := DB{*db, make(map[string]string, 0), Sanitizer}
 	mysql.initializeUser()
 	mysql.initializeArtist()
 	mysql.initializeAlbum()
@@ -47,21 +49,9 @@ func New() (*DB, error) {
 
 func (db *DB) countRows(sql string, args ...interface{}) int {
 	var count int
-	rows := db.QueryRow(sql, args...)
+	rows := db.QueryRow(Sanitizer(sql), args...)
 	rows.Scan(&count)
 	return count
-}
-
-// postgres can't handle ? placeholder in sql. so we have to chanbge them to $n
-func sanitizePlaceholder(sql string) string {
-	if configuration.Configuration(false).Database.Type == "postgres" {
-		counter := 1
-		for strings.Contains(sql, "?") {
-			sql = strings.Replace(sql, "?", fmt.Sprintf("$%d", counter), 1)
-			counter++
-		}
-	}
-	return sql
 }
 
 func createUrl(dbParam model.Database) string {
@@ -69,4 +59,8 @@ func createUrl(dbParam model.Database) string {
 	result = strings.Replace(result, "${password}", dbParam.Password, -1)
 	result = strings.Replace(result, "${schema}", dbParam.Schema, -1)
 	return result
+}
+
+func Sanitizer(s string) string {
+	return s
 }

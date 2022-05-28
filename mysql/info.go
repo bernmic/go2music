@@ -1,46 +1,12 @@
 package mysql
 
 import (
+	"go2music/database"
 	"go2music/model"
 	"regexp"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	sqlDecades = `
-select 
-	count(id) count,
-	concat(left(yearpublished, 3), '0s') as decade
-from 
-	song
-where
-	length(yearpublished)>=4
-group by
-	concat(left(yearpublished, 3), '0s')
-`
-	sqlYears = `
-select 
-	count(id) count,
-	LEFT(yearpublished, 4)
-from 
-	song
-where LEFT(yearpublished, 3) = LEFT(?, 3)
-group by
-	LEFT(yearpublished, 4)`
-
-	sqlGenres = `
-select 
-	count(id) count,
-	genre
-from 
-	song
-group by
-	genre
-order by
-	genre
-`
 )
 
 var (
@@ -49,6 +15,9 @@ var (
 )
 
 func (db *DB) initializeInfo() {
+	db.stmt["sqlInfoDecades"] = database.SqlInfoDecades
+	db.stmt["sqlInfoYears"] = database.SqlInfoYears
+	db.stmt["sqlInfoGenres"] = database.SqlInfoGenres
 }
 
 // Info returns the dashboard informations
@@ -60,27 +29,27 @@ func (db *DB) Info(cached bool) (*model.Info, error) {
 	waiter.Add(10)
 	go func() {
 		defer waiter.Done()
-		infoCache.SongCount = db.countRows(sanitizePlaceholder(sqlSongCount))
+		infoCache.SongCount = db.countRows(db.stmt["sqlSongCount"])
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.TotalLength = db.countRows(sanitizePlaceholder(sqlSongDuration))
+		infoCache.TotalLength = db.countRows(db.stmt["sqlSongDuration"])
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.AlbumCount = db.countRows(sanitizePlaceholder(sqlAlbumCount))
+		infoCache.AlbumCount = db.countRows(db.stmt["sqlAlbumCount"])
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.ArtistCount = db.countRows(sanitizePlaceholder(sqlArtistCount))
+		infoCache.ArtistCount = db.countRows(db.stmt["sqlArtistCount"])
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.PlaylistCount = db.countRows(sanitizePlaceholder(sqlPlaylistCount))
+		infoCache.PlaylistCount = db.countRows(db.stmt["sqlPlaylistCount"])
 	}()
 	go func() {
 		defer waiter.Done()
-		infoCache.UserCount = db.countRows(sanitizePlaceholder(sqlUserCount))
+		infoCache.UserCount = db.countRows(db.stmt["sqlUserCount"])
 	}()
 	go func() {
 		defer waiter.Done()
@@ -109,7 +78,7 @@ func (db *DB) Info(cached bool) (*model.Info, error) {
 
 func (db *DB) GetDecades() ([]*model.NameCount, error) {
 	decades := make([]*model.NameCount, 0)
-	rows, err := db.Query(sanitizePlaceholder(sqlDecades))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlInfoDecades"]))
 	if err != nil {
 		log.Errorf("Error get all decades: %v", err)
 		return nil, err
@@ -132,7 +101,7 @@ func (db *DB) GetDecades() ([]*model.NameCount, error) {
 
 func (db *DB) GetYears(decade string) ([]*model.NameCount, error) {
 	years := make([]*model.NameCount, 0)
-	rows, err := db.Query(sanitizePlaceholder(sqlYears), decade)
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlInfoYears"]), decade)
 	if err != nil {
 		log.Errorf("Error get all years: %v", err)
 		return nil, err
@@ -152,7 +121,7 @@ func (db *DB) GetYears(decade string) ([]*model.NameCount, error) {
 
 func (db *DB) GetGenres() ([]*model.NameCount, error) {
 	genres := make([]*model.NameCount, 0)
-	rows, err := db.Query(sanitizePlaceholder(sqlGenres))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlInfoGenres"]))
 	if err != nil {
 		log.Errorf("Error get all genres: %v", err)
 		return nil, err

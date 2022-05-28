@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"go2music/database"
 	"go2music/fs"
 	"go2music/model"
 	"go2music/parser"
@@ -14,128 +15,55 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	sqlSongExists = "SELECT 1 FROM song LIMIT 1"
-	sqlSongCreate = `
-	CREATE TABLE IF NOT EXISTS song (
-		id varchar(32),
-		path VARCHAR(255) NOT NULL,
-		title VARCHAR(255),
-		artist_id varchar(32) NULL,
-		album_id varchar(32) NULL,
-		genre VARCHAR(255) NULL,
-		track INT NULL,
-		yearpublished VARCHAR(32) NULL,
-		bitrate INT NULL,
-		samplerate INT NULL,
-		duration INT NULL,
-		mode VARCHAR(30) NULL,
-		vbr BOOLEAN NULL,
-		added INT NOT NULL,
-		filedate INT NOT NULL,
-		rating INT NOT NULL,
-		mbid VARCHAR(36),
-		PRIMARY KEY (id),
-		FOREIGN KEY (artist_id) REFERENCES artist(id),
-		FOREIGN KEY (album_id) REFERENCES album(id)
-		);
-	`
-	sqlSongIndexPath = "CREATE UNIQUE INDEX song_path ON song (path)"
-	sqlSongIndexMbid = "CREATE INDEX song_mbid ON song (mbid)"
-
-	sqlUserSongCreate = `
-	CREATE TABLE user_song (
-		user_id VARCHAR(32),
-		song_id VARCHAR(32),
-		rating INT NOT NULL,
-		playcount INT NOT NULL,
-		lastplayed INT NOT NULL,
-		PRIMARY KEY (user_id, song_id),
-		FOREIGN KEY (user_id) REFERENCES guser(id),
-		FOREIGN KEY (song_id) REFERENCES song(id)
-	);
-`
-
-	sqlSongAll = `
-SELECT
-	song.id,
-	song.path,
-	song.title,
-	song.genre,
-	song.track,
-	song.yearpublished,
-	song.bitrate,
-	song.samplerate,
-	song.duration,
-	song.mode,
-	song.vbr,
-	song.added,
-	song.filedate,
-	song.rating,
-	artist.id artist_id,
-	artist.name,
-	album.id album_id,
-	album.title album_title,
-	album.path album_path,
-	song.mbid
-FROM
-	song
-LEFT JOIN artist ON song.artist_id = artist.id
-LEFT JOIN album ON song.album_id = album.id
-`
-
-	sqlSongCount = `
-SELECT
-	count(*)
-FROM
-	song
-LEFT JOIN artist ON song.artist_id = artist.id
-LEFT JOIN album ON song.album_id = album.id
-`
-	sqlSongInsert          = "INSERT INTO song (id, path, title, artist_id, album_id, genre, track, yearpublished, bitrate, samplerate, duration, mode, vbr, added, filedate, rating, mbid) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-	sqlSongUpdate          = "UPDATE song SET path=?, title=?, artist_id=?, album_id=?, genre=?, track=?, yearpublished=?, bitrate=?, samplerate=?, duration=?, mode=?, vbr=?, added=?, filedate=?, rating=?, mbid=? WHERE id=?"
-	sqlSongDelete          = "DELETE FROM song WHERE id=?"
-	sqlUserSongDelete      = "DELETE FROM user_song WHERE song_id=?"
-	sqlSongPathExists      = "SELECT path FROM song WHERE path = ?"
-	sqlSongCountByAlbum    = "SELECT COUNT(*) FROM song WHERE album_id = ?"
-	sqlSongCountByArtist   = "SELECT COUNT(*) FROM song WHERE artist_id = ?"
-	sqlSongCountByPlaylist = "SELECT COUNT(*) FROM song WHERE id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)"
-	sqlSongCountByYear     = "SELECT COUNT(*) FROM song WHERE yearpublished = ?"
-	sqlSongCountByGenre    = "SELECT COUNT(*) FROM song WHERE genre = ?"
-	sqlSongPlaycount       = "SELECT SUM(user_song.playcount) FROM song INNER JOIN user_song ON song.id = user_song.song_id WHERE song_id = ?"
-	sqlUserSongById        = "SELECT user_id,song_id,rating,playcount FROM user_song WHERE user_id=? AND song_id=?"
-	sqlUserSongInsert      = "INSERT INTO user_song (user_id, song_id, rating, playcount, lastplayed) VALUES(?, ?, ?, ?, ?)"
-	sqlUserSongUpdate      = "UPDATE user_song SET rating=?, playcount=?, lastplayed=? WHERE user_id=? AND song_id=?"
-	sqlSongOnlyIdAndPath   = "SELECT id, path FROM song"
-	sqlSongDuration        = "SELECT SUM(duration) FROM song"
-)
-
 func (db *DB) initializeSong() {
-	_, err := db.Query(sqlSongExists)
+	db.stmt["sqlSongExists"] = database.SqlSongExists
+	db.stmt["sqlSongCreate"] = database.SqlSongCreate
+	db.stmt["sqlSongIndexPath"] = database.SqlSongIndexPath
+	db.stmt["sqlSongIndexMbid"] = database.SqlSongIndexMbid
+	db.stmt["sqlUserSongCreate"] = database.SqlUserSongCreate
+	db.stmt["sqlSongAll"] = database.SqlSongAll
+	db.stmt["sqlSongCount"] = database.SqlSongCount
+	db.stmt["sqlSongInsert"] = database.SqlSongInsert
+	db.stmt["sqlSongUpdate"] = database.SqlSongUpdate
+	db.stmt["sqlSongDelete"] = database.SqlSongDelete
+	db.stmt["sqlUserSongDelete"] = database.SqlUserSongDelete
+	db.stmt["sqlSongPathExists"] = database.SqlSongPathExists
+	db.stmt["sqlSongCountByAlbum"] = database.SqlSongCountByAlbum
+	db.stmt["sqlSongCountByArtist"] = database.SqlSongCountByArtist
+	db.stmt["sqlSongCountByPlaylist"] = database.SqlSongCountByPlaylist
+	db.stmt["sqlSongCountByYear"] = database.SqlSongCountByYear
+	db.stmt["sqlSongCountByGenre"] = database.SqlSongCountByGenre
+	db.stmt["sqlSongPlaycount"] = database.SqlSongPlaycount
+	db.stmt["sqlUserSongById"] = database.SqlUserSongById
+	db.stmt["sqlUserSongInsert"] = database.SqlUserSongInsert
+	db.stmt["sqlUserSongUpdate"] = database.SqlUserSongUpdate
+	db.stmt["sqlSongOnlyIdAndPath"] = database.SqlSongOnlyIdAndPath
+	db.stmt["sqlSongDuration"] = database.SqlSongDuration
+	_, err := db.Query(db.sanitizer(db.stmt["sqlSongExists"]))
 	if err != nil {
 		log.Info("Table song does not exists. Creating now.")
-		_, err := db.Exec(sqlSongCreate)
+		_, err := db.Exec(db.sanitizer(db.stmt["sqlSongCreate"]))
 		if err != nil {
 			log.Error("Error creating song table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("Song Table successfully created....")
 		}
-		_, err = db.Exec(sqlUserSongCreate)
+		_, err = db.Exec(db.sanitizer(db.stmt["sqlUserSongCreate"]))
 		if err != nil {
 			log.Error("Error creating user_song table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("UserSong Table successfully created....")
 		}
-		_, err = db.Exec(sqlSongIndexPath)
+		_, err = db.Exec(db.sanitizer(db.stmt["sqlSongIndexPath"]))
 		if err != nil {
 			log.Error("Error creating song table index for path")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("Index on song path generated....")
 		}
-		_, err = db.Exec(sqlSongIndexMbid)
+		_, err = db.Exec(db.sanitizer(db.stmt["sqlSongIndexMbid"]))
 		if err != nil {
 			log.Error("Error creating song table index for mbid")
 			panic(fmt.Sprintf("%v", err))
@@ -148,7 +76,7 @@ func (db *DB) initializeSong() {
 // CreateSong create a new song in the database
 func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 	song.Id = xid.New().String()
-	_, err := db.Exec(sanitizePlaceholder(sqlSongInsert),
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlSongInsert"]),
 		song.Id,
 		song.Path,
 		song.Title,
@@ -167,14 +95,14 @@ func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 		song.Rating,
 		song.Mbid)
 	if err != nil {
-		err = fmt.Errorf("Error inserting row to database: %v", err)
+		err = fmt.Errorf("error inserting row to database: %v", err)
 	}
 	return &song, err
 }
 
 // UpdateSong update the given song in the database
 func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
-	_, err := db.Exec(sanitizePlaceholder(sqlSongUpdate),
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlSongUpdate"]),
 		song.Path,
 		song.Title,
 		song.Artist.Id,
@@ -200,19 +128,18 @@ func (db *DB) UpdateSong(song model.Song) (*model.Song, error) {
 
 // DeleteSong delete the song with the id in the database
 func (db *DB) DeleteSong(id string) error {
-	_, err := db.Exec(sanitizePlaceholder(sqlUserSongDelete), id)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlUserSongDelete"]), id)
 	if err != nil {
 		log.Errorf("Could not delete user_song for songid %s: %v", id, err)
 		return err
 	}
-	_, err = db.Exec(sanitizePlaceholder(sqlSongDelete), id)
+	_, err = db.Exec(db.sanitizer(db.stmt["sqlSongDelete"]), id)
 	return err
 }
 
-// SongsExists checks if the given path is a song in the database
+// SongExists checks if the given path is a song in the database
 func (db *DB) SongExists(path string) bool {
-	sqlStmt := sanitizePlaceholder(sqlSongPathExists)
-	err := db.QueryRow(sqlStmt, path).Scan(&path)
+	err := db.QueryRow(db.sanitizer(db.stmt["sqlSongPathExists"]), path).Scan(&path)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			// a real error happened! you should change your function return
@@ -227,7 +154,7 @@ func (db *DB) SongExists(path string) bool {
 
 // FindOneSong get the song with the given id
 func (db *DB) FindOneSong(id string) (*model.Song, error) {
-	stmt := sqlSongAll + ` 
+	stmt := db.sanitizer(db.stmt["sqlSongAll"]) + ` 
 		WHERE
 			song.id=?
 	`
@@ -238,7 +165,7 @@ func (db *DB) FindOneSong(id string) (*model.Song, error) {
 	var albumTitle sql.NullString
 	var albumPath sql.NullString
 	var mbid sql.NullString
-	err := db.QueryRow(sanitizePlaceholder(stmt), id).Scan(
+	err := db.QueryRow(stmt, id).Scan(
 		&song.Id,
 		&song.Path,
 		&song.Title,
@@ -347,7 +274,7 @@ func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, i
 			" OR LOWER(artist.name) LIKE '%" + strings.ToLower(filter) + "%'"
 		orderAndLimit = whereClause + orderAndLimit
 	}
-	rows, err := db.Query(sanitizePlaceholder(sqlSongAll + orderAndLimit))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlSongAll"]) + orderAndLimit)
 	if err != nil {
 		log.Error("Error reading song table", err)
 		return nil, 0, err
@@ -356,7 +283,7 @@ func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, i
 	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
-		total = db.countRows(sanitizePlaceholder(sqlSongCount + whereClause))
+		total = db.countRows(db.sanitizer(db.stmt["sqlSongCount"]) + whereClause)
 	}
 	return songs, total, err
 }
@@ -364,7 +291,7 @@ func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, i
 // FindSongsByAlbumId get all songs for the album with the given id and is in the given page
 func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	stmt := sanitizePlaceholder(sqlSongAll + ` WHERE album.id = ?` + orderAndLimit)
+	stmt := db.sanitizer(db.stmt["sqlSongAll"]) + ` WHERE album.id = ?` + orderAndLimit
 	rows, err := db.Query(stmt, findAlbumId)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -374,7 +301,7 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*mo
 	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
-		total = db.countRows(sanitizePlaceholder(sqlSongCountByAlbum), findAlbumId)
+		total = db.countRows(db.sanitizer(db.stmt["sqlSongCountByAlbum"]), findAlbumId)
 	}
 	return songs, total, err
 }
@@ -382,7 +309,7 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*mo
 // FindSongsByArtistId get all songs for the artist with the given id and is in the given page
 func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	stmt := sanitizePlaceholder(sqlSongAll + `WHERE artist.id = ?	` + orderAndLimit)
+	stmt := db.sanitizer(db.stmt["sqlSongAll"]) + `WHERE artist.id = ?	` + orderAndLimit
 	rows, err := db.Query(stmt, findArtistId)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -392,14 +319,14 @@ func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*
 	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
-		total = db.countRows(sanitizePlaceholder(sqlSongCountByArtist), findArtistId)
+		total = db.countRows(db.sanitizer(db.stmt["sqlSongCountByArtist"]), findArtistId)
 	}
 	return songs, total, err
 }
 
 // FindSongsByPlaylistQuery get all songs for the dynamic playlist with the given id and is in the given page
 func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*model.Song, int, error) {
-	stmt := sqlSongAll
+	stmt := db.sanitizer(db.stmt["sqlSongAll"])
 	where, err := parser.EvalPlaylistExpression(query)
 	if err != nil {
 		log.Error("Error parsing playlist query", err)
@@ -422,7 +349,7 @@ func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*mo
 
 	total := len(songs)
 	if limit {
-		total = db.countRows(sqlSongCount + where)
+		total = db.countRows(db.sanitizer(db.stmt["sqlSongCount"]) + where)
 	}
 	return songs, total, err
 }
@@ -430,7 +357,7 @@ func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*mo
 // FindSongsByPlaylist get all songs for the static playlist with the given id and is in the given page
 func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	stmt := sanitizePlaceholder(sqlSongAll + " WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)" + orderAndLimit)
+	stmt := db.sanitizer(db.stmt["sqlSongAll"]) + " WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)" + orderAndLimit
 	rows, err := db.Query(stmt, playlistId)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -440,7 +367,7 @@ func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*mo
 	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
-		total = db.countRows(sanitizePlaceholder(sqlSongCountByPlaylist), playlistId)
+		total = db.countRows(db.sanitizer(db.stmt["sqlSongCountByPlaylist"]), playlistId)
 	}
 	return songs, total, err
 }
@@ -448,7 +375,7 @@ func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*mo
 // FindSongsByYear get all songs published in the given year and is in the given page
 func (db *DB) FindSongsByYear(year string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	stmt := sanitizePlaceholder(sqlSongAll + " WHERE song.yearpublished = ?" + orderAndLimit)
+	stmt := db.sanitizer(db.stmt["sqlSongAll"]) + " WHERE song.yearpublished = ?" + orderAndLimit
 	rows, err := db.Query(stmt, year)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -458,7 +385,7 @@ func (db *DB) FindSongsByYear(year string, paging model.Paging) ([]*model.Song, 
 	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
-		total = db.countRows(sanitizePlaceholder(sqlSongCountByYear), year)
+		total = db.countRows(db.sanitizer(db.stmt["sqlSongCountByYear"]), year)
 	}
 	return songs, total, err
 }
@@ -466,7 +393,7 @@ func (db *DB) FindSongsByYear(year string, paging model.Paging) ([]*model.Song, 
 // FindSongsByGenre get all songs with the given genre and is in the given page
 func (db *DB) FindSongsByGenre(genre string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	stmt := sanitizePlaceholder(sqlSongAll + " WHERE song.genre = ?" + orderAndLimit)
+	stmt := db.sanitizer(db.stmt["sqlSongAll"]) + " WHERE song.genre = ?" + orderAndLimit
 	rows, err := db.Query(stmt, genre)
 	if err != nil {
 		log.Error("Error reading song table", err)
@@ -476,14 +403,14 @@ func (db *DB) FindSongsByGenre(genre string, paging model.Paging) ([]*model.Song
 	songs, err := fetchSongs(rows)
 	total := len(songs)
 	if limit {
-		total = db.countRows(sanitizePlaceholder(sqlSongCountByGenre), genre)
+		total = db.countRows(db.sanitizer(db.stmt["sqlSongCountByGenre"]), genre)
 	}
 	return songs, total, err
 }
 
 // FindRecentlyAddedSongs find num recently added songs
 func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
-	rows, err := db.Query(sanitizePlaceholder(sqlSongAll+" ORDER BY song.added DESC LIMIT ?"), num)
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlSongAll"])+" ORDER BY song.added DESC LIMIT ?", num)
 	if err != nil {
 		log.Error("Error reading song table", err)
 		return nil, err
@@ -495,7 +422,7 @@ func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
 
 // FindRecentlyPlayedSongs find num recently played songs
 func (db *DB) FindRecentlyPlayedSongs(num int) ([]*model.Song, error) {
-	rows, err := db.Query(sanitizePlaceholder(sqlSongAll+" INNER JOIN user_song ON song.id = user_song.song_id ORDER BY lastplayed DESC LIMIT ?"), num)
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlSongAll"])+" INNER JOIN user_song ON song.id = user_song.song_id ORDER BY lastplayed DESC LIMIT ?", num)
 	if err != nil {
 		log.Error("Error reading song table", err)
 		return nil, err
@@ -507,11 +434,11 @@ func (db *DB) FindRecentlyPlayedSongs(num int) ([]*model.Song, error) {
 
 // FindMostPlayedSongs find num most played songs
 func (db *DB) FindMostPlayedSongs(num int) ([]*model.Song, error) {
-	rows, err := db.Query(sanitizePlaceholder(sqlSongAll+`
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlSongAll"])+`
 	INNER JOIN user_song ON song.id = user_song.song_id
 	GROUP BY user_song.song_id
 	ORDER BY SUM(user_song.playcount) DESC LIMIT ?
-		`), num)
+		`, num)
 	if err != nil {
 		log.Error("Error reading song table", err)
 		return nil, err
@@ -519,7 +446,7 @@ func (db *DB) FindMostPlayedSongs(num int) ([]*model.Song, error) {
 	defer rows.Close()
 	songs, err := fetchSongs(rows)
 	for _, s := range songs {
-		s.PlayCount = db.countRows(sanitizePlaceholder(sqlSongPlaycount), s.Id)
+		s.PlayCount = db.countRows(db.sanitizer(db.stmt["sqlSongPlaycount"]), s.Id)
 	}
 	return songs, err
 }
@@ -540,13 +467,13 @@ func (db *DB) GetCoverForSong(song *model.Song) ([]byte, string, error) {
 func (db *DB) SongPlayed(song *model.Song, user *model.User) bool {
 	userSong := model.UserSong{}
 	err := db.QueryRow(
-		sanitizePlaceholder(sqlUserSongById),
+		db.sanitizer(db.stmt["sqlUserSongById"]),
 		user.Id,
 		song.Id).Scan(&userSong.UserId, &userSong.SongId, &userSong.Rating, &userSong.PlayCount)
 	if err != nil {
 		userSong = model.UserSong{UserId: user.Id, SongId: song.Id, Rating: 0, PlayCount: 1}
 		_, err := db.Exec(
-			sanitizePlaceholder(sqlUserSongInsert),
+			db.sanitizer(db.stmt["sqlUserSongInsert"]),
 			userSong.UserId,
 			userSong.SongId,
 			userSong.Rating,
@@ -558,7 +485,7 @@ func (db *DB) SongPlayed(song *model.Song, user *model.User) bool {
 			return false
 		}
 	} else {
-		_, err := db.Exec(sanitizePlaceholder(sqlUserSongUpdate),
+		_, err := db.Exec(db.sanitizer(db.stmt["sqlUserSongUpdate"]),
 			userSong.Rating,
 			userSong.PlayCount+1,
 			time.Now().Unix(),
@@ -574,7 +501,7 @@ func (db *DB) SongPlayed(song *model.Song, user *model.User) bool {
 
 // GetAllSongIdsAndPaths returns all song ids and path as a map
 func (db *DB) GetAllSongIdsAndPaths() (map[string]string, error) {
-	rows, err := db.Query(sanitizePlaceholder(sqlSongOnlyIdAndPath))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlSongOnlyIdAndPath"]))
 	if err != nil {
 		return nil, err
 	}

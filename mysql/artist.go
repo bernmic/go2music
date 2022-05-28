@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"go2music/database"
 	"go2music/model"
 	"strings"
 
@@ -10,40 +11,39 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	sqlArtistExists      = "SELECT 1 FROM artist LIMIT 1"
-	sqlArtistCreate      = "CREATE TABLE IF NOT EXISTS artist (id varchar(32), name varchar(255) NOT NULL, mbid varchar(36), PRIMARY KEY (id));"
-	sqlArtistIndexName   = "CREATE UNIQUE INDEX artist_name ON artist (name)"
-	sqlArtistIndexMbid   = "CREATE INDEX artist_mbid ON artist (mbid)"
-	sqlArtistInsert      = "INSERT INTO artist (id, name, mbid) VALUES(?, ?, ?)"
-	sqlArtistUpdate      = "UPDATE artist SET name=?, mbid=? WHERE id=?"
-	sqlArtistDelete      = "DELETE FROM artist WHERE id=?"
-	sqlArtistById        = "SELECT id,name,mbid FROM artist WHERE id=?"
-	sqlArtistByName      = "SELECT id,name,mbid FROM artist WHERE name=?"
-	sqlArtistAll         = "SELECT id, name, mbid FROM artist"
-	sqlArtistCount       = "SELECT COUNT(*) FROM artist"
-	sqlArtistWithoutName = "SELECT artist.id, artist.name, artist.mbid FROM artist WHERE artist.name IS NULL OR artist.name=''"
-)
+const ()
 
 func (db *DB) initializeArtist() {
-	_, err := db.Query(sqlArtistExists)
+	db.stmt["sqlArtistExists"] = database.SqlArtistExists
+	db.stmt["sqlArtistCreate"] = database.SqlArtistCreate
+	db.stmt["sqlArtistIndexName"] = database.SqlArtistIndexName
+	db.stmt["sqlArtistIndexMbid"] = database.SqlArtistIndexMbid
+	db.stmt["sqlArtistInsert"] = database.SqlArtistInsert
+	db.stmt["sqlArtistUpdate"] = database.SqlArtistUpdate
+	db.stmt["sqlArtistDelete"] = database.SqlArtistDelete
+	db.stmt["sqlArtistById"] = database.SqlArtistById
+	db.stmt["sqlArtistByName"] = database.SqlArtistByName
+	db.stmt["sqlArtistAll"] = database.SqlArtistAll
+	db.stmt["sqlArtistCount"] = database.SqlArtistCount
+	db.stmt["sqlArtistWithoutName"] = database.SqlArtistWithoutName
+	_, err := db.Query(db.sanitizer(db.stmt["sqlArtistExists"]))
 	if err != nil {
 		log.Info("Table artist does not exists. Creating now.")
-		_, err := db.Exec(sqlArtistCreate)
+		_, err := db.Exec(db.sanitizer(db.stmt["sqlArtistCreate"]))
 		if err != nil {
 			log.Error("Error creating artist table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("Artist Table successfully created....")
 		}
-		_, err = db.Exec(sqlArtistIndexName)
+		_, err = db.Exec(db.sanitizer(db.stmt["sqlArtistIndexName"]))
 		if err != nil {
 			log.Error("Error creating artist table index for name")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("Index on artist name generated....")
 		}
-		_, err = db.Exec(sqlArtistIndexMbid)
+		_, err = db.Exec(db.sanitizer(db.stmt["sqlArtistIndexMbid"]))
 		if err != nil {
 			log.Error("Error creating artist table index for mbid")
 			panic(fmt.Sprintf("%v", err))
@@ -56,7 +56,7 @@ func (db *DB) initializeArtist() {
 // CreateArtist create a new artist in the database
 func (db *DB) CreateArtist(artist model.Artist) (*model.Artist, error) {
 	artist.Id = xid.New().String()
-	_, err := db.Exec(sanitizePlaceholder(sqlArtistInsert), artist.Id, artist.Name, artist.Mbid)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlArtistInsert"]), artist.Id, artist.Name, artist.Mbid)
 	if err != nil {
 		log.Error(err)
 	}
@@ -70,7 +70,7 @@ func (db *DB) CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error
 		return existingArtist, findErr
 	}
 	artist.Id = xid.New().String()
-	_, err := db.Exec(sanitizePlaceholder(sqlArtistInsert), artist.Id, artist.Name, artist.Mbid)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlArtistInsert"]), artist.Id, artist.Name, artist.Mbid)
 	if err != nil {
 		log.Error(err)
 	}
@@ -79,24 +79,24 @@ func (db *DB) CreateIfNotExistsArtist(artist model.Artist) (*model.Artist, error
 
 // UpdateArtist update the given artist in the database
 func (db *DB) UpdateArtist(artist model.Artist) (*model.Artist, error) {
-	_, err := db.Exec(sanitizePlaceholder(sqlArtistUpdate), artist.Name, artist.Mbid, artist.Id)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlArtistUpdate"]), artist.Name, artist.Mbid, artist.Id)
 	return &artist, err
 }
 
 // DeleteArtist delete the artist with the id in the database
 func (db *DB) DeleteArtist(id string) error {
-	_, err := db.Exec(sanitizePlaceholder(sqlArtistDelete), id)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlArtistDelete"]), id)
 	return err
 }
 
 // FindArtistById get the artist with the given id
 func (db *DB) FindArtistById(id string) (*model.Artist, error) {
-	return fetchArtistRow(db.QueryRow(sanitizePlaceholder(sqlArtistById), id))
+	return fetchArtistRow(db.QueryRow(db.sanitizer(db.stmt["sqlArtistById"]), id))
 }
 
 // FindArtistByName get the artist with the given name
 func (db *DB) FindArtistByName(name string) (*model.Artist, error) {
-	return fetchArtistRow(db.QueryRow(sanitizePlaceholder(sqlArtistByName), name))
+	return fetchArtistRow(db.QueryRow(db.sanitizer(db.stmt["sqlArtistByName"]), name))
 }
 
 // FindAllArtists get all artists which matches the optional filter and is in the given page
@@ -107,7 +107,7 @@ func (db *DB) FindAllArtists(filter string, paging model.Paging) ([]*model.Artis
 		whereClause = " WHERE LOWER(artist.name) LIKE '%" + strings.ToLower(filter) + "%'"
 		orderAndLimit = whereClause + orderAndLimit
 	}
-	rows, err := db.Query(sanitizePlaceholder(sqlArtistAll + orderAndLimit))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlArtistAll"]) + orderAndLimit)
 	if err != nil {
 		log.Errorf("Error get all artists: %v", err)
 		return nil, 0, err
@@ -118,14 +118,14 @@ func (db *DB) FindAllArtists(filter string, paging model.Paging) ([]*model.Artis
 	}
 	total := len(artists)
 	if limit {
-		total = db.countRows(sanitizePlaceholder(sqlArtistCount + whereClause))
+		total = db.countRows(db.sanitizer(db.stmt["sqlArtistCount"]) + whereClause)
 	}
 	return artists, total, err
 }
 
 // FindArtistsWithoutName find all artists without a name
 func (db *DB) FindArtistsWithoutName() ([]*model.Artist, error) {
-	rows, err := db.Query(sanitizePlaceholder(sqlArtistWithoutName))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlArtistWithoutName"]))
 	if err != nil {
 		log.Errorf("Error get artists without name: %v", err)
 		return nil, err

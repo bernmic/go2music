@@ -2,7 +2,6 @@ package fs
 
 import (
 	"errors"
-	"fmt"
 	"go2music/database"
 	"go2music/model"
 	"os"
@@ -30,7 +29,7 @@ func replaceVariables(in string) string {
 func readData(filename string) (*model.Song, error) {
 	f, err := os.Open(filename)
 	if err != nil {
-		fmt.Printf("error loading file: %v", err)
+		log.Errorf("error loading file: %v", err)
 		problemSong(filename, err)
 		return nil, err
 	}
@@ -96,8 +95,6 @@ func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 // ID3Reader adds all songfiles to the database if they don't exists there.
 func ID3Reader(filenames []string, databaseAccess *database.DatabaseAccess) {
 	counter := 0
-	fmt.Printf("databaseAccess=%v\n", databaseAccess)
-	fmt.Printf("SongManager=%v\n", databaseAccess.SongManager)
 	for _, filename := range filenames {
 		if !databaseAccess.SongManager.SongExists(filename) {
 			song, err := readData(filename)

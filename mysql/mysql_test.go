@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 		fmt.Printf("Error accessing database: %v\n", err)
 		return
 	}
-	testDatabase = DB{*db}
+	testDatabase = DB{*db, make(map[string]string, 0)}
 	cleanDatabase(db)
 
 	testDatabase.initializeUser()

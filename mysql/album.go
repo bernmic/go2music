@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"go2music/database"
 	"go2music/model"
 	"strings"
 
@@ -10,65 +11,40 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	sqlAlbumExists       = "SELECT 1 FROM album LIMIT 1"
-	sqlCreateAlbum       = "CREATE TABLE IF NOT EXISTS album (id varchar(32), title varchar(255) NOT NULL, path varchar(255) NOT NULL, mbid varchar(36), PRIMARY KEY (id));"
-	sqlAlbumIndexPath    = "CREATE UNIQUE INDEX album_path ON album (path)"
-	sqlAlbumIndexMbid    = "CREATE INDEX album_mbid ON album (mbid)"
-	sqlAlbumInsert       = "INSERT INTO album (id, title, path, mbid) VALUES(?, ?, ?, ?)"
-	sqlAlbumUpdate       = "UPDATE album SET title=?, path=?, mbid=? WHERE id=?"
-	sqlAlbumDelete       = "DELETE FROM album WHERE id=?"
-	sqlAlbumById         = "SELECT id,title,path, mbid FROM album WHERE id=?"
-	sqlAlbumByPath       = "SELECT id,title,path,mbid FROM album WHERE path=?"
-	sqlAlbumAll          = "SELECT id, title, path, mbid FROM album"
-	sqlAlbumCount        = "SELECT COUNT(*) FROM album"
-	sqlAlbumWithoutSong  = "SELECT album.id, album.title, album.path, album.mbid FROM album LEFT OUTER JOIN song ON album.id=song.album_id WHERE song.id IS NULL"
-	sqlAlbumWithoutTitle = "SELECT album.id, album.title, album.path, album.mbid FROM album WHERE album.title IS NULL OR album.title=''"
-	sqlAlbumForArtist    = `
-SELECT DISTINCT
-	album.id album_id,
-	album.title album_title,
-	album.path album_path,
-	album.mbid album_mbid
-FROM
-	song
-LEFT JOIN artist ON song.artist_id = artist.id
-LEFT JOIN album ON song.album_id = album.id
-WHERE
-	artist.id=?
-`
-	sqlAlbumRecent = `
-	SELECT DISTINCT
-		album.id,
-		album.title,
-		album.path,
-		album.mbid
-	FROM
-		song
-	INNER JOIN album ON song.album_id = album.id
-	ORDER BY song.added DESC LIMIT ?
-	`
-)
-
 func (db *DB) initializeAlbum() {
-	_, err := db.Query(sqlAlbumExists)
+	db.stmt["sqlAlbumExists"] = database.SqlAlbumExists
+	db.stmt["sqlAlbumCreate"] = database.SqlAlbumCreate
+	db.stmt["sqlAlbumIndexPath"] = database.SqlAlbumIndexPath
+	db.stmt["sqlAlbumIndexMbid"] = database.SqlAlbumIndexMbid
+	db.stmt["sqlAlbumInsert"] = database.SqlAlbumInsert
+	db.stmt["sqlAlbumUpdate"] = database.SqlAlbumUpdate
+	db.stmt["sqlAlbumDelete"] = database.SqlAlbumDelete
+	db.stmt["sqlAlbumById"] = database.SqlAlbumById
+	db.stmt["sqlAlbumByPath"] = database.SqlAlbumByPath
+	db.stmt["sqlAlbumAll"] = database.SqlAlbumAll
+	db.stmt["sqlAlbumCount"] = database.SqlAlbumCount
+	db.stmt["sqlAlbumWithoutSong"] = database.SqlAlbumWithoutSong
+	db.stmt["sqlAlbumWithoutTitle"] = database.SqlAlbumWithoutTitle
+	db.stmt["sqlAlbumForArtist"] = database.SqlAlbumForArtist
+	db.stmt["sqlAlbumRecent"] = database.SqlAlbumRecent
+	_, err := db.Query(db.sanitizer(db.stmt["sqlAlbumExists"]))
 	if err != nil {
 		log.Info("Table album does not exists. Creating now.")
-		_, err := db.Exec(sqlCreateAlbum)
+		_, err := db.Exec(db.sanitizer(db.stmt["sqlAlbumCreate"]))
 		if err != nil {
 			log.Error("Error creating album table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("Album Table successfully created....")
 		}
-		_, err = db.Exec(sqlAlbumIndexPath)
+		_, err = db.Exec(db.sanitizer(db.stmt["sqlAlbumIndexPath"]))
 		if err != nil {
 			log.Error("Error creating album table index for path")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Info("Index on album path generated....")
 		}
-		_, err = db.Exec(sqlAlbumIndexMbid)
+		_, err = db.Exec(db.sanitizer(db.stmt["sqlAlbumIndexMbid"]))
 		if err != nil {
 			log.Error("Error creating album table index for mbid")
 			panic(fmt.Sprintf("%v", err))
@@ -81,7 +57,7 @@ func (db *DB) initializeAlbum() {
 // CreateAlbum create a new album in the database
 func (db *DB) CreateAlbum(album model.Album) (*model.Album, error) {
 	album.Id = xid.New().String()
-	_, err := db.Exec(sanitizePlaceholder(sqlAlbumInsert), album.Id, album.Title, album.Path, album.Mbid)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlAlbumInsert"]), album.Id, album.Title, album.Path, album.Mbid)
 	if err != nil {
 		log.Error(err)
 	}
@@ -95,7 +71,7 @@ func (db *DB) CreateIfNotExistsAlbum(album model.Album) (*model.Album, error) {
 	if findErr == nil {
 		return existingAlbum, findErr
 	}
-	_, err := db.Exec(sanitizePlaceholder(sqlAlbumInsert), album.Id, album.Title, album.Path, album.Mbid)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlAlbumInsert"]), album.Id, album.Title, album.Path, album.Mbid)
 	if err != nil {
 		log.Error(err)
 	}
@@ -104,24 +80,24 @@ func (db *DB) CreateIfNotExistsAlbum(album model.Album) (*model.Album, error) {
 
 // UpdateAlbum update the given album in the database
 func (db *DB) UpdateAlbum(album model.Album) (*model.Album, error) {
-	_, err := db.Exec(sanitizePlaceholder(sqlAlbumUpdate), album.Title, album.Path, album.Mbid, album.Id)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlAlbumUpdate"]), album.Title, album.Path, album.Mbid, album.Id)
 	return &album, err
 }
 
 // DeleteAlbum delete the album with the id in the database
 func (db *DB) DeleteAlbum(id string) error {
-	_, err := db.Exec(sanitizePlaceholder(sqlAlbumDelete), id)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlAlbumDelete"]), id)
 	return err
 }
 
 // FindAlbumById get the album with the given id
 func (db *DB) FindAlbumById(id string) (*model.Album, error) {
-	return fetchAlbumRow(db.QueryRow(sanitizePlaceholder(sqlAlbumById), id))
+	return fetchAlbumRow(db.QueryRow(db.sanitizer(db.stmt["sqlAlbumById"]), id))
 }
 
 // FindAlbumByPath get the album with the given path
 func (db *DB) FindAlbumByPath(path string) (*model.Album, error) {
-	return fetchAlbumRow(db.QueryRow(sanitizePlaceholder(sqlAlbumByPath), path))
+	return fetchAlbumRow(db.QueryRow(db.sanitizer(db.stmt["sqlAlbumByPath"]), path))
 }
 
 func fetchAlbumRow(row *sql.Row) (*model.Album, error) {
@@ -171,7 +147,7 @@ func (db *DB) FindAllAlbums(filter string, paging model.Paging, titleMode string
 		whereClause = whereClause + " AND LOWER(album.title) LIKE '%" + strings.ToLower(filter) + "%'"
 	}
 	orderAndLimit = whereClause + orderAndLimit
-	rows, err := db.Query(sanitizePlaceholder(sqlAlbumAll + orderAndLimit))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlAlbumAll"]) + orderAndLimit)
 	if err != nil {
 		log.Errorf("Error get all albums: %v", err)
 		return nil, 0, err
@@ -183,14 +159,14 @@ func (db *DB) FindAllAlbums(filter string, paging model.Paging, titleMode string
 
 	total := len(albums)
 	if limit {
-		total = db.countRows(sanitizePlaceholder(sqlAlbumCount + whereClause))
+		total = db.countRows(db.sanitizer(db.stmt["sqlAlbumCount"]) + whereClause)
 	}
 	return albums, total, err
 }
 
 // FindAlbumsWithoutSongs find all albums without any song
 func (db *DB) FindAlbumsWithoutSongs() ([]*model.Album, error) {
-	rows, err := db.Query(sanitizePlaceholder(sqlAlbumWithoutSong))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlAlbumWithoutSong"]))
 	if err != nil {
 		log.Errorf("Error get albums without songs: %v", err)
 		return nil, err
@@ -205,7 +181,7 @@ func (db *DB) FindAlbumsWithoutSongs() ([]*model.Album, error) {
 
 // FindAlbumsWithoutTitle find all albums without a title
 func (db *DB) FindAlbumsWithoutTitle() ([]*model.Album, error) {
-	rows, err := db.Query(sanitizePlaceholder(sqlAlbumWithoutTitle))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlAlbumWithoutTitle"]))
 	if err != nil {
 		log.Errorf("Error get albums without title: %v", err)
 		return nil, err
@@ -220,7 +196,7 @@ func (db *DB) FindAlbumsWithoutTitle() ([]*model.Album, error) {
 
 // FindAlbumsForArtist find all albums with at least one song of the given artist
 func (db *DB) FindAlbumsForArtist(artistId string) ([]*model.Album, error) {
-	rows, err := db.Query(sanitizePlaceholder(sqlAlbumForArtist), artistId)
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlAlbumForArtist"]), artistId)
 	if err != nil {
 		log.Errorf("Error get all albums for artist: %v", err)
 		return nil, err
@@ -234,7 +210,7 @@ func (db *DB) FindAlbumsForArtist(artistId string) ([]*model.Album, error) {
 
 // FindRecentlyAddedAlbums find the num recently added albums
 func (db *DB) FindRecentlyAddedAlbums(num int) ([]*model.Album, error) {
-	rows, err := db.Query(sanitizePlaceholder(sqlAlbumRecent), num)
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlAlbumRecent"]), num)
 	if err != nil {
 		log.Error("Error reading recently added albums: ", err)
 		return nil, err

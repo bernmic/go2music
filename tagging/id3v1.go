@@ -163,11 +163,10 @@ func Open(file string) (*V1Tag, error) {
 	tag := V1Tag{}
 
 	stats, err := f.Stat()
-	p, err := f.Seek(stats.Size()-tagLength, 0)
+	_, err = f.Seek(stats.Size()-tagLength, 0)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(p)
 	data := make([]byte, tagLength)
 	n, err := f.Read(data)
 	if err != nil {
@@ -200,11 +199,10 @@ func HasID3V1(file string) bool {
 	defer f.Close()
 
 	stats, err := f.Stat()
-	p, err := f.Seek(stats.Size()-tagLength, 0)
+	_, err = f.Seek(stats.Size()-tagLength, 0)
 	if err != nil {
 		return false
 	}
-	fmt.Println(p)
 	data := make([]byte, tagLength)
 	n, err := f.Read(data)
 	if err != nil {

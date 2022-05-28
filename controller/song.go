@@ -84,13 +84,12 @@ func streamSong(c *gin.Context) {
 	c.Header("Cache-Control", "no-cache")
 	c.File(song.Path)
 
-	u, ok := c.Get("principal")
-	if !ok {
+	u, err := principal(c)
+	if err != nil {
 		respondWithError(http.StatusUnauthorized, "unknown user", c)
 		return
 	}
-	user := *(u.(*model.User))
-	go databaseAccess.SongManager.SongPlayed(song, &user)
+	go databaseAccess.SongManager.SongPlayed(song, u)
 }
 
 func rateSong(c *gin.Context) {

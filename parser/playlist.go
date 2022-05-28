@@ -2,8 +2,8 @@ package parser
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -26,7 +26,7 @@ func EvalPlaylistExpression(expression string) (string, error) {
 	line := scanner.Text()
 	exp, err := parser.ParseExpr(line)
 	if err != nil {
-		fmt.Printf("parsing failed: %s\n", err)
+		log.Errorf("parsing failed: %s\n", err)
 		return "", err
 	}
 	return evalAST(exp)
@@ -72,7 +72,7 @@ func evalAST(exp ast.Expr) (string, error) {
 		}
 		return val, nil
 	default:
-		fmt.Printf("%v\n", exp)
+		log.Errorf("%v\n", exp)
 	}
 	return "", errors.Errorf("Illegal expression")
 }

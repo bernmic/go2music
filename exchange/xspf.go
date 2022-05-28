@@ -2,7 +2,7 @@ package exchange
 
 import (
 	"encoding/xml"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"go2music/model"
 	"io"
 	"net/url"
@@ -53,7 +53,7 @@ func ExportXSPF(p *model.Playlist, songs []*model.Song, w io.Writer) {
 		pl.TrackList.Tracks = append(pl.TrackList.Tracks, trackFromSong(song))
 	}
 	if err := enc.Encode(pl); err != nil {
-		fmt.Printf("error: %v\n", err)
+		log.Errorf("error: %v\n", err)
 	}
 }
 

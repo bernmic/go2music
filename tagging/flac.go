@@ -2,6 +2,7 @@ package tagging
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"strings"
 
 	"github.com/go-flac/flacpicture"
@@ -12,7 +13,6 @@ import (
 // ParseFlac gets metadata from a flac song
 func (m *Media) ParseFlac(file string) (*TaggingSong, error) {
 	vc, pic, si := extractFLACComment(file)
-	//fmt.Printf("%v, %d", vc, pic)
 	s := TaggingSong{File: file[len(m.MediaPath)+1:], Type: "flac"}
 	for _, p := range vc.Comments {
 		kv := strings.Split(p, "=")
@@ -44,7 +44,7 @@ func (m *Media) ParseFlac(file string) (*TaggingSong, error) {
 			case "language":
 				s.Language = kv[1]
 			default:
-				//fmt.Println(p)
+				log.Infof("unknown ID3V2 field: %s", key)
 			}
 		}
 	}

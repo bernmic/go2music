@@ -4,45 +4,34 @@ import (
 	"fmt"
 	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
+	"go2music/database"
 	"go2music/model"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
 )
 
-const (
-	sqlUserExists = "SELECT 1 FROM guser LIMIT 1"
-	sqlUserCreate = `
-	CREATE TABLE IF NOT EXISTS
-		guser (
-			id varchar(32), 
-			username varchar(255) NOT NULL, 
-			password varchar(255) NOT NULL, 
-			role varchar(255) NOT NULL, 
-			email varchar(255) NOT NULL, 
-			PRIMARY KEY (id)
-		);`
-	sqlUserIndexName = "CREATE UNIQUE INDEX guser_username ON guser (username)"
-	sqlUserCount     = "SELECT count(*) c FROM guser"
-	sqlUserInsert    = "INSERT INTO guser (id,username,password,role,email) VALUES(?,?,?,?,?)"
-	sqlUserUpdate    = "UPDATE guser SET username=?, password=?, role=?, email=? WHERE id=?"
-	sqlUserDelete    = "DELETE FROM guser WHERE id=?"
-	sqlUserById      = "SELECT id, username, password, role, email FROM guser WHERE id=?"
-	sqlUserByName    = "SELECT id, username, password, role, email FROM guser WHERE username=?"
-	sqlUserAll       = "SELECT id, username, password, role, email FROM guser"
-)
-
 func (db *DB) initializeUser() {
-	_, err := db.Query(sqlUserExists)
+	db.stmt["sqlUserExists"] = database.SqlUserExists
+	db.stmt["sqlUserCreate"] = database.SqlUserCreate
+	db.stmt["sqlUserIndexName"] = database.SqlUserIndexName
+	db.stmt["sqlUserCount"] = database.SqlUserCount
+	db.stmt["sqlUserInsert"] = database.SqlUserInsert
+	db.stmt["sqlUserUpdate"] = database.SqlUserUpdate
+	db.stmt["sqlUserDelete"] = database.SqlUserDelete
+	db.stmt["sqlUserById"] = database.SqlUserById
+	db.stmt["sqlUserByName"] = database.SqlUserByName
+	db.stmt["sqlUserAll"] = database.SqlUserAll
+	_, err := db.Query(db.sanitizer(db.stmt["sqlUserExists"]))
 	if err != nil {
 		log.Print("Table guser does not exists. Creating now.")
-		result, err := db.Exec(sqlUserCreate)
+		result, err := db.Exec(db.sanitizer(db.stmt["sqlUserCreate"]))
 		if err != nil {
 			log.Error("Error creating guser table")
 			panic(fmt.Sprintf("%v", err))
 		} else {
 			log.Infof("User Table successfully created....%v", result)
 		}
-		_, err = db.Exec(sqlUserIndexName)
+		_, err = db.Exec(db.sanitizer(db.stmt["sqlUserIndexName"]))
 		if err != nil {
 			log.Error("Error creating user table index for username")
 			panic(fmt.Sprintf("%v", err))
@@ -51,7 +40,7 @@ func (db *DB) initializeUser() {
 		}
 	}
 	var count int64
-	err = db.QueryRow(sanitizePlaceholder(sqlUserCount)).Scan(&count)
+	err = db.QueryRow(db.sanitizer(db.stmt["sqlUserCount"])).Scan(&count)
 	if err != nil {
 		log.Errorf("Error querying user count: %v", err)
 	}
@@ -80,7 +69,7 @@ func (db *DB) CreateUser(user model.User) (*model.User, error) {
 	user.Id = xid.New().String()
 	password, _ := HashPassword(user.Password)
 	_, err := db.Exec(
-		sanitizePlaceholder(sqlUserInsert),
+		db.sanitizer(db.stmt["sqlUserInsert"]),
 		user.Id,
 		user.Username,
 		password,
@@ -101,7 +90,7 @@ func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 	password, _ := HashPassword(user.Password)
 	user.Id = xid.New().String()
 	_, err := db.Exec(
-		sanitizePlaceholder(sqlUserInsert),
+		db.sanitizer(db.stmt["sqlUserInsert"]),
 		user.Id,
 		user.Username,
 		password,
@@ -116,7 +105,7 @@ func (db *DB) CreateIfNotExistsUser(user model.User) (*model.User, error) {
 // UpdateUser update the given user in the database
 func (db *DB) UpdateUser(user model.User) (*model.User, error) {
 	_, err := db.Exec(
-		sanitizePlaceholder(sqlUserUpdate),
+		db.sanitizer(db.stmt["sqlUserUpdate"]),
 		user.Username,
 		user.Password,
 		user.Role,
@@ -127,7 +116,7 @@ func (db *DB) UpdateUser(user model.User) (*model.User, error) {
 
 // DeleteUser delete the user with the id in the database
 func (db *DB) DeleteUser(id string) error {
-	_, err := db.Exec(sanitizePlaceholder(sqlUserDelete), id)
+	_, err := db.Exec(db.sanitizer(db.stmt["sqlUserDelete"]), id)
 	return err
 }
 
@@ -135,7 +124,7 @@ func (db *DB) DeleteUser(id string) error {
 func (db *DB) FindUserById(id string) (*model.User, error) {
 	user := new(model.User)
 	err := db.QueryRow(
-		sanitizePlaceholder(sqlUserById), id).Scan(
+		db.sanitizer(db.stmt["sqlUserById"]), id).Scan(
 		&user.Id,
 		&user.Username,
 		&user.Password,
@@ -151,7 +140,7 @@ func (db *DB) FindUserById(id string) (*model.User, error) {
 func (db *DB) FindUserByUsername(name string) (*model.User, error) {
 	user := new(model.User)
 	err := db.QueryRow(
-		sanitizePlaceholder(sqlUserByName), name).Scan(
+		db.sanitizer(db.stmt["sqlUserByName"]), name).Scan(
 		&user.Id,
 		&user.Username,
 		&user.Password,
@@ -171,7 +160,7 @@ func (db *DB) FindAllUsers(filter string, paging model.Paging) ([]*model.User, i
 		whereClause = " WHERE LOWER(username) LIKE '%" + strings.ToLower(filter) + "%'"
 		orderAndLimit = whereClause + orderAndLimit
 	}
-	rows, err := db.Query(sanitizePlaceholder(sqlUserAll + orderAndLimit))
+	rows, err := db.Query(db.sanitizer(db.stmt["sqlUserAll"]) + orderAndLimit)
 	if err != nil {
 		log.Error(err)
 	}
@@ -196,7 +185,7 @@ func (db *DB) FindAllUsers(filter string, paging model.Paging) ([]*model.User, i
 
 	total := len(users)
 	if limit {
-		total = db.countRows(sanitizePlaceholder(sqlUserCount + whereClause))
+		total = db.countRows(db.sanitizer(db.stmt["sqlUserCount"]) + whereClause)
 	}
 
 	return users, total, err

@@ -98,11 +98,11 @@ export class PlayerService {
   }
 
   songCoverUrl(song: Song): string {
-    return environment.restserver + "/api/song/" + song.songId + "/cover?bearer=" + this.authService.getToken();
+    return environment.restserver + "/api/song/" + song.songId + "/cover?bearer=" + encodeURIComponent(this.authService.getToken());
   }
 
   songStreamUrl(song: Song): string {
-    return environment.restserver + "/api/song/" + song.songId + "/stream?bearer=" + this.authService.getToken();
+    return environment.restserver + "/api/song/" + song.songId + "/stream?bearer=" + encodeURIComponent(this.authService.getToken());
   }
 
   private LOCALSTORAGE_PREFIX = "PLAYQUEUE-";

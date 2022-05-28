@@ -38,12 +38,13 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			bearer := c.Query("bearer")
+			bearer := c.Request.URL.Query().Get("bearer")
+			//bearer := c.Query("bearer")
 			if bearer != "" {
 				authHeader = "Bearer " + bearer
 			}
 		}
-		user, err := auth.ValidateUser(strings.Split(authHeader, " ")[1])
+		user, err := auth.ValidateUser(strings.SplitN(authHeader, " ", 2)[1])
 		if err == nil && (user.Role == auth.UserRole || user.Role == auth.AdminRole) {
 			c.Set("principal", user)
 			log.Println("INFO Authorization OK - " + user.Username + " with role " + user.Role)

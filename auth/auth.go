@@ -104,8 +104,7 @@ func GenerateToken(header string, payload map[string]interface{}, secret string)
 	// We then Marshal the payload which is a map. This converts it to a string of JSON.
 	payloadstr, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Println("Error generating Token")
-		return string(payloadstr), err
+		return string(payloadstr), fmt.Errorf("error generating token: %v", err)
 	}
 	payload64 := base64.StdEncoding.EncodeToString(payloadstr)
 
@@ -121,6 +120,10 @@ func GenerateToken(header string, payload map[string]interface{}, secret string)
 
 	//Finally we have the token
 	tokenStr := message + "." + signature
+	if strings.ContainsAny(tokenStr, " ") {
+		log.Warn("Token contains space!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	}
+	fmt.Println("TOKEN=" + tokenStr)
 	return tokenStr, nil
 }
 
@@ -148,7 +151,6 @@ func ValidateToken(token string, secret string) (bool, []byte, error) {
 	h.Write([]byte(unsignedStr))
 
 	signature := base64.StdEncoding.EncodeToString(h.Sum(nil))
-	fmt.Println(signature)
 
 	// if both the signature don’t match, this means token is wrong
 	if signature != splitToken[2] {
