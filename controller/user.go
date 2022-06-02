@@ -21,10 +21,10 @@ func getUsers(c *gin.Context) {
 	filter := extractFilterFromRequest(c)
 	users, total, err := databaseAccess.UserManager.FindAllUsers(filter, paging)
 	if err == nil {
-		c.JSON(http.StatusOK, model.UserCollection{users, paging, total})
+		c.JSON(http.StatusOK, model.UserCollection{Users: users, Paging: paging, Total: total})
 		return
 	}
-	respondWithError(http.StatusInternalServerError, "Cound not read users", c)
+	respondWithError(http.StatusInternalServerError, "Could not read users", c)
 }
 
 func getUser(c *gin.Context) {

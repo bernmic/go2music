@@ -27,7 +27,6 @@ import (
 	"go2music/configuration"
 	"go2music/controller"
 	"go2music/database"
-	"go2music/fs"
 	"go2music/install"
 	"go2music/mysql"
 	"go2music/postgres"
@@ -90,7 +89,7 @@ func main() {
 	}
 	startCron()
 	if configuration.Configuration(false).Media.SyncAtStart {
-		go fs.SyncWithFilesystem(&databaseAccess)
+		go database.SyncWithFilesystem(&databaseAccess)
 	}
 	controller.Run(&databaseAccess)
 }
@@ -122,7 +121,7 @@ func startCron() {
 }
 
 func cron() {
-	fs.SyncWithFilesystem(&databaseAccess)
+	database.SyncWithFilesystem(&databaseAccess)
 }
 
 func parseFrequency(f string) (uint64, string, error) {

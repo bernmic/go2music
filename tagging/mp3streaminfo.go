@@ -2,6 +2,7 @@ package tagging
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 )
@@ -44,7 +45,12 @@ func StreamInfo(filename string) (*Mp3StreamInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error opening file: %v", err)
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			log.Errorf("error closing file for streamInfo: %v", err)
+		}
+	}()
 	id3header := make([]byte, id3v2Headerlength)
 	c, err := f.Read(id3header)
 	if err != nil || c != id3v2Headerlength {

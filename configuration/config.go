@@ -25,7 +25,7 @@ const (
 	TokenSecret    Secret = "token"
 )
 
-// ConfigFile is the name of the configutration file
+// ConfigFile is the name of the configuration file
 var ConfigFile = "go2music.yaml"
 
 // Configuration returns the actual configuration.
@@ -48,7 +48,10 @@ func Configuration(force bool) *model.Config {
 
 		configdata, err := ioutil.ReadFile(ConfigFile)
 		if err == nil {
-			yaml.Unmarshal([]byte(configdata), &config)
+			err = yaml.Unmarshal([]byte(configdata), &config)
+			if err != nil {
+				log.Errorf("error unmarshalling config file: %v", err)
+			}
 		} else {
 			log.Warnf("Config file not found. Use default parameters.")
 		}
@@ -141,9 +144,12 @@ func Configuration(force bool) *model.Config {
 // Secrets returns the requested secret
 func Secrets(secret Secret) string {
 	if len(secrets) == 0 {
-		secretdata, err := ioutil.ReadFile(SecretsFile)
+		secretData, err := ioutil.ReadFile(SecretsFile)
 		if err == nil {
-			yaml.Unmarshal([]byte(secretdata), &config)
+			err = yaml.Unmarshal([]byte(secretData), &config)
+			if err != nil {
+				log.Errorf("error unmarshalling secrets file: %v", err)
+			}
 		}
 	}
 	return ""

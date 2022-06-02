@@ -3,6 +3,7 @@ package tagging
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -159,7 +160,12 @@ func Open(file string) (*V1Tag, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			log.Errorf("error closing file for id2v1: %v", err)
+		}
+	}()
 	tag := V1Tag{}
 
 	stats, err := f.Stat()
@@ -196,7 +202,12 @@ func HasID3V1(file string) bool {
 	if err != nil {
 		return false
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			log.Errorf("error closing file for hasId2v1: %v", err)
+		}
+	}()
 
 	stats, err := f.Stat()
 	_, err = f.Seek(stats.Size()-tagLength, 0)

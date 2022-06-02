@@ -1,4 +1,4 @@
-package postgres
+package database
 
 import (
 	"go2music/model"
@@ -32,15 +32,15 @@ func Test_PagingPlaylist(t *testing.T) {
 	}
 	paging.Size = 2
 	s, l = createOrderAndLimitForPlaylist(paging)
-	if s != " ORDER BY name DESC LIMIT 2 OFFSET 0" {
-		t.Error("Expected 'ORDER BY name DESC LIMIT 2 OFFSET 0'. got " + s)
+	if s != " ORDER BY name DESC LIMIT 0,2" {
+		t.Error("Expected 'ORDER BY name DESC LIMIT 0,2'. got " + s)
 	}
 	if !l {
 		t.Error("Expected limit flag == true. Got false")
 	}
 	paging.Page = 1
 	s, _ = createOrderAndLimitForPlaylist(paging)
-	if s != " ORDER BY name DESC LIMIT 2 OFFSET 2" {
-		t.Error("Expected 'ORDER BY name DESC LIMIT 2 OFFSET 2'. got " + s)
+	if s != " ORDER BY name DESC LIMIT 2,2" {
+		t.Error("Expected 'ORDER BY name DESC LIMIT 2,2'. got " + s)
 	}
 }

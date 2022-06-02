@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go2music/configuration"
+	"go2music/database"
 	"go2music/model"
 	"strings"
 
@@ -12,15 +13,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// DB contains the session data for a database session
-type DB struct {
-	sql.DB
-	stmt      map[string]string
-	sanitizer func(string) string
-}
-
 // New create a new mysql database session and returens it
-func New() (*DB, error) {
+func New() (*database.DB, error) {
 	c := configuration.Configuration(false)
 	//url := c.Database.Url + "/" + c.Database.Schema
 	//db, err := sql.Open(c.Database.Type, fmt.Sprintf("%s:%s@%s", c.Database.Username, c.Database.Password, url))
@@ -33,25 +27,18 @@ func New() (*DB, error) {
 	}
 	if err := db.Ping(); err != nil {
 		log.Errorf("Error accessing database: %v\n", err)
-		return nil, errors.New("Database not configured or accessible")
+		return nil, errors.New("database not configured or accessible")
 	}
-	mysql := DB{*db, make(map[string]string, 0), Sanitizer}
-	mysql.initializeUser()
-	mysql.initializeArtist()
-	mysql.initializeAlbum()
-	mysql.initializeSong()
-	mysql.initializePlaylist()
-	mysql.initializeInfo()
+	mysql := database.DB{DB: *db, Stmt: make(map[string]string, 0), Sanitizer: Sanitizer}
+	initializeUser(&mysql)
+	initializeArtist(&mysql)
+	initializeAlbum(&mysql)
+	initializeSong(&mysql)
+	initializePlaylist(&mysql)
+	initializeInfo(&mysql)
 	log.Info("Database initialized....")
 
 	return &mysql, nil
-}
-
-func (db *DB) countRows(sql string, args ...interface{}) int {
-	var count int
-	rows := db.QueryRow(Sanitizer(sql), args...)
-	rows.Scan(&count)
-	return count
 }
 
 func createUrl(dbParam model.Database) string {

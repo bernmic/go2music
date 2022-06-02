@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	EMPTY_SQL_STRING = "''"
+	EmptySqlString = "''"
 )
 
 // EvalPlaylistExpression evaluate the given expression and returns an SQL where clause.
@@ -111,10 +111,10 @@ func evalBinary(exp *ast.BinaryExpr) (string, error) {
 			right = strings.Replace(right, "?", "_", -1)
 			return left + " LIKE " + right, nil
 		}
-		if left == EMPTY_SQL_STRING {
+		if left == EmptySqlString {
 			return right + " IS NULL OR " + right + "=''", nil
 		}
-		if right == EMPTY_SQL_STRING {
+		if right == EmptySqlString {
 			return left + " IS NULL OR " + left + "=''", nil
 		}
 		return left + "=" + right, nil
@@ -131,10 +131,10 @@ func evalBinary(exp *ast.BinaryExpr) (string, error) {
 			right = strings.Replace(right, "?", "_", -1)
 			return left + " NOT LIKE " + right, nil
 		}
-		if left == EMPTY_SQL_STRING {
+		if left == EmptySqlString {
 			return right + " IS NOT NULL AND " + right + "!=''", nil
 		}
-		if right == EMPTY_SQL_STRING {
+		if right == EmptySqlString {
 			return left + " IS NOT NULL AND " + left + "!=''", nil
 		}
 		return left + "!=" + right, nil

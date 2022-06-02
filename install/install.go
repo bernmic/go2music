@@ -48,7 +48,10 @@ func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method == http.MethodPost {
 		// POST receive the data and write config file
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			log.Errorf("error parsing template: %v", err)
+		}
 		c := model.Config{}
 		c.Database.Type = r.Form.Get("databasetype")
 		c.Database.Schema = r.Form.Get("databaseschema")
@@ -69,7 +72,10 @@ func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 		c.Application.Loglevel = "info"
 		c.Application.Cors = "all"
 		// write config
-		configuration.ChangeConfiguration(&c)
+		_, err = configuration.ChangeConfiguration(&c)
+		if err != nil {
+			log.Errorf("error writing congiguration: %v", err)
+		}
 		log.Infof("Restart now.")
 		http.Redirect(w, r, "/", http.StatusFound)
 		// send shutdown signal

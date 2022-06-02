@@ -70,7 +70,10 @@ func initRouter() {
 		metricsRouter = gin.New()
 		metricsRouter.GET("/metrics", metrics.PrometheusHandler(databaseAccess))
 		mp := fmt.Sprintf(":%d", configuration.Configuration(false).Metrics.Port)
-		go metricsRouter.Run(mp)
+		go func() {
+			err := metricsRouter.Run(mp)
+			log.Errorf("error in metrics router: %v", err)
+		}()
 	}
 }
 
@@ -87,7 +90,10 @@ func noRoute(c *gin.Context) {
 				// we have the static file in our assets. so we send this one.
 				c.Writer.WriteHeader(http.StatusOK)
 				c.Header("Content-Type", getMimeType(u))
-				c.Writer.Write(b)
+				_, err = c.Writer.Write(b)
+				if err != nil {
+					log.Errorf("error writing static content: %v", err)
+				}
 				c.Writer.Flush()
 				return
 			}
@@ -103,7 +109,10 @@ func Run(da *database.DatabaseAccess) {
 	databaseAccess = da
 	initRouter()
 	serverAddress := fmt.Sprintf(":%d", configuration.Configuration(false).Server.Port)
-	router.Run(serverAddress)
+	err := router.Run(serverAddress)
+	if err != nil {
+		log.Errorf("error in engine: %v", err)
+	}
 }
 
 // CorsMiddleware creates a middleware which allows all origins, needed methods and headers for all endpoints.

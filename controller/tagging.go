@@ -125,13 +125,21 @@ func setTag(c *gin.Context) {
 		c.JSON(http.StatusNotFound, status(http.StatusNotFound, "file not found"))
 		return
 	}
-	defer tag.Close()
+	defer func() {
+		err := tag.Close()
+		if err != nil {
+			log.Errorf("error closing tag for set: %v", err)
+		}
+	}()
 	err = m.SongMP3(&s, tag)
 	err = tag.Save()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, status(http.StatusInternalServerError, err.Error()))
 	} else {
-		tag.Close()
+		err := tag.Close()
+		if err != nil {
+			log.Errorf("error closing tag for set: %v", err)
+		}
 		song(c)
 	}
 }
@@ -143,7 +151,12 @@ func removeTag(c *gin.Context) {
 		c.JSON(http.StatusNotFound, status(http.StatusNotFound, "file not found"))
 		return
 	}
-	defer tag.Close()
+	defer func() {
+		err := tag.Close()
+		if err != nil {
+			log.Errorf("error closing tag for remove: %v", err)
+		}
+	}()
 	tag.DeleteAllFrames()
 	tag.SetVersion(4)
 	err = tag.Save()

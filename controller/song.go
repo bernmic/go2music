@@ -59,7 +59,12 @@ func streamSong(c *gin.Context) {
 		return
 	}
 	file, err := os.Open(song.Path)
-	defer file.Close() //Close after function return
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Errorf("error closing file in stream: %v", err)
+		}
+	}() //Close after function return
 	if err != nil {
 		//File not found, send 404
 		respondWithError(http.StatusNotFound, "song file not found", c)
@@ -69,7 +74,11 @@ func streamSong(c *gin.Context) {
 	//Create a buffer to store the header of the file in
 	fileHeader := make([]byte, 512)
 	//Copy the headers into the fileHeader buffer
-	file.Read(fileHeader)
+	_, err = file.Read(fileHeader)
+	if err != nil {
+		log.Errorf("error reading file header for streaming: %v", err)
+		respondWithError(http.StatusInternalServerError, "internal error", c)
+	}
 	//Get content type of file
 	fileContentType := http.DetectContentType(fileHeader)
 
@@ -119,7 +128,7 @@ func getCover(c *gin.Context) {
 	counterSong.Add("GET /:id/cover", 1)
 	id := c.Param("id")
 	s := c.Param("size")
-	size := COVER_SIZE
+	size := CoverSize
 	var err error
 	if s != "" {
 		size, err = strconv.Atoi(s)
@@ -137,7 +146,12 @@ func getCover(c *gin.Context) {
 	if err != nil {
 		f, err := assets.FrontendAssets.Open("/assets/img/defaultAlbum.png")
 		if err == nil {
-			defer f.Close()
+			defer func() {
+				err := f.Close()
+				if err != nil {
+					log.Errorf("error closing file in getCover: %v", err)
+				}
+			}() //Close after function return
 			image, err := ioutil.ReadAll(f)
 			if err == nil {
 				c.Header("Content-Type", "image/png")

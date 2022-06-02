@@ -1,9 +1,8 @@
-package fs
+package database
 
 import (
 	"errors"
 	"go2music/configuration"
-	"go2music/database"
 	"go2music/model"
 	"os"
 	"path/filepath"
@@ -34,7 +33,7 @@ func GetSyncState() *model.SyncState {
 
 // SyncWithFilesystem syncs the database with the configured directory in filesystem.
 // New songs where added to database, removed songs where deleted from database.
-func SyncWithFilesystem(databaseAccess *database.DatabaseAccess) {
+func SyncWithFilesystem(databaseAccess *DatabaseAccess) {
 	if running {
 		log.Info("Scanning ist already running. stopping here.")
 		return
@@ -48,7 +47,7 @@ func SyncWithFilesystem(databaseAccess *database.DatabaseAccess) {
 		EmptyAlbums:     make(map[string]string, 0),
 	}
 	start := time.Now()
-	path := replaceVariables(configuration.Configuration(false).Media.Path)
+	path := ReplaceVariables(configuration.Configuration(false).Media.Path)
 	log.Info("Start scanning filesystem at " + path)
 	result, err := Filescanner(path, ".mp3")
 	if err == nil {
@@ -68,7 +67,7 @@ func SyncWithFilesystem(databaseAccess *database.DatabaseAccess) {
 	running = false
 }
 
-func findEmptyAlbums(albumManager database.AlbumManager) {
+func findEmptyAlbums(albumManager AlbumManager) {
 	albums, err := albumManager.FindAlbumsWithoutSongs()
 	if err == nil {
 		syncState.EmptyAlbums = make(map[string]string, 0)
@@ -78,7 +77,7 @@ func findEmptyAlbums(albumManager database.AlbumManager) {
 	}
 }
 
-func findAlbumsWithoutTitle(albumManager database.AlbumManager) {
+func findAlbumsWithoutTitle(albumManager AlbumManager) {
 	albums, err := albumManager.FindAlbumsWithoutTitle()
 	if err == nil {
 		syncState.AlbumsWithoutTitle = make(map[string]string, 0)
@@ -88,7 +87,7 @@ func findAlbumsWithoutTitle(albumManager database.AlbumManager) {
 	}
 }
 
-func findArtistsWithoutName(artistManager database.ArtistManager) {
+func findArtistsWithoutName(artistManager ArtistManager) {
 	artists, err := artistManager.FindArtistsWithoutName()
 	if err == nil {
 		syncState.ArtistsWithoutName = make(map[string]string, 0)
@@ -98,12 +97,7 @@ func findArtistsWithoutName(artistManager database.ArtistManager) {
 	}
 }
 
-func problemSong(s string, err error) {
-	syncState.ProblemSongs[s] = err.Error()
-	syncState.NewSongsProblems = syncState.NewSongsProblems + 1
-}
-
-func findDanglingSongs(songManager database.SongManager) {
+func findDanglingSongs(songManager SongManager) {
 	log.Info("Start searching dangling songs.")
 	start := time.Now()
 	m, err := songManager.GetAllSongIdsAndPaths()
@@ -121,7 +115,7 @@ func findDanglingSongs(songManager database.SongManager) {
 }
 
 // RemoveDanglingSongs remove all songs found by the last dangling songs search
-func RemoveDanglingSongs(songManager database.SongManager) (int, error) {
+func RemoveDanglingSongs(songManager SongManager) (int, error) {
 	if running {
 		log.Info("Scanning ist running. stopping here.")
 		return 0, errors.New("Can't remove dangling songs while scanning is running!")
@@ -141,7 +135,7 @@ func RemoveDanglingSongs(songManager database.SongManager) (int, error) {
 }
 
 // RemoveDanglingSong remove the given dangling song
-func RemoveDanglingSong(id string, songManager database.SongManager) error {
+func RemoveDanglingSong(id string, songManager SongManager) error {
 	if syncState.DanglingSongs[id] == "" {
 		return errors.New("Song not in dangling list")
 	}
@@ -154,7 +148,7 @@ func RemoveDanglingSong(id string, songManager database.SongManager) error {
 }
 
 // SetAlbumTitleToFoldername Set the album title to the last part of the filesystem path
-func SetAlbumTitleToFoldername(id string, albumManager database.AlbumManager) error {
+func SetAlbumTitleToFoldername(id string, albumManager AlbumManager) error {
 	if syncState.AlbumsWithoutTitle[id] == "" {
 		return errors.New("Album not in list of albums without title")
 	}
@@ -169,4 +163,9 @@ func SetAlbumTitleToFoldername(id string, albumManager database.AlbumManager) er
 		delete(syncState.AlbumsWithoutTitle, id)
 	}
 	return err
+}
+
+func problemSong(s string, err error) {
+	syncState.ProblemSongs[s] = err.Error()
+	syncState.NewSongsProblems = syncState.NewSongsProblems + 1
 }

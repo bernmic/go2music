@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go2music/configuration"
+	"go2music/database"
 	"go2music/model"
 	"strings"
 
@@ -12,12 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// DB contains the session data for a database session
-type DB struct {
-	*sql.DB
-}
-
-func New() (*DB, error) {
+func New() (*database.DB, error) {
 	c := configuration.Configuration(false)
 	url := createUrl(c.Database)
 	log.Infof("Use postgres database at %v", url)
@@ -28,15 +24,15 @@ func New() (*DB, error) {
 	}
 	if err := db.Ping(); err != nil {
 		log.Errorf("Error accessing database: %v\n", err)
-		return nil, errors.New("Database not configured or accessible")
+		return nil, errors.New("database not configured or accessible")
 	}
-	pg := DB{db}
-	pg.initializeUser()
-	pg.initializeArtist()
-	pg.initializeAlbum()
-	pg.initializeSong()
-	pg.initializePlaylist()
-	pg.initializeInfo()
+	pg := database.DB{DB: *db, Stmt: make(map[string]string), Sanitizer: sanitizePlaceholder}
+	initializeUser(&pg)
+	initializeArtist(&pg)
+	initializeAlbum(&pg)
+	initializeSong(&pg)
+	initializePlaylist(&pg)
+	initializeInfo(&pg)
 	log.Info("Database initialized....")
 
 	return &pg, nil
@@ -48,13 +44,6 @@ func createUrl(dbParam model.Database) string {
 	result = strings.Replace(result, "${password}", dbParam.Password, -1)
 	result = strings.Replace(result, "${schema}", dbParam.Schema, -1)
 	return result
-}
-
-func (db *DB) countRows(sql string, args ...interface{}) int {
-	var count int
-	rows := db.QueryRow(sql, args...)
-	rows.Scan(&count)
-	return count
 }
 
 // postgres can't handle ? placeholder in sql. so we have to change them to $n

@@ -12,13 +12,13 @@ import (
 )
 
 const (
-	LASTFM_BASEURL = "https://ws.audioscrobbler.com/2.0/"
-	LASTFM_APIKEY  = "a4de25f6f66a67f4293126bcc199c2d7"
+	LastfmBaseurl = "https://ws.audioscrobbler.com/2.0/"
+	LastfmApikey  = "a4de25f6f66a67f4293126bcc199c2d7"
 )
 
 func GetArtistInfo(artistname string) (*LastfmArtistInfo, error) {
-	url := fmt.Sprintf("%s?method=%s&artist=%s&api_key=%s&format=json", LASTFM_BASEURL, "artist.getinfo", url.QueryEscape(artistname), LASTFM_APIKEY)
-	response, err := http.Get(url)
+	u := fmt.Sprintf("%s?method=%s&artist=%s&api_key=%s&format=json", LastfmBaseurl, "artist.getinfo", url.QueryEscape(artistname), LastfmApikey)
+	response, err := http.Get(u)
 	if err != nil {
 		log.Warnf("Lastfm get artistinfo request failed: %s\n", err)
 		return nil, err
@@ -45,8 +45,8 @@ func GetArtistInfo(artistname string) (*LastfmArtistInfo, error) {
 }
 
 func GetAlbumInfo(albumname string, artistname string) (*LastfmAlbumInfo, error) {
-	url := fmt.Sprintf("%s?method=%s&album=%s&artist=%s&api_key=%s&format=json", LASTFM_BASEURL, "album.getinfo", url.QueryEscape(albumname), url.QueryEscape(artistname), LASTFM_APIKEY)
-	response, err := http.Get(url)
+	u := fmt.Sprintf("%s?method=%s&album=%s&artist=%s&api_key=%s&format=json", LastfmBaseurl, "album.getinfo", url.QueryEscape(albumname), url.QueryEscape(artistname), LastfmApikey)
+	response, err := http.Get(u)
 	if err != nil {
 		log.Warnf("Lastfm get albuminfo request failed: %s\n", err)
 		return nil, err

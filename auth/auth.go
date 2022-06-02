@@ -12,7 +12,6 @@ import (
 	"go2music/configuration"
 	"go2music/database"
 	"go2music/model"
-	"go2music/mysql"
 	"strings"
 	"time"
 )
@@ -47,7 +46,7 @@ func AuthenticateRequest(authHeader string, userManager database.UserManager) (*
 	if err != nil {
 		return nil, errors.New("username and/or password wrong")
 	}
-	if mysql.CheckPasswordHash(userpwd[1], user.Password) {
+	if database.CheckPasswordHash(userpwd[1], user.Password) {
 		return user, nil
 	}
 	return nil, errors.New("username and/or password wrong")

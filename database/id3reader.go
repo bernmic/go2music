@@ -1,8 +1,7 @@
-package fs
+package database
 
 import (
 	"errors"
-	"go2music/database"
 	"go2music/model"
 	"os"
 	"os/user"
@@ -16,7 +15,7 @@ import (
 	"github.com/xhenner/mp3-go"
 )
 
-func replaceVariables(in string) string {
+func ReplaceVariables(in string) string {
 	homeDir := ""
 	usr, err := user.Current()
 	if err == nil {
@@ -33,7 +32,12 @@ func readData(filename string) (*model.Song, error) {
 		problemSong(filename, err)
 		return nil, err
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			log.Errorf("error closing file in readData: %v", err)
+		}
+	}()
 
 	id3tag, err := tag.ReadFrom(f)
 	if err != nil {
@@ -93,7 +97,7 @@ func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 }
 
 // ID3Reader adds all songfiles to the database if they don't exists there.
-func ID3Reader(filenames []string, databaseAccess *database.DatabaseAccess) {
+func ID3Reader(filenames []string, databaseAccess *DatabaseAccess) {
 	counter := 0
 	for _, filename := range filenames {
 		if !databaseAccess.SongManager.SongExists(filename) {
@@ -127,7 +131,12 @@ func GetCoverFromID3(filename string) ([]byte, string, error) {
 		log.Errorf("error opening file: %v", err)
 		return nil, "", err
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			log.Errorf("error closing file for cover: %v", err)
+		}
+	}()
 
 	id3tag, err := tag.ReadFrom(f)
 	if err != nil {

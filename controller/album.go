@@ -2,6 +2,7 @@ package controller
 
 import (
 	"expvar"
+	log "github.com/sirupsen/logrus"
 	"go2music/assets"
 	"go2music/model"
 	"go2music/thirdparty"
@@ -120,7 +121,7 @@ func getCoverForAlbum(c *gin.Context) {
 	counterAlbum.Add("GET /:id/cover", 1)
 	id := c.Param("id")
 	s := c.Param("size")
-	size := COVER_SIZE
+	size := CoverSize
 	var err error
 	if s != "" {
 		size, err = strconv.Atoi(s)
@@ -145,7 +146,12 @@ func getCoverForAlbum(c *gin.Context) {
 		}
 		f, err := assets.FrontendAssets.Open("/assets/img/defaultAlbum.png")
 		if err == nil {
-			defer f.Close()
+			defer func() {
+				err := f.Close()
+				if err != nil {
+					log.Errorf("error closing file in getCoverForAlbum: %v", err)
+				}
+			}() //Close after function return
 			image, err = ioutil.ReadAll(f)
 			if err == nil {
 				c.Header("Content-Type", "image/png")

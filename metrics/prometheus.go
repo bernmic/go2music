@@ -10,7 +10,7 @@ import (
 
 var (
 	requests       *prometheus.CounterVec
-	collect        bool = false
+	collect        = false
 	databaseAccess *database.DatabaseAccess
 	statistics     *prometheus.GaugeVec
 )

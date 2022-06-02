@@ -2,7 +2,7 @@ package controller
 
 import (
 	"expvar"
-	"go2music/fs"
+	"go2music/database"
 	"go2music/model"
 	"go2music/thirdparty"
 	"net/http"
@@ -34,59 +34,59 @@ func syncLastFM(c *gin.Context) {
 
 func getSyncInfo(c *gin.Context) {
 	counterSync.Add("GET /", 1)
-	c.JSON(http.StatusOK, fs.GetSyncState())
+	c.JSON(http.StatusOK, database.GetSyncState())
 }
 
 func startSync(c *gin.Context) {
-	go fs.SyncWithFilesystem(databaseAccess)
-	c.JSON(http.StatusOK, fs.GetSyncState())
+	go database.SyncWithFilesystem(databaseAccess)
+	c.JSON(http.StatusOK, database.GetSyncState())
 }
 
 func getDanglingSongs(c *gin.Context) {
-	syncStatus := fs.GetSyncState()
+	syncStatus := database.GetSyncState()
 	c.JSON(http.StatusOK, gin.H{"dangling_songs": syncStatus.DanglingSongs})
 }
 
 func removeDanglingSongs(c *gin.Context) {
-	_, err := fs.RemoveDanglingSongs(databaseAccess.SongManager)
+	_, err := database.RemoveDanglingSongs(databaseAccess.SongManager)
 	if err != nil {
 		log.Errorf("Error removing dangling songs: %v", err)
 		respondWithError(http.StatusInternalServerError, "Error removing dangling songs", c)
 		return
 	}
-	c.JSON(http.StatusOK, fs.GetSyncState())
+	c.JSON(http.StatusOK, database.GetSyncState())
 }
 
 func removeDanglingSong(c *gin.Context) {
 	id := c.Param("id")
-	err := fs.RemoveDanglingSong(id, databaseAccess.SongManager)
+	err := database.RemoveDanglingSong(id, databaseAccess.SongManager)
 	if err != nil {
 		log.Warnf("Error removing dangling song: %v", err)
 		respondWithError(http.StatusInternalServerError, "Error removing dangling song", c)
 		return
 	}
-	c.JSON(http.StatusOK, fs.GetSyncState())
+	c.JSON(http.StatusOK, database.GetSyncState())
 }
 
 func removeEmptyAlbums(c *gin.Context) {
-	for id, _ := range fs.GetSyncState().EmptyAlbums {
+	for _, id := range database.GetSyncState().EmptyAlbums {
 		err := databaseAccess.AlbumManager.DeleteAlbum(id)
 		if err == nil {
-			delete(fs.GetSyncState().EmptyAlbums, id)
+			delete(database.GetSyncState().EmptyAlbums, id)
 		}
 	}
-	c.JSON(http.StatusOK, fs.GetSyncState())
+	c.JSON(http.StatusOK, database.GetSyncState())
 }
 
 func setAlbumTitleToFoldername(c *gin.Context) {
 	id := c.Param("id")
-	err := fs.SetAlbumTitleToFoldername(id, databaseAccess.AlbumManager)
+	err := database.SetAlbumTitleToFoldername(id, databaseAccess.AlbumManager)
 	if err != nil {
 		log.Warnf("Error setting title for album: %v", err)
 		respondWithError(http.StatusInternalServerError, "Error setting title for album", c)
 		return
 	}
-	c.JSON(http.StatusOK, fs.GetSyncState())
+	c.JSON(http.StatusOK, database.GetSyncState())
 }
 
 func SyncMbIdsWithLastFM() {
@@ -107,7 +107,10 @@ func SyncMbIdsWithLastFM() {
 			info, err := thirdparty.GetArtistInfo(artist.Name)
 			if err == nil && info.Mbid != "" {
 				artist.Mbid = info.Mbid
-				databaseAccess.ArtistManager.UpdateArtist(*artist)
+				_, err = databaseAccess.ArtistManager.UpdateArtist(*artist)
+				if err != nil {
+					log.Errorf("error syncing artist with MB: %v", err)
+				}
 			}
 		}
 	}

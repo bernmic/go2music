@@ -1,9 +1,8 @@
 package tagging
 
 import (
-	"log"
-
 	"github.com/bogem/id3v2/v2"
+	log "github.com/sirupsen/logrus"
 )
 
 // ParseMP3 gets ID3V2 metadata from a mp3 file
@@ -14,7 +13,12 @@ func (m *Media) ParseMP3(f string) (*TaggingSong, error) {
 		log.Println("Error while opening mp3 file: ", err)
 		return nil, err
 	}
-	defer tag.Close()
+	defer func() {
+		err := tag.Close()
+		if err != nil {
+			log.Errorf("error closing tag for mp3: %v", err)
+		}
+	}()
 
 	songData, err := m.mp3Song(tag)
 	songData.File = f[len(m.MediaPath)+1:]

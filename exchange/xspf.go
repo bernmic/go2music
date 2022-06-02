@@ -42,7 +42,11 @@ type XSPF struct {
 }
 
 func ExportXSPF(p *model.Playlist, songs []*model.Song, w io.Writer) {
-	w.Write([]byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"))
+	_, err := w.Write([]byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"))
+	if err != nil {
+		log.Errorf("error writing XSPF header: %v", err)
+		return
+	}
 	enc := xml.NewEncoder(w)
 	enc.Indent("", "    ")
 	pl := XSPF{Version: "1", Xmlns: "http://xspf.org/ns/0/"}
@@ -52,7 +56,7 @@ func ExportXSPF(p *model.Playlist, songs []*model.Song, w io.Writer) {
 	for _, song := range songs {
 		pl.TrackList.Tracks = append(pl.TrackList.Tracks, trackFromSong(song))
 	}
-	if err := enc.Encode(pl); err != nil {
+	if err = enc.Encode(pl); err != nil {
 		log.Errorf("error: %v\n", err)
 	}
 }

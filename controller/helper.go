@@ -10,7 +10,6 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -25,7 +24,7 @@ import (
 )
 
 const (
-	COVER_SIZE = 300 // size of an album cover in pixels
+	CoverSize = 300 // size of an album cover in pixels
 )
 
 func respondWithError(code int, message string, c *gin.Context) {
@@ -72,32 +71,6 @@ func getMimeType(u string) string {
 	}
 }
 
-/*
-	Add all files (not dirs) unter root to routergroup with relativepath
-    if there is an index.html, add a route from relative path to it
-*/
-func staticRoutes(relativePath, root string, r *gin.RouterGroup) {
-	files, err := ioutil.ReadDir(root)
-	if err == nil {
-		if !strings.HasSuffix(relativePath, "/") {
-			relativePath += "/"
-		}
-		if !strings.HasSuffix(root, "/") {
-			root += "/"
-		}
-		for _, file := range files {
-			if !file.IsDir() {
-				r.StaticFile(relativePath+file.Name(), root+file.Name())
-				if file.Name() == "index.html" {
-					r.StaticFile(relativePath, root+file.Name())
-				}
-			}
-		}
-	} else {
-		log.Warn("directory not found: " + root)
-	}
-}
-
 func sendSongsAsZip(c *gin.Context, songs []*model.Song, filename string) {
 	if filename == "" {
 		if allSameArtist(songs) {
@@ -113,6 +86,12 @@ func sendSongsAsZip(c *gin.Context, songs []*model.Song, filename string) {
 	c.Header("Content-Type", "application/zip")
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
 	zw := zip.NewWriter(c.Writer)
+	defer func() {
+		err := zw.Close()
+		if err != nil {
+			log.Errorf("error closing file in songsAsZip")
+		}
+	}()
 	for _, song := range songs {
 		if err := addFileToZip(zw, song.Path); err != nil {
 			respondWithError(http.StatusInternalServerError, "Error creating zip file: "+err.Error(), c)
@@ -134,7 +113,6 @@ func sendSongsAsZip(c *gin.Context, songs []*model.Song, filename string) {
 	} else {
 		log.Warn("Error creating M3U: " + err.Error())
 	}
-	zw.Close()
 }
 
 func createM3U(songs []*model.Song) bytes.Buffer {
@@ -153,7 +131,12 @@ func addFileToZip(zw *zip.Writer, filename string) error {
 	if err != nil {
 		return err
 	}
-	defer fileToZip.Close()
+	defer func() {
+		err := fileToZip.Close()
+		if err != nil {
+			log.Errorf("error closing file in addFileToZip")
+		}
+	}()
 
 	// Get the file information
 	info, err := fileToZip.Stat()
