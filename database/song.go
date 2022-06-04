@@ -210,10 +210,10 @@ func (db *DB) SongExists(path string) bool {
 
 // FindOneSong get the song with the given id
 func (db *DB) FindOneSong(id string) (*model.Song, error) {
-	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"]) + ` 
+	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"] + ` 
 		WHERE
 			song.id=?
-	`
+	`)
 	song := new(model.Song)
 	var artistId sql.NullString
 	var artistName sql.NullString
@@ -332,7 +332,7 @@ func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, i
 	}
 	rows, err := db.Query(db.Sanitizer(db.Stmt["sqlSongAll"]) + orderAndLimit)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error reading all songs: %v", err)
 		return nil, 0, err
 	}
 	defer func() {
@@ -352,10 +352,10 @@ func (db *DB) FindAllSongs(filter string, paging model.Paging) ([]*model.Song, i
 // FindSongsByAlbumId get all songs for the album with the given id and is in the given page
 func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"]) + ` WHERE album.id = ?` + orderAndLimit
+	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"] + ` WHERE album.id = ?` + orderAndLimit)
 	rows, err := db.Query(Stmt, findAlbumId)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error song by album: %v", err)
 		return nil, 0, err
 	}
 	defer func() {
@@ -375,10 +375,10 @@ func (db *DB) FindSongsByAlbumId(findAlbumId string, paging model.Paging) ([]*mo
 // FindSongsByArtistId get all songs for the artist with the given id and is in the given page
 func (db *DB) FindSongsByArtistId(findArtistId string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"]) + `WHERE artist.id = ?	` + orderAndLimit
+	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"] + `WHERE artist.id = ?	` + orderAndLimit)
 	rows, err := db.Query(Stmt, findArtistId)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error reading songs by artist: %v", err)
 		return nil, 0, err
 	}
 	defer func() {
@@ -412,7 +412,7 @@ func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*mo
 
 	rows, err := db.Query(Stmt + where + orderAndLimit)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error reading songs by dynamic playlist: %v", err)
 		return nil, 0, err
 	}
 	defer func() {
@@ -433,10 +433,10 @@ func (db *DB) FindSongsByPlaylistQuery(query string, paging model.Paging) ([]*mo
 // FindSongsByPlaylist get all songs for the static playlist with the given id and is in the given page
 func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"]) + " WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)" + orderAndLimit
+	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"] + " WHERE song.id IN (SELECT song_id FROM playlist_song WHERE playlist_id = ?)" + orderAndLimit)
 	rows, err := db.Query(Stmt, playlistId)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error reading songs by static playlist: %v", err)
 		return nil, 0, err
 	}
 	defer func() {
@@ -456,10 +456,10 @@ func (db *DB) FindSongsByPlaylist(playlistId string, paging model.Paging) ([]*mo
 // FindSongsByYear get all songs published in the given year and is in the given page
 func (db *DB) FindSongsByYear(year string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"]) + " WHERE song.yearpublished = ?" + orderAndLimit
+	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"] + " WHERE song.yearpublished = ?" + orderAndLimit)
 	rows, err := db.Query(Stmt, year)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error reading songs by year: %v", err)
 		return nil, 0, err
 	}
 	defer func() {
@@ -479,10 +479,10 @@ func (db *DB) FindSongsByYear(year string, paging model.Paging) ([]*model.Song, 
 // FindSongsByGenre get all songs with the given genre and is in the given page
 func (db *DB) FindSongsByGenre(genre string, paging model.Paging) ([]*model.Song, int, error) {
 	orderAndLimit, limit := createOrderAndLimitForSong(paging)
-	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"]) + " WHERE song.genre = ?" + orderAndLimit
+	Stmt := db.Sanitizer(db.Stmt["sqlSongAll"] + " WHERE song.genre = ?" + orderAndLimit)
 	rows, err := db.Query(Stmt, genre)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error reading songs by genre: %v", err)
 		return nil, 0, err
 	}
 	defer func() {
@@ -501,9 +501,9 @@ func (db *DB) FindSongsByGenre(genre string, paging model.Paging) ([]*model.Song
 
 // FindRecentlyAddedSongs find num recently added songs
 func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
-	rows, err := db.Query(db.Sanitizer(db.Stmt["sqlSongAll"])+" ORDER BY song.added DESC LIMIT ?", num)
+	rows, err := db.Query(db.Sanitizer(db.Stmt["sqlSongAll"]+" ORDER BY song.added DESC LIMIT ?"), num)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error reading recently added songs: %v", err)
 		return nil, err
 	}
 	defer func() {
@@ -518,9 +518,9 @@ func (db *DB) FindRecentlyAddedSongs(num int) ([]*model.Song, error) {
 
 // FindRecentlyPlayedSongs find num recently played songs
 func (db *DB) FindRecentlyPlayedSongs(num int) ([]*model.Song, error) {
-	rows, err := db.Query(db.Sanitizer(db.Stmt["sqlSongAll"])+" INNER JOIN user_song ON song.id = user_song.song_id ORDER BY lastplayed DESC LIMIT ?", num)
+	rows, err := db.Query(db.Sanitizer(db.Stmt["sqlSongAll"]+" INNER JOIN user_song ON song.id = user_song.song_id ORDER BY lastplayed DESC LIMIT ?"), num)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error reading recently played songs: %v", err)
 		return nil, err
 	}
 	defer func() {
@@ -535,13 +535,13 @@ func (db *DB) FindRecentlyPlayedSongs(num int) ([]*model.Song, error) {
 
 // FindMostPlayedSongs find num most played songs
 func (db *DB) FindMostPlayedSongs(num int) ([]*model.Song, error) {
-	rows, err := db.Query(db.Sanitizer(db.Stmt["sqlSongAll"])+`
+	rows, err := db.Query(db.Sanitizer(db.Stmt["sqlSongAll"]+`
 	INNER JOIN user_song ON song.id = user_song.song_id
 	GROUP BY user_song.song_id
 	ORDER BY SUM(user_song.playcount) DESC LIMIT ?
-		`, num)
+		`), num)
 	if err != nil {
-		log.Error("Error reading song table", err)
+		log.Errorf("error reading most played song: %v", err)
 		return nil, err
 	}
 	defer func() {
@@ -652,7 +652,7 @@ func createOrderAndLimitForSong(paging model.Paging) (string, bool) {
 		}
 	}
 	if paging.Size > 0 {
-		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+		s += fmt.Sprintf(" LIMIT %d OFFSET %d", paging.Size, paging.Page*paging.Size)
 		l = true
 	}
 	return s, l

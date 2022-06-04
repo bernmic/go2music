@@ -207,7 +207,7 @@ func createOrderAndLimitForUser(paging model.Paging) (string, bool) {
 		}
 	}
 	if paging.Size > 0 {
-		s += fmt.Sprintf(" LIMIT %d,%d", paging.Page*paging.Size, paging.Size)
+		s += fmt.Sprintf(" LIMIT %d OFFSET %d", paging.Size, paging.Page*paging.Size)
 		l = true
 	}
 	return s, l

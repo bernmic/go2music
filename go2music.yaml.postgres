@@ -3,7 +3,7 @@ application:
   loglevel: debug
   cors: all
 server:
-  port: 8085
+  port: 8080
 databasem:
   username: go2music
   password: go2music
@@ -17,12 +17,12 @@ database:
   type: postgres
   url: postgresql://${username}:${password}@localhost:5432/${schema}
 media:
-  path: /mnt/t/Sortiert/Audio
+  path: t:/Sortiert/Audio
   syncfrequency: 1800s
   syncatstart: true
 tagging:
-  path: /mnt/t/Unsortiert/Audio
-Metrics:
-  Collect: true
-  Port: 8081
+  path: t:/Sortiert/Audio
+metrics:
+  collect: true
+  port: 2112
   
