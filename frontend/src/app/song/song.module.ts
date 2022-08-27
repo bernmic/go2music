@@ -17,32 +17,31 @@ import {MatSortModule} from "@angular/material/sort";
 import {MatTableModule} from "@angular/material/table";
 
 @NgModule({
-  imports: [
-    BrowserModule,
-    HttpClientModule,
-    RouterModule,
-    SharedModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatPaginatorModule,
-    MatProgressSpinnerModule,
-    MatSelectModule,
-    MatSortModule,
-    MatTableModule
-  ],
-  declarations: [
-    SongListComponent,
-    PlaylistSelectDialogComponent
-  ],
-  exports: [
-    SongListComponent
-  ],
-  providers: [
-    SongService
-  ],
-  entryComponents: [PlaylistSelectDialogComponent]
+    imports: [
+        BrowserModule,
+        HttpClientModule,
+        RouterModule,
+        SharedModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatPaginatorModule,
+        MatProgressSpinnerModule,
+        MatSelectModule,
+        MatSortModule,
+        MatTableModule
+    ],
+    declarations: [
+        SongListComponent,
+        PlaylistSelectDialogComponent
+    ],
+    exports: [
+        SongListComponent
+    ],
+    providers: [
+        SongService
+    ]
 })
 
 export class SongModule {

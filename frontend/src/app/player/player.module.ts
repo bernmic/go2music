@@ -19,36 +19,33 @@ import {PlayerDialog} from "./player.dialog";
 import {MatTooltipModule} from "@angular/material/tooltip";
 
 @NgModule({
-  imports: [
-    BrowserModule,
-    DragDropModule,
-    SharedModule,
-    FlexLayoutModule,
-    MatButtonModule,
-    MatCardModule,
-    MatDividerModule,
-    MatIconModule,
-    MatListModule,
-    MatMenuModule,
-    MatProgressBarModule,
-    MatSliderModule,
-    MatSnackBarModule,
-    MatTooltipModule
-  ],
-  declarations: [
-    PlayerComponent,
-    PlayQueueComponent,
-    PlayerDialog
-  ],
-  exports: [
-    PlayerComponent
-  ],
-  providers: [
-    PlayerService
-  ],
-  entryComponents: [
-    PlayerDialog
-  ]
+    imports: [
+        BrowserModule,
+        DragDropModule,
+        SharedModule,
+        FlexLayoutModule,
+        MatButtonModule,
+        MatCardModule,
+        MatDividerModule,
+        MatIconModule,
+        MatListModule,
+        MatMenuModule,
+        MatProgressBarModule,
+        MatSliderModule,
+        MatSnackBarModule,
+        MatTooltipModule
+    ],
+    declarations: [
+        PlayerComponent,
+        PlayQueueComponent,
+        PlayerDialog
+    ],
+    exports: [
+        PlayerComponent
+    ],
+    providers: [
+        PlayerService
+    ]
 })
 
 export class PlayerModule {

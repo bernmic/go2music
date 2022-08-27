@@ -10,29 +10,25 @@ import {FormsModule} from "@angular/forms";
 import {YesnoAlertComponent} from "./yesno-alert.component";
 
 @NgModule({
-  imports: [
-    FormsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatDialogModule
-  ],
-  declarations: [
-    DurationPipe,
-    UnixdatePipe,
-    TextinputDialogComponent,
-    YesnoAlertComponent
-  ],
-  exports: [
-    DurationPipe,
-    UnixdatePipe,
-    TextinputDialogComponent,
-    YesnoAlertComponent
-  ],
-  entryComponents: [
-    TextinputDialogComponent,
-    YesnoAlertComponent
-  ]
+    imports: [
+        FormsModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatDialogModule
+    ],
+    declarations: [
+        DurationPipe,
+        UnixdatePipe,
+        TextinputDialogComponent,
+        YesnoAlertComponent
+    ],
+    exports: [
+        DurationPipe,
+        UnixdatePipe,
+        TextinputDialogComponent,
+        YesnoAlertComponent
+    ]
 })
 
 export class SharedModule {}
