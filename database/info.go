@@ -5,6 +5,7 @@ import (
 	"go2music/model"
 	"regexp"
 	"sync"
+	"time"
 )
 
 // InfoManager defines the database functions for info (eg. dashboards)
@@ -50,14 +51,18 @@ order by
 `
 )
 
+const cacheExpirationPeriod = 300
+
 var (
-	infoCache  = model.Info{}
-	dirtyCache = true
+	infoCache   = model.Info{}
+	dirtyCache  = true
+	cacheExpire = time.Now()
 )
 
 // Info returns the dashboard informations
 func (db *DB) Info(cached bool) (*model.Info, error) {
-	if cached && !dirtyCache {
+	if cached && !dirtyCache && time.Now().Before(cacheExpire) {
+		log.Debug("deliver info from cache")
 		return &infoCache, nil
 	}
 	var waiter sync.WaitGroup
@@ -108,6 +113,7 @@ func (db *DB) Info(cached bool) (*model.Info, error) {
 	}()
 	waiter.Wait()
 	dirtyCache = false
+	cacheExpire = time.Now().Add(time.Second * cacheExpirationPeriod)
 	return &infoCache, nil
 }
 
