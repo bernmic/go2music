@@ -7,11 +7,13 @@ type Server struct {
 
 // Database contains the configuration of the database backend
 type Database struct {
-	Username string `yaml:"username,omitempty" json:"username,omitempty"`
-	Password string `yaml:"password,omitempty" json:"password,omitempty"`
-	Schema   string `yaml:"schema,omitempty" json:"schema,omitempty"`
-	Type     string `yaml:"type,omitempty" json:"type,omitempty"`
-	Url      string `yaml:"url,omitempty" json:"url,omitempty"`
+	Username     string `yaml:"username,omitempty" json:"username,omitempty"`
+	Password     string `yaml:"password,omitempty" json:"password,omitempty"`
+	Schema       string `yaml:"schema,omitempty" json:"schema,omitempty"`
+	Type         string `yaml:"type,omitempty" json:"type,omitempty"`
+	Url          string `yaml:"url,omitempty" json:"url,omitempty"`
+	RetryCounter int    `yaml:"retryCounter,omitempty" json:"retryCounter,omitempty"`
+	RetryDelay   string `yaml:"retryDelay,omitempty" json:"retryDelay,omitempty"`
 }
 
 // Media contains the configuration of the media and sync

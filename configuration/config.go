@@ -136,6 +136,12 @@ func Configuration(force bool) *model.Config {
 			}
 			config.Database.Type = os.Getenv("GO2MUSIC_DBTYPE")
 		}
+		if config.Database.RetryCounter == 0 {
+			config.Database.RetryCounter = 1
+		}
+		if config.Database.RetryDelay == "" {
+			config.Database.RetryDelay = "0s"
+		}
 		configLoaded = true
 	}
 	return &config
