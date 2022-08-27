@@ -40,7 +40,6 @@ type MP3Frame struct {
 
 // StreamInfo gets stream information from a mp3 file
 func StreamInfo(filename string) (*Mp3StreamInfo, error) {
-	var pos int64
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("error opening file: %v", err)
@@ -51,6 +50,11 @@ func StreamInfo(filename string) (*Mp3StreamInfo, error) {
 			log.Errorf("error closing file for streamInfo: %v", err)
 		}
 	}()
+	return ReadStreamInfo(f)
+}
+
+func ReadStreamInfo(f *os.File) (*Mp3StreamInfo, error) {
+	var pos int64
 	id3header := make([]byte, id3v2Headerlength)
 	c, err := f.Read(id3header)
 	if err != nil || c != id3v2Headerlength {
@@ -113,6 +117,10 @@ func StreamInfo(filename string) (*Mp3StreamInfo, error) {
 			fr.Samplerate = m2samplerates[sr]
 		} else if fr.Version == 3 {
 			fr.Samplerate = m1samplerates[sr]
+		}
+		if fr.Samplerate == 0 {
+			//return nil, fmt.Errorf("could not determine samplerate for version %d, sr %d", fr.Version, sr)
+			fr.Samplerate = 44100
 		}
 		frames = append(frames, fr)
 		if fr.Layer == 3 {

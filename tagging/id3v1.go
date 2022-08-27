@@ -166,6 +166,10 @@ func Open(file string) (*V1Tag, error) {
 			log.Errorf("error closing file for id2v1: %v", err)
 		}
 	}()
+	return ReadID3V1(f)
+}
+
+func ReadID3V1(f *os.File) (*V1Tag, error) {
 	tag := V1Tag{}
 
 	stats, err := f.Stat()
