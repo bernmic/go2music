@@ -20,8 +20,8 @@ require (
 	github.com/rs/xid v1.3.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/xhenner/mp3-go v0.0.0-20150104015949-cefd7fb0189c
-	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
-	golang.org/x/text v0.3.7
+	golang.org/x/crypto v0.1.0
+	golang.org/x/text v0.4.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -44,6 +44,6 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/ugorji/go/codec v1.2.6 // indirect
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
