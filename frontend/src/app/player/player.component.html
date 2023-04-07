@@ -37,7 +37,9 @@
       <button mat-icon-button (click)="volumeChanged(0)">
         <mat-icon>volume_down</mat-icon>
       </button>
-      <mat-slider color="primary" min="0" max="100" step="1" [value]="volume" #volumeCtrl></mat-slider>
+      <mat-slider color="primary" min="0" max="100" step="1">
+        <input matSliderThumb [(ngModel)]="volume" #volumeCtrl>
+      </mat-slider>
       <button mat-icon-button (click)="volumeChanged(100)">
         <mat-icon>volume_up</mat-icon>
       </button>

@@ -7,7 +7,7 @@ import {AlbumService} from "./album.service";
 import {HttpClientModule} from "@angular/common/http";
 import {BrowserModule} from "@angular/platform-browser";
 import {RouterModule} from "@angular/router";
-import {FlexLayoutModule} from "@angular/flex-layout";
+import {FlexLayoutModule} from "@ngbracket/ngx-layout";
 import {MatCardModule} from "@angular/material/card";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatGridListModule} from "@angular/material/grid-list";
@@ -17,7 +17,7 @@ import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {AlbumDetailComponent} from "./album-detail.component";
 import {MatChipsModule} from "@angular/material/chips";
-import {MatButtonModule} from "@angular/material/button";
+import { MatButtonModule} from "@angular/material/button";
 
 @NgModule({
   imports: [

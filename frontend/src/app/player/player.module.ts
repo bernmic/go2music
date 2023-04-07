@@ -5,7 +5,7 @@ import {PlayerService} from "./player.service";
 import {SharedModule} from "../shared/shared.module";
 import {PlayQueueComponent} from "./play-queue.component";
 import {DragDropModule} from "@angular/cdk/drag-drop";
-import {FlexLayoutModule} from '@angular/flex-layout';
+import {FlexLayoutModule} from '@ngbracket/ngx-layout';
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
 import {MatDividerModule} from "@angular/material/divider";
@@ -17,11 +17,13 @@ import {MatSliderModule} from "@angular/material/slider";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {PlayerDialog} from "./player.dialog";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
     imports: [
         BrowserModule,
         DragDropModule,
+        FormsModule,
         SharedModule,
         FlexLayoutModule,
         MatButtonModule,

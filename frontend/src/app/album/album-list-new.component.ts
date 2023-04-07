@@ -5,7 +5,7 @@ import {Album} from "./album.model";
 import {fromEvent} from "rxjs";
 import {debounceTime, distinctUntilChanged, filter, map, tap} from "rxjs/operators";
 import {MatPaginator} from "@angular/material/paginator";
-import {MediaChange, MediaObserver} from "@angular/flex-layout";
+import {MediaChange, MediaObserver} from "@ngbracket/ngx-layout";
 
 @Component({
   selector: 'app-album-list-new',

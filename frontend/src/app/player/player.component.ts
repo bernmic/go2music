@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { Howl } from "howler";
 import { Subscription } from "rxjs";
-import { MatSlider } from "@angular/material/slider";
+import {MatSlider, MatSliderThumb} from "@angular/material/slider";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
 import { Song } from "../song/song.model";
@@ -27,7 +27,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   @Output() newSongLoaded: EventEmitter<Song> = new EventEmitter();
 
   @ViewChild("volumeCtrl", { static: true })
-  volumeControl: MatSlider;
+  volumeControl: MatSliderThumb;
 
   constructor(
     private playerService: PlayerService,
@@ -43,14 +43,14 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.volumeControl.input.subscribe(event => {
-      this.volumeChanged(event.value);
+    this.volumeControl.valueChange.subscribe(event => {
+      this.volumeChanged(event.valueOf());
     });
   }
 
   ngOnDestroy(): void {
     this.songPlaySubscription.unsubscribe();
-    this.volumeControl.input.unsubscribe();
+    this.volumeControl.valueChange.unsubscribe();
   }
 
   isCurrentSong(song: Song): boolean {

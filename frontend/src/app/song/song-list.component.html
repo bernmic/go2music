@@ -13,7 +13,7 @@
     (click)="downloadPlaylist()">get_app
   </mat-icon>
   <mat-form-field [style.visibility]="kind==='' ? 'visible' : 'hidden'">
-    <mat-placeholder><mat-icon>search</mat-icon></mat-placeholder>
+    <mat-icon matPrefix>search</mat-icon>
     <input matInput #input>
   </mat-form-field>
 
