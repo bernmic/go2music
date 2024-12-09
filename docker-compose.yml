@@ -23,7 +23,7 @@ services:
     - "8080:8080"
     volumes:
     - go2music_data:/config
-    - /media/music:/music
+    - /mnt/audio:/music
     networks:
       - go2music_mysql_net
     restart: always
