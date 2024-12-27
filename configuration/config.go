@@ -65,7 +65,10 @@ func Configuration(force bool) *model.Config {
 		}
 
 		if config.Application.Cors == "" {
-			config.Application.Cors = "direct"
+			config.Application.Cors = os.Getenv("GO2MUSIC_CORS")
+			if config.Application.Cors == "" {
+				config.Application.Cors = "direct"
+			}
 		}
 
 		if config.Application.TokenLifetime == "" {
@@ -165,9 +168,6 @@ func Secrets(secret Secret) string {
 func ChangeConfiguration(config *model.Config) (*model.Config, error) {
 	newConfig := Configuration(true)
 
-	if config.Application.Cors != "" {
-		newConfig.Application.Cors = config.Application.Cors
-	}
 	if config.Application.Mode != "" {
 		newConfig.Application.Mode = config.Application.Mode
 	}
