@@ -114,7 +114,7 @@ func Configuration(force bool) *model.Config {
 			}
 		}
 		if config.Metrics.Port == 0 {
-			config.Server.Port = 2112
+			config.Metrics.Port = 2112
 		}
 		if config.Database.Type == "" {
 			config.Database.Username = os.Getenv("GO2MUSIC_DBUSERNAME")
