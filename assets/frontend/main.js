@@ -1473,7 +1473,7 @@ AppComponent.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵ
       _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](63, AppComponent_mat_list_item_63_Template, 5, 0, "mat-list-item", 28);
       _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
       _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](64, "div", 29);
-      _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](65, "0.4.3");
+      _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](65, "0.4.5");
       _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
       _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](66, "mat-sidenav", 30, 31);
       _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](68, "app-player");
