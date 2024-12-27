@@ -53,5 +53,7 @@ There is a complete web frontend for go2music in the frontend folder. It is a si
 - bind artists, albums, songs to a musicbrainz id
 - bring playcount and rating to the frontend
 - Rewrite authentication and authorization.
+- reduce dependencies in go.mod
+- rewrite frontend with latest Angular and put it in a separate repo
 
 [Jetbrains](https://www.jetbrains.com/?from=go2music) supports this project with GoLand/IntelliJ Idea licenses. We appreciate their support for free and open source software!
