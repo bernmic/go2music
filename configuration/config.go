@@ -46,7 +46,7 @@ func Configuration(force bool) *model.Config {
 
 		config = model.Config{}
 
-		configdata, err := ioutil.ReadFile(ConfigFile)
+		configdata, err := os.ReadFile(ConfigFile)
 		if err == nil {
 			err = yaml.Unmarshal([]byte(configdata), &config)
 			if err != nil {

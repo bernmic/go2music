@@ -17,6 +17,7 @@ import (
 // SongManager defines all database functions for songs
 type SongManager interface {
 	CreateSong(song model.Song) (*model.Song, error)
+	CreateSongs(songs []*model.Song) ([]*model.Song, error)
 	UpdateSong(song model.Song) (*model.Song, error)
 	DeleteSong(id string) error
 	SongExists(path string) bool
@@ -154,6 +155,49 @@ func (db *DB) CreateSong(song model.Song) (*model.Song, error) {
 		err = fmt.Errorf("error inserting row to database: %v", err)
 	}
 	return &song, err
+}
+
+// CreateSongs create new songs in the database (bulk insert)
+func (db *DB) CreateSongs(songs []*model.Song) ([]*model.Song, error) {
+	if len(songs) == 0 {
+		return songs, nil
+	}
+	var rows []interface{}
+	sql := db.Stmt["sqlSongInsert"]
+
+	for i := 0; i < len(songs); i++ {
+		sql += ",(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+		songs[i].Id = xid.New().String()
+		rows = append(rows,
+			songs[i].Id,
+			songs[i].Path,
+			songs[i].Title,
+			songs[i].Artist.Id,
+			songs[i].Album.Id,
+			songs[i].Genre,
+			songs[i].Track,
+			songs[i].YearPublished,
+			songs[i].Bitrate,
+			songs[i].Samplerate,
+			songs[i].Duration,
+			songs[i].Mode,
+			songs[i].Vbr,
+			songs[i].Added,
+			songs[i].Filedate,
+			songs[i].Rating,
+			songs[i].Mbid)
+	}
+	sql = sql[:len(sql)-36]
+	stmtIns, err := db.Prepare(db.Sanitizer(sql))
+	if err != nil {
+		return nil, fmt.Errorf("error preparing statement: %v", err)
+	}
+	defer stmtIns.Close()
+	_, err = stmtIns.Exec(rows...)
+	if err != nil {
+		err = fmt.Errorf("error inserting row to database: %v", err)
+	}
+	return songs, err
 }
 
 // UpdateSong update the given song in the database

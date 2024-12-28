@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+	"go2music/configuration"
 	"go2music/model"
 	"os"
 	"os/user"
@@ -99,6 +100,7 @@ func readMetaData(filename string, song *model.Song) (*model.Song, error) {
 // ID3Reader adds all songfiles to the database if they don't exists there.
 func ID3Reader(filenames []string, databaseAccess *DatabaseAccess) {
 	counter := 0
+	songs := make([]*model.Song, 0)
 	for _, filename := range filenames {
 		if !databaseAccess.SongManager.SongExists(filename) {
 			song, err := readData(filename)
@@ -108,18 +110,40 @@ func ID3Reader(filenames []string, databaseAccess *DatabaseAccess) {
 			if err == nil {
 				song.Artist, err = databaseAccess.ArtistManager.CreateIfNotExistsArtist(*song.Artist)
 				song.Album, err = databaseAccess.AlbumManager.CreateIfNotExistsAlbum(*song.Album)
-				song, err = databaseAccess.SongManager.CreateSong(*song)
-				if err != nil {
-					log.Errorf("Error creating song: %v, %v", err, song)
-					problemSong(filename, err)
+				if configuration.Configuration(false).Database.UseBulkInsert == false {
+					song, err = databaseAccess.SongManager.CreateSong(*song)
+					if err != nil {
+						log.Errorf("Error creating song: %v, %v", err, song)
+						problemSong(filename, err)
+					} else {
+						counter++
+						syncState.NewSongsAdded = counter
+						if counter%100 == 0 {
+							log.Infof("Proceeded %d songs", counter)
+						}
+					}
 				} else {
+					songs = append(songs, song)
 					counter++
 					syncState.NewSongsAdded = counter
 					if counter%100 == 0 {
+						_, err := databaseAccess.SongManager.CreateSongs(songs)
+						if err != nil {
+							log.Errorf("error bulk insert songs: %v", err)
+							return
+						}
+						songs = make([]*model.Song, 0)
 						log.Infof("Proceeded %d songs", counter)
+
 					}
 				}
 			}
+		}
+	}
+	if configuration.Configuration(false).Database.UseBulkInsert {
+		_, err := databaseAccess.SongManager.CreateSongs(songs)
+		if err != nil {
+			log.Errorf("error bulk insert songs: %v", err)
 		}
 	}
 }

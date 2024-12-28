@@ -49,7 +49,7 @@ func New() (*database.DB, error) {
 	initializeSong(&mysql)
 	initializePlaylist(&mysql)
 	initializeInfo(&mysql)
-	log.Info("Database initialized....")
+	log.Info("MySQL database initialized....")
 
 	return &mysql, nil
 }

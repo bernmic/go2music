@@ -6,18 +6,18 @@
 //
 // there are no TOS at this moment, use at your own risk we take no responsibility
 //
-//     Title: Go2Music
-//     Schemes: http, https
-//     Host: localhost
-// 	   BasePath: /api
-//     Version: 0.0.1
-//     License: MIT http://opensource.org/licenses/MIT
+//	    Title: Go2Music
+//	    Schemes: http, https
+//	    Host: localhost
+//		   BasePath: /api
+//	    Version: 0.0.1
+//	    License: MIT http://opensource.org/licenses/MIT
 //
-//     Consumes:
-//     - application/json
+//	    Consumes:
+//	    - application/json
 //
-//     Produces:
-//     - application/json
+//	    Produces:
+//	    - application/json
 //
 // swagger:meta
 package main
@@ -87,6 +87,7 @@ func main() {
 	} else {
 		panic(errors.New("Unknown database type " + databaseType))
 	}
+	log.Infof("Using bulk insert: %t", configuration.Configuration(false).Database.UseBulkInsert)
 	startCron()
 	if configuration.Configuration(false).Media.SyncAtStart {
 		go database.SyncWithFilesystem(&databaseAccess)
