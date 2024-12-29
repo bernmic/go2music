@@ -14,7 +14,7 @@ type Database struct {
 	Url           string `yaml:"url,omitempty" json:"url,omitempty"`
 	RetryCounter  int    `yaml:"retryCounter,omitempty" json:"retryCounter,omitempty"`
 	RetryDelay    string `yaml:"retryDelay,omitempty" json:"retryDelay,omitempty"`
-	UseBulkInsert bool   `yaml:"useBulkInsert,omitempty" json:"useBulkInsert,omitempty"`
+	UseBulkInsert *bool  `yaml:"useBulkInsert,omitempty" json:"useBulkInsert,omitempty"`
 }
 
 // Media contains the configuration of the media and sync

@@ -145,6 +145,18 @@ func Configuration(force bool) *model.Config {
 		if config.Database.RetryDelay == "" {
 			config.Database.RetryDelay = "0s"
 		}
+		if config.Database.UseBulkInsert == nil {
+			env, b := os.LookupEnv("GO2MUSIC_BULKINSERT")
+			if b {
+				b, err = strconv.ParseBool(env)
+				if err != nil {
+					b = true
+				}
+			} else {
+				b = true
+			}
+			config.Database.UseBulkInsert = &b
+		}
 		configLoaded = true
 	}
 	return &config

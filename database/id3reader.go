@@ -110,7 +110,7 @@ func ID3Reader(filenames []string, databaseAccess *DatabaseAccess) {
 			if err == nil {
 				song.Artist, err = databaseAccess.ArtistManager.CreateIfNotExistsArtist(*song.Artist)
 				song.Album, err = databaseAccess.AlbumManager.CreateIfNotExistsAlbum(*song.Album)
-				if configuration.Configuration(false).Database.UseBulkInsert == false {
+				if *configuration.Configuration(false).Database.UseBulkInsert == false {
 					song, err = databaseAccess.SongManager.CreateSong(*song)
 					if err != nil {
 						log.Errorf("Error creating song: %v, %v", err, song)
@@ -140,7 +140,7 @@ func ID3Reader(filenames []string, databaseAccess *DatabaseAccess) {
 			}
 		}
 	}
-	if configuration.Configuration(false).Database.UseBulkInsert {
+	if *configuration.Configuration(false).Database.UseBulkInsert {
 		_, err := databaseAccess.SongManager.CreateSongs(songs)
 		if err != nil {
 			log.Errorf("error bulk insert songs: %v", err)
