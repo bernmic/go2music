@@ -730,6 +730,9 @@ func GetCoverFromPath(path string) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", fmt.Errorf("error in Walk: %v", err)
 	}
+	if len(files) > 10 {
+		files = files[:10]
+	}
 	log.Infof("Found cover files: %v", files)
 	if len(files) > 0 {
 		// todo select the correct cover file
