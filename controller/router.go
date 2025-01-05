@@ -6,7 +6,7 @@ import (
 	"go2music/configuration"
 	"go2music/database"
 	"go2music/metrics"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -24,15 +24,16 @@ var (
 )
 
 func initRouter() {
-	gin.SetMode(configuration.Configuration(false).Application.Mode)
+	config := configuration.Configuration(false)
+	gin.SetMode(config.Application.Mode)
 
 	router = gin.New()
 	router.Use(ginrus.Ginrus(log.New(), time.RFC3339, false))
 	router.Use(gin.Recovery())
-	if configuration.Configuration(false).Application.Cors == "all" {
+	if config.Application.Cors == "all" {
 		router.Use(CorsMiddleware())
 	}
-	if configuration.Configuration(false).Metrics.Collect {
+	if config.Metrics.Collect {
 		router.Use(metrics.PrometheusMetricsMiddleware())
 	}
 	router.GET("/debug/vars", expvar.Handler())
@@ -49,7 +50,7 @@ func initRouter() {
 		initInfo(api)
 		initTagging(api)
 	}
-	if configuration.Configuration(false).Application.Cors == "all" {
+	if config.Application.Cors == "all" {
 		api.Use(CorsMiddleware())
 	}
 
@@ -60,17 +61,18 @@ func initRouter() {
 		initConfig(admin)
 		initSync(admin)
 	}
-	if configuration.Configuration(false).Application.Cors == "all" {
+	if config.Application.Cors == "all" {
 		admin.Use(CorsMiddleware())
 	}
 
 	router.NoRoute(noRoute)
 
-	if configuration.Configuration(false).Metrics.Collect {
+	if config.Metrics.Collect {
 		metricsRouter = gin.New()
 		metricsRouter.GET("/metrics", metrics.PrometheusHandler(databaseAccess))
-		mp := fmt.Sprintf(":%d", configuration.Configuration(false).Metrics.Port)
+		mp := fmt.Sprintf(":%d", config.Metrics.Port)
 		go func() {
+			log.Infof("start metrics server on port %d", config.Metrics.Port)
 			err := metricsRouter.Run(mp)
 			log.Errorf("error in metrics router: %v", err)
 		}()
@@ -85,7 +87,7 @@ func noRoute(c *gin.Context) {
 		}
 		f, err := assets.FrontendAssets.Open(u)
 		if err == nil {
-			b, err := ioutil.ReadAll(f)
+			b, err := io.ReadAll(f)
 			if err == nil {
 				// we have the static file in our assets. so we send this one.
 				c.Writer.WriteHeader(http.StatusOK)
@@ -108,7 +110,10 @@ func noRoute(c *gin.Context) {
 func Run(da *database.DatabaseAccess) {
 	databaseAccess = da
 	initRouter()
-	serverAddress := fmt.Sprintf(":%d", configuration.Configuration(false).Server.Port)
+	port := configuration.Configuration(false).Server.Port
+	serverAddress := fmt.Sprintf(":%d", port)
+	log.Infof("start server on port %d", port)
+
 	err := router.Run(serverAddress)
 	if err != nil {
 		log.Errorf("error in engine: %v", err)

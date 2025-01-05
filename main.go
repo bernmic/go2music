@@ -47,7 +47,7 @@ func main() {
 		}
 		configuration.Configuration(true)
 	}
-
+	configuration.Configuration(false).Application.Version = Version
 	loglevel := configuration.Configuration(false).Application.Loglevel
 	switch loglevel {
 	case "panic":

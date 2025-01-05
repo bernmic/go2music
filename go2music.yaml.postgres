@@ -15,7 +15,7 @@ databasem:
 database:
   username: go2music
   password: go2music
-  schema: go2music?sslmode=disable
+  schema: postgres?sslmode=disable
   type: postgres
   url: postgresql://${username}:${password}@localhost:5432/${schema}
   retryCount: 3

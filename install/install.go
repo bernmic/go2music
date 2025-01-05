@@ -39,6 +39,7 @@ func (is *InstallServer) install(w http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles("assets/install/install.tpl")
 		if err != nil {
 			is.Terminate <- err
+			return
 		}
 		err = t.Execute(w, createInstallParameter())
 		if err != nil {
@@ -90,6 +91,7 @@ func InstallHandler() error {
 	http.HandleFunc("/", s.root)
 	http.HandleFunc("/install", s.install)
 	go func() {
+		log.Infof("starting install server on port 8080")
 		if err := s.Server.ListenAndServe(); err != nil {
 			log.Errorf("Httpserver: ListenAndServe() error: %s", err)
 		}

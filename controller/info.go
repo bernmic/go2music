@@ -2,6 +2,7 @@ package controller
 
 import (
 	"expvar"
+	"go2music/configuration"
 	"go2music/model"
 	"net/http"
 
@@ -19,6 +20,14 @@ func initInfo(r *gin.RouterGroup) {
 	r.GET("/info/year/:year/songs", getSongsForYear)
 	r.GET("/info/genres", getGenres)
 	r.GET("/info/genres/:genre/songs", getSongsForGenre)
+	r.GET("/info/version", getVersion)
+}
+
+func getVersion(c *gin.Context) {
+	counterInfo.Add("GET /version", 1)
+	result := make(map[string]string)
+	result["version"] = configuration.Configuration(false).Application.Version
+	c.JSON(http.StatusOK, result)
 }
 
 func getInfo(c *gin.Context) {

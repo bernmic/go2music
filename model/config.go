@@ -31,6 +31,7 @@ type Application struct {
 	Cors          string `yaml:"cors,omitempty" json:"cors,omitempty"`
 	TokenLifetime string `yaml:"tokenlifetime,omitempty" json:"tokenlifetime,omitempty"`
 	TokenSecret   string `yaml:"tokenSecret,omitempty" json:"tokenSecret,omitempty"`
+	Version       string `yaml:"-" json:"-"`
 }
 
 // Config is the root structure of the configuration
