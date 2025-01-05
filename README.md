@@ -62,6 +62,43 @@ ng build -c production
 ```
 This will build the frontend and copy the result to assets/front folder.
 
+## Dynamic playlists
+Dynamic playlists have an expression which will be converted into a SQL where clause.
+Strings have to be in double quotes. Numbers are not quoted. Parenthesis are supported. Wildcards can be used in strings. '*' means zero or more character. '?' means exact one character.
+
+### Fields in queries
+| field    | description                    | type   |
+|----------|--------------------------------|--------|
+| album    | title of the album             | string |
+| artist   | name of the artist             | string |
+| song     | title of the song              | string |
+| genre    | genre of the song              | string |
+| duration | duration of the song (seconds) | number |
+| year     | year the song was published    | string |
+| rating   | rating of the song (0-255)     | number |
+| track | track number on album             | number |
+| path | path where the song is stored      | string |
+| bitrate | bitrate of the song             | number |
+| samplerate | samplerate of the song       | number |
+
+### Logical operators
+| operator | description     |
+|----------|-----------------|
+| ==       | equal           |
+| !=       | not equal       |
+| >=       | equal or higher |
+| <=       | equal or lower  |
+| \>       | higher          |
+| <        | lower           |
+| \|\| | logical OR |
+| && | logical AND |
+
+### Examples
+- artist=="ABBA"
+- artist=="Edguy" || artist=="Avantasia"
+- album=="Bravo\*Hits\*"
+- artist=="Nightwish" && year>="2013"
+
 ## Next steps
 
 - bind artists, albums, songs to a musicbrainz id
