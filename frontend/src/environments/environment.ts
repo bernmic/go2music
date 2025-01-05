@@ -5,5 +5,6 @@
 
 export const environment = {
   production: false,
-  restserver: "http://localhost:8080"
+  restserver: "http://localhost:8080",
+  version: "develop"
 };

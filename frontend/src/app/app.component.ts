@@ -5,6 +5,7 @@ import {AuthService} from "./security/auth.service";
 import {Observable} from "rxjs/index";
 import {PlayerService} from "./player/player.service";
 import {MatBottomSheet} from "@angular/material/bottom-sheet";
+import {environment} from "../environments/environment";
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,7 @@ import {MatBottomSheet} from "@angular/material/bottom-sheet";
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnDestroy {
+  version = environment.version
   mobileQuery: MediaQueryList;
 
   private _mobileQueryListener: () => void;
