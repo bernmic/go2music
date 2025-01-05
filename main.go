@@ -87,7 +87,7 @@ func main() {
 	} else {
 		panic(errors.New("Unknown database type " + databaseType))
 	}
-	log.Infof("Using bulk insert: %t", configuration.Configuration(false).Database.UseBulkInsert)
+	log.Infof("Using bulk insert: %t", *configuration.Configuration(false).Database.UseBulkInsert)
 	startCron()
 	if configuration.Configuration(false).Media.SyncAtStart {
 		go database.SyncWithFilesystem(&databaseAccess)
