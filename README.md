@@ -38,7 +38,7 @@ The executable can be started without any parameters. It tries to read the go2mu
 
 They do the same than the parameters in de go2music.yaml
 
-## database
+## Database
 
 Supported databases are
 * MySQL
@@ -46,7 +46,8 @@ Supported databases are
 * PostgreSQL
 * CockroachDB
 
-MariaDB and MySQL are fully tested. The other not. There is a db-create.sql in database-scripts which create the database and user for a MySQL or MariaDB.
+MariaDB and MySQL are fully tested. The other not. There is a db-create.sql in database-scripts which create the database and user for a MySQL or MariaDB and PostgreSQL.
+MariaDB can be used with database type 'mysql'.
 
 ## Docker
 
@@ -55,7 +56,11 @@ The docker-compose.yml can build the go2music image and creates the container fo
 
 ## Frontend
 
-There is a complete web frontend for go2music in the frontend folder. It is a single page application written in typescript with Angular and Angular Material. You can build this in the frontend folder and copy the contents of the dist folder to the static folder of go2music.
+There is a complete web frontend for go2music in the frontend folder. It is a single page application written in typescript with Angular and Angular Material. You can build this in the frontend folder.
+```
+ng build -c production
+```
+This will build the frontend and copy the result to assets/front folder.
 
 ## Next steps
 
@@ -65,5 +70,6 @@ There is a complete web frontend for go2music in the frontend folder. It is a si
 - reduce dependencies in go.mod
 - rewrite frontend with latest Angular and put it in a separate repo
 - ~~Bulk-Insert~~
+- SQlite support
 
 [Jetbrains](https://www.jetbrains.com/?from=go2music) supports this project with GoLand/IntelliJ Idea licenses. We appreciate their support for free and open source software!
