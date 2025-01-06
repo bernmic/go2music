@@ -59,7 +59,7 @@ var (
 	cacheExpire = time.Now()
 )
 
-// Info returns the dashboard informations
+// Info returns the dashboard information
 func (db *DB) Info(cached bool) (*model.Info, error) {
 	if cached && !dirtyCache && time.Now().Before(cacheExpire) {
 		log.Debug("deliver info from cache")

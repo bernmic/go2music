@@ -51,16 +51,18 @@ WHERE
 	artist.id=?
 `
 	SqlAlbumRecent = `
-	SELECT DISTINCT
+WITH albums AS (
+SELECT DISTINCT
 		album.id,
 		album.title,
 		album.path,
-		album.mbid
+		album.mbid,
+		song.added
 	FROM
 		song
 	INNER JOIN album ON song.album_id = album.id
-	ORDER BY song.added DESC LIMIT ?
-	`
+	ORDER BY song.added DESC LIMIT ?)
+SELECT albums.id, albums.title, albums.path, albums.mbid FROM albums`
 )
 
 // CreateAlbum create a new album in the database
