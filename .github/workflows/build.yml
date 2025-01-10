@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       # Frontend
       - name: Setup NodeJS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '18'
           #cache: 'npm'
       - name: Install dependencies
         run: npm install --force
@@ -35,9 +35,9 @@ jobs:
         working-directory: ./frontend
       # Services
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.23'
       - name: Generate artifacts
         run: |
           go version
