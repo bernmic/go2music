@@ -2,7 +2,7 @@ version: '2'
 
 services:
   db:
-    image: mysql:5.7
+    image: mysql:8.0
     volumes:
     - db_data:/var/lib/mysql
     restart: always
@@ -35,6 +35,7 @@ services:
       GO2MUSIC_DBUSERNAME: go2music
       GO2MUSIC_DBPASSWORD: go2music
       GO2MUSIC_MEDIAPATH: /music
+      GO2MUSIC_BULKINSERT: true
 
 volumes:
   db_data: {}

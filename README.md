@@ -41,7 +41,7 @@ They do the same than the parameters in de go2music.yaml
 ## Database
 
 Supported databases are
-* MySQL
+* MySQL 8.0+ for full support)
 * MariaDB
 * PostgreSQL
 * CockroachDB
