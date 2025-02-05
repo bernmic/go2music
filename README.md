@@ -107,6 +107,6 @@ Strings have to be in double quotes. Numbers are not quoted. Parenthesis are sup
 - reduce dependencies in go.mod
 - rewrite frontend with latest Angular and put it in a separate repo
 - ~~Bulk-Insert~~
-- SQlite support
+- SQlite support (https://pkg.go.dev/modernc.org/sqlite)
 
 [Jetbrains](https://www.jetbrains.com/?from=go2music) supports this project with GoLand/IntelliJ Idea licenses. We appreciate their support for free and open source software!
