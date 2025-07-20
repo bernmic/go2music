@@ -1,7 +1,8 @@
 module go2music
 
-go 1.22.0
-toolchain go1.24.1
+go 1.23.0
+
+toolchain go1.24.5
 
 require (
 	github.com/bogem/id3v2/v2 v2.1.4
