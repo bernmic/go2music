@@ -2,9 +2,10 @@ package tagging
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -23,10 +24,11 @@ var m2samplerates = []uint{22050, 24000, 16000, 0}
 var m25samplerates = []uint{11025, 12000, 8000, 0}
 
 type Mp3StreamInfo struct {
-	Bitrate    uint `json:"bitrate"`
-	Samplerate uint `json:"samplerate"`
-	Duration   uint `json:"duration"`
-	Vbr        bool `json:"vbr"`
+	Bitrate     uint  `json:"bitrate"`
+	Samplerate  uint  `json:"samplerate"`
+	Duration    uint  `json:"duration"`
+	Vbr         bool  `json:"vbr"`
+	ChannelMode uint8 `json:"channel_mode"`
 }
 
 type MP3Frame struct {
@@ -149,6 +151,7 @@ func ReadStreamInfo(f *os.File) (*Mp3StreamInfo, error) {
 		bytespersecond := (m.Bitrate * 1000) / 8
 		st, _ := f.Stat()
 		m.Duration = uint((st.Size() - ihlen) / int64(bytespersecond))
+		m.ChannelMode = frames[0].Channel
 	}
 	return &m, nil
 }
