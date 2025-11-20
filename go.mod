@@ -22,8 +22,8 @@ require (
 	github.com/rs/xid v1.6.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/xhenner/mp3-go v0.0.0-20150104015949-cefd7fb0189c
-	golang.org/x/crypto v0.43.0
-	golang.org/x/text v0.30.0
+	golang.org/x/crypto v0.45.0
+	golang.org/x/text v0.31.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -62,7 +62,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/arch v0.23.0 // indirect
 	golang.org/x/image v0.32.0 // indirect
-	golang.org/x/net v0.46.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
