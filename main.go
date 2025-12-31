@@ -23,11 +23,15 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"go2music/configuration"
 	"go2music/controller"
 	"go2music/database"
 	"go2music/install"
+	"go2music/mongodb"
 	"go2music/mysql"
 	"go2music/postgres"
 	"strconv"
@@ -40,6 +44,12 @@ import (
 var databaseAccess database.DatabaseAccess
 
 func main() {
+	p1 := "/mnt/user/Audio/Alben/M/M-People/bla"
+	p2 := "/mnt/user/Audio/Alben/M/M-People/blub"
+	p1c := sha256ToString(p1)
+	p2c := sha256ToString(p2)
+	p3c := sha256ToString(p1)
+	fmt.Println(p1c, p2c, p3c)
 	if configuration.Configuration(true).Database.Type == "" {
 		log.Println("No valid configuration found. Entering installation mode on port 8080.")
 		if err := install.InstallHandler(); err != nil {
@@ -78,6 +88,14 @@ func main() {
 		databaseAccess.InfoManager = db
 	} else if databaseType == "postgres" {
 		db, _ := postgres.New()
+		databaseAccess.SongManager = db
+		databaseAccess.AlbumManager = db
+		databaseAccess.ArtistManager = db
+		databaseAccess.PlaylistManager = db
+		databaseAccess.UserManager = db
+		databaseAccess.InfoManager = db
+	} else if databaseType == "mongodb" {
+		db, _ := mongodb.NewMongoDB()
 		databaseAccess.SongManager = db
 		databaseAccess.AlbumManager = db
 		databaseAccess.ArtistManager = db
@@ -136,4 +154,10 @@ func parseFrequency(f string) (uint64, string, error) {
 	}
 	value, err := strconv.Atoi(valPart)
 	return uint64(value), unitPart, err
+}
+
+func sha256ToString(str string) string {
+	h := sha256.New()
+	h.Write([]byte(str))
+	return hex.EncodeToString(h.Sum(nil))
 }
